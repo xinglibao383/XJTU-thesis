@@ -1,12 +1,12 @@
 % !TeX root = ../main.tex
 
-\xchapter{算法与代码}{Algorithm and Code}
+\xchapter{基于自回归的人体姿态识别与预测}{Algorithm and Code}
 
 \begin{tcolorbox}[colback=red!5!white,colframe=red!75!black]
   学校并未对 算法 或 代码 的排版格式作出限定，因此可以自行修改。
 \end{tcolorbox}
 
-\xsection{算法}{Algorithm}
+\xsection{问题描述}{Algorithm}
 
 考虑到实际使用需求，即长算法分段和注释功能，模板不再使用 \clist[columbiablue]{algorithm2e} 作为默认算法排版工具，改为调用 \clist[columbiablue]{algpseudocode}。注意，这两个宏包相互冲突。算法的具体编写方式请自行查阅宏包，即\clist{texdoc algpseudocode}。
 
@@ -53,7 +53,7 @@
 
 
 
-\xsection{导入代码}{Input codes}
+\xsection{数据集构建}{Input codes}
 
 从现有文件导入源码，使用 \clist[columbiablue]{lstlisting} 宏包，本模板预先定义了一基本格式 \clist{sty_basic} 以供使用，可以自定义新的样式。
 
@@ -67,3 +67,58 @@
                     language=matlab,
                     caption={标准粒子群算法},
                     label={listing:a_label}]{./Codes/pso.m}
+
+
+\xsection{方法描述}{Input codes}
+
+\xsection{实验与结果分析}{Input codes}
+\xsubsection{评价指标}{Level of this document}
+\xsubsection{实验环境}{Level of this document}
+\xsubsection{主干网络选择实验}{Level of this document}
+
+\begin{table}[H]
+  \begin{tblr}{
+    colspec={X[c] X[c] X[c]},
+    row{1} = {font=\bfseries}
+  }
+  \toprule
+  主干网络 & 超参数 & mpjpe \\
+  \midrule
+  
+  % ====== resnet + transformer ======
+  resnet + transformer & \texttt{resent18} & \texttt{train mpjpe1 = 35.1255} \\
+  & \texttt{transformer\_hidden = 128} & \texttt{train mpjpe2 = 38.5727} \\
+  & \texttt{transformer\_layers = 2} & \texttt{val mpjpe1 = 47.8203} \\
+  & \texttt{transformer\_nhead = 4} & \texttt{val mpjpe2 = 54.1138} \\
+  & \texttt{transformer\_dropout = 0.1} & \\
+  \midrule
+  
+  % ====== resnet + lstm ======
+  resnet + lstm & \texttt{resent18} & \texttt{train mpjpe1 = 37.1577} \\
+  & \texttt{lstm\_hidden = 128} & \texttt{train mpjpe2 = 40.6118} \\
+  & \texttt{lstm\_layers = 2} & \texttt{val mpjpe1 = 49.4344} \\
+  & \texttt{lstm\_dropout = 0.1} & \texttt{val mpjpe2 = 55.9392} \\
+  \midrule
+  
+  % ====== resnet + gru ======
+  resnet + gru & \texttt{resent18} & \texttt{train mpjpe1 = 35.6946} \\
+  & \texttt{gru\_hidden = 128} & \texttt{train mpjpe2 = 39.4647}  \\
+  & \texttt{gru\_layers = 2} & \texttt{val mpjpe1 = 48.9044} \\
+  & \texttt{gru\_dropout = 0.1}  & \texttt{val mpjpe2 = 54.9700} \\
+  \midrule
+  
+  % ====== resnet + mamba ======
+  resnet + mamba & \texttt{resent18} & \texttt{train mpjpe1 = 72.2105} \\
+  & \texttt{mamba\_d\_state = 16} & \texttt{train mpjpe2 = 77.8537} \\
+  & \texttt{mamba\_d\_conv = 4} & \texttt{val mpjpe1 = 76.8240} \\
+  & \texttt{mamba\_expand = 2} & \texttt{val mpjpe2 = 81.0473} \\
+  \bottomrule
+  \end{tblr}
+  \end{table}
+
+\xsubsection{标准化选择实验}{Level of this document}
+\xsubsection{数据分割实验}{Level of this document}
+\xsubsection{设备消融实验}{Level of this document}
+\xsubsection{跨场景实验}{Level of this document}
+\xsubsection{跨人实验}{Level of this document}
+\xsubsection{最大预测场景实验}{Level of this document}
