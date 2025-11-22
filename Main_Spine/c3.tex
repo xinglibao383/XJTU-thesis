@@ -86,39 +86,92 @@
   \midrule
   
   % ====== resnet + transformer ======
-  resnet + transformer & \texttt{resent18} & \texttt{train mpjpe1 = 35.1255} \\
-  & \texttt{transformer\_hidden = 128} & \texttt{train mpjpe2 = 38.5727} \\
-  & \texttt{transformer\_layers = 2} & \texttt{val mpjpe1 = 47.8203} \\
-  & \texttt{transformer\_nhead = 4} & \texttt{val mpjpe2 = 54.1138} \\
+  resnet + transformer & \texttt{resent18} & \texttt{val mpjpe1 = 47.8203} \\
+  & \texttt{transformer\_hidden = 128} & \texttt{val mpjpe2 = 54.1138} \\
+  & \texttt{transformer\_layers = 2} & \\
+  & \texttt{transformer\_nhead = 4} & \\
   & \texttt{transformer\_dropout = 0.1} & \\
   \midrule
   
   % ====== resnet + lstm ======
-  resnet + lstm & \texttt{resent18} & \texttt{train mpjpe1 = 37.1577} \\
-  & \texttt{lstm\_hidden = 128} & \texttt{train mpjpe2 = 40.6118} \\
-  & \texttt{lstm\_layers = 2} & \texttt{val mpjpe1 = 49.4344} \\
-  & \texttt{lstm\_dropout = 0.1} & \texttt{val mpjpe2 = 55.9392} \\
+  resnet + lstm & \texttt{resent18} & \texttt{val mpjpe1 = 49.4344} \\
+  & \texttt{lstm\_hidden = 128} & \texttt{val mpjpe2 = 55.9392} \\
+  & \texttt{lstm\_layers = 2} & \\
+  & \texttt{lstm\_dropout = 0.1} & \\
   \midrule
   
   % ====== resnet + gru ======
-  resnet + gru & \texttt{resent18} & \texttt{train mpjpe1 = 35.6946} \\
-  & \texttt{gru\_hidden = 128} & \texttt{train mpjpe2 = 39.4647}  \\
-  & \texttt{gru\_layers = 2} & \texttt{val mpjpe1 = 48.9044} \\
-  & \texttt{gru\_dropout = 0.1}  & \texttt{val mpjpe2 = 54.9700} \\
+  resnet + gru & \texttt{resent18} & \texttt{val mpjpe1 = 48.9044} \\
+  & \texttt{gru\_hidden = 128} & \texttt{val mpjpe2 = 54.9700} \\
+  & \texttt{gru\_layers = 2} & \\
+  & \texttt{gru\_dropout = 0.1} & \\
   \midrule
   
   % ====== resnet + mamba ======
-  resnet + mamba & \texttt{resent18} & \texttt{train mpjpe1 = 72.2105} \\
-  & \texttt{mamba\_d\_state = 16} & \texttt{train mpjpe2 = 77.8537} \\
-  & \texttt{mamba\_d\_conv = 4} & \texttt{val mpjpe1 = 76.8240} \\
-  & \texttt{mamba\_expand = 2} & \texttt{val mpjpe2 = 81.0473} \\
+  resnet + mamba & \texttt{resent18} & \texttt{val mpjpe1 = 76.8240} \\
+  & \texttt{mamba\_d\_state = 16} & \texttt{val mpjpe2 = 81.0473} \\
+  & \texttt{mamba\_d\_conv = 4} & \\
+  & \texttt{mamba\_expand = 2} & \\
   \bottomrule
   \end{tblr}
   \end{table}
 
 \xsubsection{标准化选择实验}{Level of this document}
+
+\begin{table}[H]
+  \begin{tblr}{
+    colspec={X[c] X[c] X[c]},
+    row{1} = {font=\bfseries}
+  }
+  \toprule
+  标准化设置 & mpjpe \\
+  \midrule
+  
+  % ====== 无imu标准化，无pose标准化 ======
+  无imu标准化 & \texttt{val mpjpe1 = 60.7588} \\
+  无pose标准化 & \texttt{val mpjpe2 = 74.1964} \\
+  \midrule
+  
+  % ====== 无imu标准化，有pose标准化 ======
+  无imu标准化 & \texttt{val mpjpe1 = 79.7920} \\
+  有pose标准化 & \texttt{val mpjpe2 = 86.5976} \\
+  \midrule
+  
+  % ====== 有imu标准化，无pose标准化 ======
+  有imu标准化 & \texttt{val mpjpe1 = 58.5465} \\
+  无pose标准化 & \texttt{val mpjpe2 = 70.5447}  \\
+  \midrule
+  
+  % ====== 有imu标准化，有pose标准化 ======
+  有imu标准化 & \texttt{val mpjpe1 = 50.6833} \\
+  有pose标准化 & \texttt{val mpjpe2 = 56.4806} \\
+  \bottomrule
+  \end{tblr}
+  \end{table}
+
 \xsubsection{数据分割实验}{Level of this document}
 \xsubsection{设备消融实验}{Level of this document}
+
 \xsubsection{跨场景实验}{Level of this document}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=.5\textwidth]{cross_env_experiment.pdf}
+  \caption{跨场景实验}
+\end{figure}
+
 \xsubsection{跨人实验}{Level of this document}
-\xsubsection{最大预测场景实验}{Level of this document}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\textwidth]{cross_person_experiment.pdf}
+  \caption{跨人实验}
+\end{figure}
+
+\xsubsection{最大预测长度实验}{Level of this document}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\textwidth]{predict_length_experiment.pdf}
+  \caption{最大预测长度实验}
+\end{figure}

@@ -2,6 +2,8 @@
 
 \xchapter{相关理论与技术}{Floating: Figures, Tables}
 
+本章将概述本文研究任务所涉及的核心理论与技术，为后续方法设计与实验分析提供基础。内容主要包括两类传感器：惯性测量单元和 WiFi信道状态信息，以及多种深度学习网络模型：ResNet、LSTM与GRU、Transformer和Mamba。同时，本章还将介绍多模态特征融合与对齐的方法，包括交叉注意力机制和对比学习技术，以实现不同模态数据的有效特征表示和融合。
+
 请先注意，在\LaTeX 中，图表不一定要像 Word 一样被固定在某个区域，程序会自动根据上下文为图片选择合适的位置，同时还有具有超链接的交叉引用自动定位图片位置，因此不要强求图片或表格一定处于某个位置。如非要定位，则应在浮动体环境中使用\clist{[H]}选项指定位置。
 
 \begin{tcolorbox}[colback=red!5!white,colframe=red!75!black]
@@ -14,7 +16,7 @@
   \end{enumerate}
 \end{tcolorbox}
 
-\xsection{图}{Figures}
+\xsection{传感器}{Figures}
 
 
 \begin{tcolorbox}[colback=red!5!white,colframe=red!75!black]
@@ -28,7 +30,7 @@
   \end{enumerate}
 \end{tcolorbox}
 
-\xsubsection{单张图片的使用}{Single Figure}
+\xsubsection{惯性测量单元}{Single Figure}
 
 \begin{texcodeonly}[]{}
   \begin{figure}[h]
@@ -46,7 +48,7 @@
 
 一些图片下方的文字。一些图片下方的文字。一些图片下方的文字。一些图片下方的文字。一些图片下方的文字。一些图片下方的文字。一些图片下方的文字。一些图片下方的文字。一些图片下方的文字。一些图片下方的文字。一些图片下方的文字。一些图片下方的文字。一些图片下方的文字。
 
-\xsubsection{多张图片：应该使用 subcaption 而不是 subfigure}{Use subcaption instead of subfigure}
+\xsubsection{WiFi信道状态信息}{Use subcaption instead of subfigure}
 
 \begin{texcodeonly}[]{}
   \begin{figure}[h]
@@ -82,7 +84,7 @@
   \label{figure:icon}
 \end{figure}
 
-\xsubsection{多张子图分页}{Break multiple figures}
+% \xsubsection{多张子图分页}{Break multiple figures}
 
 \newcommand{\subfigg}{
   \begin{subfigure}[b]{0.49\linewidth}
@@ -156,7 +158,7 @@
 
 \clearpage
 
-\xsection{表}{Tables}
+\xsection{深度学习网络}{Tables}
 
 \begin{tcolorbox}[colback=red!5!white,colframe=red!75!black]
   \begin{enumerate}[leftmargin=0.5cm]
@@ -170,7 +172,7 @@
 \end{tcolorbox}
 
 
-\xsubsection{普通表格}{Normal Tables}
+\xsubsection{ResNet}{Normal Tables}
 
 
 考虑到使用成本、内容与样式分离。模板默认调用现代化的表格绘制宏包 \clist[columbiablue]{tabularray}。该宏包的使用方法请使用 \clist{texdoc tabularray}，网上也有此手册的中文翻译。请确保使用的发行版包含这一宏包（即更新至 2023 及以后的版本）。
@@ -222,7 +224,7 @@ tblr 环境各列的对齐方式可以以键值对的方式在必选参数中设
 
 tabularray 的优点在于格式和内容分离，使用更贴合人类习惯。单元格的合并，文字、背景、边框的样式都可以放在参数中设置。 \clist{cell{R}{C}={merge}{style}}用于设置单元格合并，其中 R,C 指定合并单元格左上角的位置，merge参数指定合并多少行多少列，style 调整合并后的单元格样式，其中 R,C 除了使用行号进行索引，可以使用 X,Y,Z 索引倒数第三、二、一行/列，可以使用 odd/even 选择 奇/偶列，还可以使用连字符(dash)选择区间，非常方便。
 
-\xsubsection{复杂表格}{Complicated tables}
+\xsubsection{LSTM和GRU}{Complicated tables}
 
 在三线表中可以加辅助线，以适应较复杂表格的需要，具体使用方法请自行阅读宏包：
 
@@ -250,7 +252,7 @@ tabularray 的优点在于格式和内容分离，使用更贴合人类习惯。
 \end{table}
 \end{texcode}
 
-\xsubsection{长表格}{Long Tables}
+\xsubsection{Transformer}{Long Tables}
 
 当表格过长时，使用\clist{longtblr}环境，此时不需要浮动体环境。在可选参数中需要设置\clist{theme=xjtu_std}，以调用预先设置好的续表样式，同时设置表格标题、label、脚注等，具体使用方法请自行阅读宏包。
 
@@ -336,3 +338,11 @@ tabularray 的优点在于格式和内容分离，使用更贴合人类习惯。
     Foot & Foot & Foot \\
     \bottomrule
 \end{longtblr}
+
+\xsubsection{Mamba}{Long Tables}
+
+\xsection{多模态特征融合与对齐}{Figures}
+
+\xsubsection{交叉注意力机制}{Long Tables}
+
+\xsubsection{对比学习}{Long Tables}

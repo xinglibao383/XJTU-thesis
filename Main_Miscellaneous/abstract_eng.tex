@@ -1,16 +1,21 @@
-
 % !TeX root = ../main.tex
 \begin{englishabstract}
-    \footnotetext{*The work was supported by the Foundation (foundation ID).}
+    % \footnotetext{*The work was supported by the Foundation (foundation ID).}
     % \astfootnote{The work was supported by the Foundation (foundation ID).}
-    \blindtext
+    % \blindtext
 
-    \blindtext
+    % \blindtext
 
-    \blindtext
+    % \blindtext
 
-    \blindtext
+    % \blindtext
 
-    \englishkeywordstype{MHD equations; Finite element methods; Decoupled scheme; Stability; Convergence; Structure preserving; Preconditioning method}{Theoretical Research}
+    In recent years, with the rapid development of artificial intelligence and Internet of Things technologies, as well as the growing demand for daily health monitoring, smart wearable devices equipped with multiple sensors have become increasingly widespread. As key sensing components, Inertial Measurement Unit (IMU) and WiFi have shown great potential in the fields of human activity recognition and pose reconstruction due to their low hardware cost, easy accessibility, and privacy-friendly characteristics. Building upon existing research, this paper conducts an in-depth discussion on the applications of IMU and WiFi in these two areas and proposes innovative algorithmic models suitable for a wide range of everyday scenarios.
+    
+    For the human activity recognition task, this paper proposes a multimodal fusion-based activity recognition method that simultaneously uses IMU and WiFi data and can jointly perform three tasks: activity recognition, identity recognition, and scene recognition. The model consists of an IMU feature extractor, a WiFi feature extractor, a cross-attention fusion module, and classifiers for activity, identity, and scene. A contrastive learning-based training strategy is adopted to align the IMU and WiFi feature extractors within a shared semantic space, thereby improving multi-task recognition accuracy. Experimental results demonstrate that on the XRFV2 dataset, the model achieves 96.06\% accuracy for activity recognition, 99.93\% for identity recognition, and 99.99\% for scene recognition, fully validating the effectiveness of the proposed approach.
+    
+    For the human pose reconstruction task, this paper proposes an autoregressive human pose reconstruction and prediction method. The model consists of an IMU feature extractor, a pose reconstructor, and an IMU predictor. First, the IMU data is fed into the IMU feature extractor; the extracted features are then sent separately into the pose reconstructor and the IMU predictor. The pose reconstructor outputs the reconstructed pose corresponding to the current IMU data, while the IMU predictor outputs the predicted IMU data for the future time step. The predicted IMU data is then fed back into the IMU feature extractor, enabling autoregressive pose reconstruction and prediction. Experimental results show that on the XRFV2 dataset, the average position error for the 25 reconstructed human keypoints is 49.3484 mm, while the prediction error is 55.1903 mm, achieving centimeter-level accuracy and validating the effectiveness of the proposed method.
+
+    \englishkeywordstype{IMU; WiFi; Contrastive learning; Autoregressive; Pose reconstruction; Activity recognition}{Application Research}
 
 \end{englishabstract}
