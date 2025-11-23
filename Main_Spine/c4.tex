@@ -79,85 +79,175 @@
 
 \subsubsection{数据分割实验}{Ref equations}
 
+\begin{table}[H]
+  \centering
+  \begin{tblr}{
+    colspec={X[c] X[c] X[c]},
+  }
+  \toprule
+  IMU输入长度 & reconstruction mpjpe & prediction mpjpe \\
+  \midrule
+
+  15  & 78.1419 & 81.7890 \\
+  30  & 63.0527 & 69.1466 \\
+  45  & 56.0555 & 63.0849 \\
+  60  & 50.7079 & 56.6010 \\
+  75  & 48.6763 & 54.1706 \\
+  90  & 48.7303 & 53.8068 \\
+  105 & 47.3098 & 51.6719 \\
+  120 & 47.4721 & 52.1078 \\
+  135 & 48.6094 & 53.8773 \\
+  150 & 47.9178 & 52.9400 \\
+
+  \bottomrule
+  \end{tblr}
+\end{table}
+
 \subsubsection{设备消融实验}{Ref equations}
+
+\begin{table}[H]
+  \centering
+  \begin{tblr}{
+    colspec={X[c] X[c] X[c]},
+  }
+  \toprule
+  消除设备 & reconstruction mpjpe & prediction mpjpe \\
+  \midrule
+
+  None      & 50.7079 & 56.6010 \\
+  0         & 52.2946 & 58.6593 \\
+  1         & 51.2945 & 57.8350 \\
+  2         & 50.5097 & 56.7976 \\
+  3         & 51.3100 & 57.8461 \\
+  4         & 50.6537 & 56.2470 \\
+  2 and 4   & 52.5957 & 58.7247 \\
+
+  \bottomrule
+  \end{tblr}
+\end{table}
 
 \xsubsection{骨干网络选择实验结果分析}{Level of this document}
 
 \begin{table}[H]
+  \centering
   \begin{tblr}{
-    colspec={X[c] X[c]},
+    colspec={X[c] X[c] X[c] X[c]},
     % row{1} = {font=\bfseries}
   }
   \toprule
-  主干网络 & mpjpe \\
+  主干网络1 & 主干网络2 & reconstruction mpjpe & prediction mpjpe \\
   \midrule
   
-  % ====== resnet + transformer ======
-  resnet + transformer & \texttt{mpjpe1 = 47.8203, mpjpe2 = 54.1138} \\
+  resnet & transformer & 47.8203 & 54.1138 \\
+  resnet & lstm        & 49.4344 & 55.9392 \\
+  resnet & gru         & 48.9044 & 54.9700 \\
+  resnet & mamba       & 76.8240 & 81.0473 \\
   
-  % ====== resnet + lstm ======
-  resnet + lstm & \texttt{mpjpe1 = 49.4344, mpjpe2 = 55.9392} \\
-  
-  % ====== resnet + gru ======
-  resnet + gru & \texttt{mpjpe1 = 48.9044, mpjpe2 = 54.9700} \\
-  
-  % ====== resnet + mamba ======
-  resnet + mamba & \texttt{mpjpe1 = 76.8240, mpjpe2 = 81.0473} \\
   \bottomrule
   \end{tblr}
-  \end{table}
+\end{table}
 
 \xsubsection{标准化消融实验结果分析}{Level of this document}
 
 \begin{table}[H]
+  \centering
   \begin{tblr}{
-    colspec={X[c] X[c]},
+    colspec={X[c] X[c] X[c] X[c]},
     % row{1} = {font=\bfseries}
   }
   \toprule
-  标准化设置 & mpjpe \\
+  IMU标准化 & Pose标准化 & reconstruction mpjpe & prediction mpjpe \\
   \midrule
   
-  % ====== 无imu标准化，无pose标准化 ======
-  无imu标准化，无pose标准化 & \texttt{mpjpe1 = 60.7588, mpjpe2 = 74.1964} \\
-  % \midrule
+  否 & 否 & 60.7588 & 74.1964 \\
   
-  % ====== 无imu标准化，有pose标准化 ======
-  无imu标准化，有pose标准化 & \texttt{mpjpe1 = 79.7920, mpjpe2 = 86.5976} \\
-  % \midrule
+  否 & 是 & 79.7920 & 86.5976 \\
   
-  % ====== 有imu标准化，无pose标准化 ======
-  有imu标准化，无pose标准化 & \texttt{mpjpe1 = 58.5465, mpjpe2 = 70.5447} \\
-  % \midrule
+  是 & 否 & 58.5465 & 70.5447 \\
   
-  % ====== 有imu标准化，有pose标准化 ======
-  有imu标准化，有pose标准化 & \texttt{mpjpe1 = 50.6833, mpjpe2 = 56.4806} \\
+  是 & 是 & 50.6833 & 56.4806 \\
+  
   \bottomrule
   \end{tblr}
-  \end{table}
+\end{table}
 
 \xsubsection{跨域实验结果分析}{Level of this document}
 
 \subsubsection{跨场景实验}{Ref equations}
 
-\begin{figure}[h]
+\begin{table}[H]
   \centering
-  \includegraphics[width=.5\textwidth]{cross_env_experiment.pdf}
-  \caption{跨场景实验}
-\end{figure}
+  \begin{tblr}{
+    colspec={X[c] X[c] X[c]},
+    % row{1} = {font=\bfseries}
+  }
+  \toprule
+  测试场景 & reconstruction mpjpe & prediction mpjpe \\
+  \midrule
+
+  livingroom & 204.4093 & 226.1702 \\
+  office     & 147.1609 & 155.1837 \\
+  kitchen    & 138.3596 & 143.9825 \\
+
+  \bottomrule
+  \end{tblr}
+\end{table}
 
 \subsubsection{跨人实验}{Ref equations}
 
-\begin{figure}[h]
+\begin{table}[H]
   \centering
-  \includegraphics[width=\textwidth]{cross_person_experiment.pdf}
-  \caption{跨人实验}
-\end{figure}
+  \begin{tblr}{
+    colspec={X[c] X[c] X[c]},
+  }
+  \toprule
+  测试志愿者 & reconstruction mpjpe & prediction mpjpe \\
+  \midrule
+
+  0  & 93.9199  & 100.6215 \\
+  1  & 117.3705 & 123.4515 \\
+  2  & 86.6879  & 91.1092 \\
+  3  & 102.1780 & 108.2353 \\
+  4  & 126.7194 & 138.4886 \\
+  5  & 104.7901 & 113.8852 \\
+  6  & 100.7176 & 106.4436 \\
+  7  & 108.6058 & 118.8354 \\
+  8  & 114.5809 & 122.3770 \\
+  9  & 98.3641  & 106.3886 \\
+  10 & 97.3505  & 104.0960 \\
+  11 & 105.0606 & 112.9244 \\
+  12 & 85.6985  & 89.5146 \\
+  13 & 95.7136  & 102.6839 \\
+  14 & 103.5153 & 110.9676 \\
+  15 & 115.2117 & 125.8084 \\
+
+  \bottomrule
+  \end{tblr}
+\end{table}
 
 \xsubsection{最大预测长度实验结果分析}{Level of this document}
 
-\begin{figure}[h]
+\begin{table}[H]
   \centering
-  \includegraphics[width=\textwidth]{predict_length_experiment.pdf}
-  \caption{最大预测长度实验}
-\end{figure}
+  \begin{tblr}{
+    colspec={X[c] X[c]},
+  }
+  \toprule
+  预测长度区间 & mpjpe \\
+  \midrule
+
+  {[-15, 0)}   & \texttt{56.1941} \\
+  {[0, 15)}    & \texttt{60.9056} \\
+  {[15, 30)}   & \texttt{65.6229} \\
+  {[30, 45)}   & \texttt{77.7804} \\
+  {[45, 60)}   & \texttt{88.2202} \\
+  {[60, 75)}   & \texttt{94.8827} \\
+  {[75, 90)}   & \texttt{101.9103} \\
+  {[90, 105)}  & \texttt{108.3201} \\
+  {[105, 120)} & \texttt{113.4193} \\
+  {[120, 135)} & \texttt{119.1812} \\
+  {[135, 150)} & \texttt{125.6723} \\
+
+  \bottomrule
+  \end{tblr}
+\end{table}
