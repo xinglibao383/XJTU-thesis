@@ -20,29 +20,246 @@
 
 \subsubsection{模态消融实验}{Ref equations}
 
+\begin{table}[H]
+  \centering
+  \begin{tblr}{
+    colspec={X[c] X[c] X[c] X[c]},
+  }
+  \toprule
+  模态 & 活动准确率 & 身份准确率 & 场景准确率 \\
+  \midrule
+
+  imu            & 92.96\% & 96.79\% & 97.83\% \\
+  wifi           & 87.96\% & 99.70\% & 99.92\% \\
+  wifi\_amp      & 87.75\% & 99.52\% & 99.89\% \\
+  wifi\_pha      & 84.85\% & 97.86\% & 100.00\% \\
+  stft           & 64.34\% & 96.63\% & 100.00\% \\
+  stft\_amp      & 68.45\% & 97.54\% & 99.99\% \\
+  stft\_phase    & 23.94\% & 63.80\% & 97.56\% \\
+  imu + wifi     & 96.06\% & 99.93\% & 99.99\% \\
+  imu + wifi\_amp & 95.68\% & 99.93\% & 99.95\% \\
+  imu + wifi\_pha & 94.65\% & 99.70\% & 99.99\% \\
+  imu + stft     & 94.00\% & 99.66\% & 99.92\% \\
+  imu + stft\_amp & 93.39\% & 99.63\% & 99.88\% \\
+  imu + stft\_pha & 90.24\% & 96.58\% & 98.78\% \\
+
+  \bottomrule
+  \end{tblr}
+\end{table}
+
 \subsubsection{设备消融实验}{Ref equations}
 
+\begin{table}[H]
+  \centering
+  \begin{tblr}{
+    colspec={X[c] X[c] X[c] X[c] X[c]},
+  }
+  \toprule
+  设备 & 设备编号 & 活动准确率 & 身份准确率 & 场景准确率 \\
+  \midrule
+
+  -    & -    & 96.06\% & 99.93\% & 99.99\% \\
+  imu  & 0    & 94.86\% & 99.85\% & 99.90\% \\
+  imu  & 1    & 95.67\% & 99.94\% & 99.96\% \\
+  imu  & 2    & 94.79\% & 99.82\% & 99.96\% \\
+  imu  & 3    & 95.34\% & 99.86\% & 99.95\% \\
+  imu  & 4    & 95.65\% & 99.88\% & 99.96\% \\
+  wifi & 0    & 95.53\% & 99.76\% & 99.95\% \\
+  wifi & 1    & 94.80\% & 99.77\% & 99.95\% \\
+  wifi & 2    & 94.79\% & 99.71\% & 99.94\% \\
+
+  \bottomrule
+  \end{tblr}
+\end{table}
+
 \subsubsection{数据分割实验}{Ref equations}
+
+\begin{table}[H]
+  \centering
+  \begin{tblr}{
+    colspec={X[2,c] X[1,c] X[1,c] X[1,c]},
+  }
+  \toprule
+  数据分割方案 & 活动准确率 & 身份准确率 & 场景准确率 \\
+  \midrule
+
+  window\_size = \ 25, stride = \ 25  & 88.83\% & 99.73\% & 99.95\% \\
+  window\_size = \ 50, stride = \ 25  & 96.06\% & 99.93\% & 99.99\% \\
+  window\_size = \ 75, stride = \ 25  & 98.50\% & 99.96\% & 99.99\% \\
+  window\_size = 100, stride = \ 25  & 99.27\% & 99.96\% & 99.99\% \\
+  window\_size = 125, stride = \ 25  & 99.62\% & 99.99\% & 99.99\% \\
+  window\_size = 150, stride = \ 25  & 99.79\% & 99.98\% & 99.96\% \\
+  window\_size = \ 50, stride = \ 50  & 88.71\% & 99.52\% & 99.90\% \\
+  window\_size = \ 75, stride = \ 50  & 94.47\% & 99.85\% & 99.94\% \\
+  window\_size = 100, stride = \ 50  & 96.95\% & 99.94\% & 99.93\% \\
+  window\_size = 125, stride = \ 50  & 97.50\% & 99.68\% & 99.73\% \\
+  window\_size = 150, stride = \ 50  & 98.77\% & 99.93\% & 99.90\% \\
+  window\_size = \ 75, stride = \ 75  & 89.85\% & 99.54\% & 99.71\% \\
+  window\_size = 100, stride = \ 75  & 91.82\% & 99.21\% & 99.85\% \\
+  window\_size = 125, stride = \ 75  & 92.73\% & 98.38\% & 99.44\% \\
+  window\_size = 150, stride = \ 75  & 96.33\% & 99.39\% & 99.72\% \\
+  window\_size = 100, stride = 100 & 91.31\% & 99.12\% & 99.71\% \\
+  window\_size = 125, stride = 100 & 92.34\% & 98.48\% & 99.30\% \\
+  window\_size = 150, stride = 100 & 93.69\% & 98.40\% & 99.27\% \\
+  window\_size = 125, stride = 125 & 90.87\% & 96.81\% & 99.00\% \\
+  window\_size = 150, stride = 125 & 94.91\% & 99.28\% & 99.70\% \\
+  window\_size = 150, stride = 150 & 93.21\% & 98.52\% & 99.30\% \\
+
+  \bottomrule
+  \end{tblr}
+\end{table}
 
 \xsubsection{网络架构实验结果分析}{Ref equations}
 
 \subsubsection{骨干网络选择实验}{Ref equations}
 
+\begin{table}[H]
+  \centering
+  \begin{tblr}{
+    colspec={X[c] X[c] X[c] X[c]},
+  }
+  \toprule
+  骨干网络 & 活动准确率 & 身份准确率 & 场景准确率 \\
+  \midrule
+
+  resnet18    & 88.44\% & 98.75\% & 99.99\% \\
+  mamba       & 96.06\% & 99.93\% & 99.99\% \\
+  lstm        & 91.43\% & 99.68\% & 99.91\% \\
+  gru         & 92.90\% & 99.90\% & 99.99\% \\
+  transformer & 95.06\% & 99.95\% & 99.97\% \\
+
+  \bottomrule
+  \end{tblr}
+\end{table}
+
 \subsubsection{模态融合方案选择实验}{Ref equations}
+
+\begin{table}[H]
+  \centering
+  \begin{tblr}{
+    colspec={X[c] X[c] X[c] X[c]},
+  }
+  \toprule
+  模态融合方案 & 活动准确率 & 身份准确率 & 场景准确率 \\
+  \midrule
+
+  拼接       & 96.20\% & 99.84\% & 99.99\% \\
+  交叉注意力  & 96.06\% & 99.93\% & 99.99\% \\
+
+  \bottomrule
+  \end{tblr}
+\end{table}
 
 \xsubsection{消融实验结果分析}{Ref equations}
 
 \subsubsection{标准化消融实验}{Ref equations}
 
+\begin{table}[H]
+  \centering
+  \begin{tblr}{
+    colspec={X[c] X[c] X[c] X[c]},
+  }
+  \toprule
+  IMU标准化 & WiFi标准化 & 活动准确率 & 身份准确率 & 场景准确率 \\
+  \midrule
+
+  否 & 否 & 96.06\% & 99.93\% & 99.99\% \\
+  是 & 否 & 96.36\% & 99.94\% & 99.99\% \\
+  否 & 是 & 95.60\% & 99.91\% & 99.99\% \\
+  是 & 是 & 96.30\% & 99.94\% & 99.99\% \\
+
+  \bottomrule
+  \end{tblr}
+\end{table}
+
 \subsubsection{对比学习消融实验}{Ref equations}
 
+\begin{table}[H]
+  \centering
+  \begin{tblr}{
+    colspec={X[c] X[c] X[c] X[c]},
+  }
+  \toprule
+  对比学习 & 活动准确率 & 身份准确率 & 场景准确率 \\
+  \midrule
+
+  否 & 96.06\% & 99.93\% & 99.99\% \\
+  是 & 94.06\% & 99.75\% & 99.98\% \\
+
+  \bottomrule
+  \end{tblr}
+\end{table}
+
 \subsubsection{损失函数权重消融实验}{Ref equations}
+
+\begin{table}[H]
+  \centering
+  \begin{tblr}{
+    colspec={X[c] X[c] X[c] X[c]},
+  }
+  \toprule
+  交叉熵损失函数权重 & 活动准确率 & 身份准确率 & 场景准确率 \\
+  \midrule
+
+  是 & 96.06\% & 99.93\% & 99.99\% \\
+  否 & 94.76\% & 99.81\% & 99.92\% \\
+
+  \bottomrule
+  \end{tblr}
+\end{table}
 
 \xsubsection{跨域实验结果分析}{Ref equations}
 
 \subsubsection{跨场景实验}{Ref equations}
 
+\begin{table}[H]
+  \centering
+  \begin{tblr}{
+    colspec={X[c] X[c] X[c] X[c]},
+  }
+  \toprule
+  测试场景 & 活动准确率 & 身份准确率 & 场景准确率 \\
+  \midrule
+
+  livingroom & 25.58\% & 42.76\% & 3.94\% \\
+  office     & 30.74\% & 34.71\% & 6.16\% \\
+  kitchen    & 23.61\% & 4.62\% & 4.25\% \\
+
+  \bottomrule
+  \end{tblr}
+\end{table}
+
 \subsubsection{跨人实验}{Ref equations}
+
+\begin{table}[H]
+  \centering
+  \begin{tblr}{
+    colspec={X[c] X[c] X[c] X[c]},
+  }
+  \toprule
+  测试志愿者 & 活动准确率 & 身份准确率 & 场景准确率 \\
+  \midrule
+
+  0  & 85.32\% & 99.39\% & 16.73\% \\
+  1  & 55.14\% & 81.64\% & 11.48\% \\
+  2  & 82.56\% & 99.29\% & 15.76\% \\
+  3  & 74.60\% & 99.62\% & 1.20\% \\
+  4  & 62.13\% & 98.56\% & 29.95\% \\
+  5  & 76.29\% & 99.22\% & 0.13\% \\
+  6  & 67.01\% & 99.47\% & 2.52\% \\
+  7  & 71.91\% & 99.20\% & 0.05\% \\
+  8  & 69.87\% & 99.81\% & 32.60\% \\
+  9  & 68.72\% & 98.73\% & 11.04\% \\
+  10 & 72.71\% & 99.60\% & 1.02\% \\
+  11 & 72.47\% & 99.91\% & 1.03\% \\
+  12 & 79.33\% & 99.94\% & 1.25\% \\
+  13 & 76.55\% & 99.79\% & 2.36\% \\
+  14 & 69.43\% & 99.91\% & 8.33\% \\
+  15 & 69.26\% & 99.95\% & 41.25\% \\
+
+  \bottomrule
+  \end{tblr}
+\end{table}
 
 % \xsubsection{引用公式}{Ref equations}
 
