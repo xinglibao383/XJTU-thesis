@@ -85,40 +85,24 @@
 
 \begin{table}[H]
   \begin{tblr}{
-    colspec={X[c] X[c] X[c]},
-    row{1} = {font=\bfseries}
+    colspec={X[c] X[c]},
+    % row{1} = {font=\bfseries}
   }
   \toprule
-  主干网络 & 超参数 & mpjpe \\
+  主干网络 & mpjpe \\
   \midrule
   
   % ====== resnet + transformer ======
-  resnet + transformer & \texttt{resent18} & \texttt{val mpjpe1 = 47.8203} \\
-  & \texttt{transformer\_hidden = 128} & \texttt{val mpjpe2 = 54.1138} \\
-  & \texttt{transformer\_layers = 2} & \\
-  & \texttt{transformer\_nhead = 4} & \\
-  & \texttt{transformer\_dropout = 0.1} & \\
-  \midrule
+  resnet + transformer & \texttt{mpjpe1 = 47.8203, mpjpe2 = 54.1138} \\
   
   % ====== resnet + lstm ======
-  resnet + lstm & \texttt{resent18} & \texttt{val mpjpe1 = 49.4344} \\
-  & \texttt{lstm\_hidden = 128} & \texttt{val mpjpe2 = 55.9392} \\
-  & \texttt{lstm\_layers = 2} & \\
-  & \texttt{lstm\_dropout = 0.1} & \\
-  \midrule
+  resnet + lstm & \texttt{mpjpe1 = 49.4344, mpjpe2 = 55.9392} \\
   
   % ====== resnet + gru ======
-  resnet + gru & \texttt{resent18} & \texttt{val mpjpe1 = 48.9044} \\
-  & \texttt{gru\_hidden = 128} & \texttt{val mpjpe2 = 54.9700} \\
-  & \texttt{gru\_layers = 2} & \\
-  & \texttt{gru\_dropout = 0.1} & \\
-  \midrule
+  resnet + gru & \texttt{mpjpe1 = 48.9044, mpjpe2 = 54.9700} \\
   
   % ====== resnet + mamba ======
-  resnet + mamba & \texttt{resent18} & \texttt{val mpjpe1 = 76.8240} \\
-  & \texttt{mamba\_d\_state = 16} & \texttt{val mpjpe2 = 81.0473} \\
-  & \texttt{mamba\_d\_conv = 4} & \\
-  & \texttt{mamba\_expand = 2} & \\
+  resnet + mamba & \texttt{mpjpe1 = 76.8240, mpjpe2 = 81.0473} \\
   \bottomrule
   \end{tblr}
   \end{table}
@@ -127,31 +111,27 @@
 
 \begin{table}[H]
   \begin{tblr}{
-    colspec={X[c] X[c] X[c]},
-    row{1} = {font=\bfseries}
+    colspec={X[c] X[c]},
+    % row{1} = {font=\bfseries}
   }
   \toprule
   标准化设置 & mpjpe \\
   \midrule
   
   % ====== 无imu标准化，无pose标准化 ======
-  无imu标准化 & \texttt{val mpjpe1 = 60.7588} \\
-  无pose标准化 & \texttt{val mpjpe2 = 74.1964} \\
-  \midrule
+  无imu标准化，无pose标准化 & \texttt{mpjpe1 = 60.7588, mpjpe2 = 74.1964} \\
+  % \midrule
   
   % ====== 无imu标准化，有pose标准化 ======
-  无imu标准化 & \texttt{val mpjpe1 = 79.7920} \\
-  有pose标准化 & \texttt{val mpjpe2 = 86.5976} \\
-  \midrule
+  无imu标准化，有pose标准化 & \texttt{mpjpe1 = 79.7920, mpjpe2 = 86.5976} \\
+  % \midrule
   
   % ====== 有imu标准化，无pose标准化 ======
-  有imu标准化 & \texttt{val mpjpe1 = 58.5465} \\
-  无pose标准化 & \texttt{val mpjpe2 = 70.5447}  \\
-  \midrule
+  有imu标准化，无pose标准化 & \texttt{mpjpe1 = 58.5465, mpjpe2 = 70.5447} \\
+  % \midrule
   
   % ====== 有imu标准化，有pose标准化 ======
-  有imu标准化 & \texttt{val mpjpe1 = 50.6833} \\
-  有pose标准化 & \texttt{val mpjpe2 = 56.4806} \\
+  有imu标准化，有pose标准化 & \texttt{mpjpe1 = 50.6833, mpjpe2 = 56.4806} \\
   \bottomrule
   \end{tblr}
   \end{table}

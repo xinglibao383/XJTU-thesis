@@ -254,6 +254,12 @@ tabularray 的优点在于格式和内容分离，使用更贴合人类习惯。
 
 \xsubsection{Transformer}{Long Tables}
 
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=.5\textwidth]{transformer.png}
+  \caption{transformer}
+\end{figure}
+
 当表格过长时，使用\clist{longtblr}环境，此时不需要浮动体环境。在可选参数中需要设置\clist{theme=xjtu_std}，以调用预先设置好的续表样式，同时设置表格标题、label、脚注等，具体使用方法请自行阅读宏包。
 
 \begin{texcodeonly}[]{}
@@ -324,6 +330,7 @@ tabularray 的优点在于格式和内容分离，使用更贴合人类习惯。
     Foot & Foot & Foot \\
     Alpha & Beta & Gamma \\
     Epsilon & Zeta & Eta \\
+    \midrule
     Iota & Kappa & Lambda \\
     Nu & Xi & Omicron \\
     Rho & Sigma & Tau \\
