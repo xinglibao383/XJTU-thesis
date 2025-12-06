@@ -25,6 +25,7 @@
 *.zlg
 *.zln
 *.pdf
+!Build/main.pdf
 
 ## Intermediate documents:
 *.dvi
