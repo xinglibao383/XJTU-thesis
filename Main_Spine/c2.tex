@@ -97,7 +97,109 @@ a_{measured} = a_{linear} + R \cdot g + b_a + n_a
 
 \xsubsection{WiFi信道状态信息}{Use subcaption instead of subfigure}
 
+随着无线通信技术的演进，Wi-Fi（Wireless Fidelity）已不仅仅是局域网数据传输的标准，更逐渐演变为一种非接触式的环境感知手段。本节将详细阐述支撑Wi-Fi感知的核心技术——正交频分复用（OFDM）以及描述无线信道细粒度特征的信道状态信息（CSI）。
 
+\subsubsection{正交频分复用技术 (OFDM)}
+
+正交频分复用（Orthogonal Frequency Division Multiplexing, OFDM）是现代Wi-Fi标准（如IEEE 802.11n/ac/ax）的核心调制技术，其主要目的是在多径传播环境下实现高效、可靠的高速数据传输。
+
+OFDM 将高速串行数据流分解为多个低速并行子数据流，并将它们调制到一组相互正交的子载波（Sub-carriers）上进行传输。与传统的频分复用（FDM）不同，OFDM 允许子载波的频谱相互重叠，但通过保持载波间的正交性，接收端可以利用快速傅里叶变换（FFT）无干扰地分离出各个子载波的信号。
+
+从数学角度看，OFDM 信号可以表示为多个子载波的线性叠加。设 $N$ 为子载波数量，$f_0$ 为子载波间隔，则时域上的发送信号 $s(t)$ 可表示为：
+
+\begin{equation}
+s(t)=\sum_{k=0}^{N-1}X_{k}\cdot e^{j2\pi kf_{0}t}
+\end{equation}
+
+其中，$X_k$ 表示第 $k$ 个子载波上的复数调制符号（如QAM符号），$j$ 为虚数单位。
+
+OFDM 技术将宽带频率选择性衰落信道转化为多个平坦衰落的窄带子信道，这种机制不仅极大地提高了频谱利用率，还显著增强了系统对抗多径效应（Multipath Effect）和符号间干扰（ISI）的鲁棒性，为提取高质量的信道特征提供了物理层基础。
+
+\subsubsection{信道状态信息 (Channel State Information, CSI)}
+
+传统的无线感知常依赖接收信号强度指示（RSSI），但这是一种叠加了多径信号的粗粒度特征，稳定性较差。相比之下，信道状态信息（CSI）属于物理层（PHY Layer）特征，它从子载波层面细粒度地描述了无线信号在发射端与接收端之间的传播特性，反映了信号在传输过程中的散射、反射、衰减及相位偏移等物理现象。
+
+在无线通信系统中，接收信号 $Y$、发送信号 $X$ 与信道脉冲响应 $H$ 以及噪声 $N$ 之间的关系通常描述为 $Y = H \cdot X + N$。CSI 即为信道频率响应（Channel Frequency Response, CFR）的采样值，也就是矩阵 $H$ 的估计。
+
+假设无线通信系统包含 $M$ 个发射天线和 $N$ 个接收天线，则信道状态信息矩阵 $H$ 可表示为：
+
+\begin{equation}
+H=\begin{bmatrix}h_{11}&h_{12}&\cdots&h_{1N}\\ h_{21}&h_{22}&\cdots&h_{2N}\\ \vdots&\vdots&\ddots&\vdots\\ h_{M1}&h_{M2}&\cdots&h_{MN}\end{bmatrix}
+\end{equation}
+
+其中，矩阵元素 $h_{mn}$ 表示从第 $m$ 个发射天线到第 $n$ 个接收天线的复数信道增益。
+
+CSI 矩阵中的每一个元素 $h_{mn}$ 均为复数，包含了信号的振幅（Amplitude）和相位（Phase）信息，可表示为 $h_{mn} = |h_{mn}|e^{j\theta_{mn}}$。
+
+\begin{itemize}
+    \item 振幅信息：反映了信号在特定子载波上的能量衰减程度。其计算公式为：
+    \begin{equation}
+    |\alpha_{mn}|=|h_{mn}|=\sqrt{Re(h_{mn})^{2}+Im(h_{mn})^{2}}
+    \end{equation}
+    其中，$Re(\cdot)$ 和 $Im(\cdot)$ 分别代表复数的实部和虚部。
+
+    \item 相位信息：反映了信号传播的时延和路径变化，对位置移动极为敏感。其计算公式为：
+    \begin{equation}
+    \theta_{mn}=\arg(h_{mn})=\arctan\left(\frac{Im(h_{mn})}{Re(h_{mn})}\right)
+    \end{equation}
+\end{itemize}
+
+Wi-Fi 感知的核心在于“多径效应”引起的CSI波动。当环境中的目标（如人体）发生移动或动作时，会改变信号的传播路径（反射、散射），导致接收端特定子载波的CSI振幅和相位发生特异性变化。通过在时域上分析这些波动模式，并结合机器学习算法，可以实现对呼吸监测、步态识别、跌倒检测及精细动作分类的高精度感知。
+
+相较于由于多径叠加而导致信息模糊的 RSSI，CSI 提供了频域上的多维信息，能够更本质地刻画环境与目标的特征，因此在复杂室内环境下的姿态重构与动作识别任务中表现出更高的稳定性和准确性。
+
+\subsubsection{CSI 相位误差消除与清洗}
+
+虽然 CSI 相位信息包含着对物体运动极为敏感的时空特征，但在商用 Wi-Fi 设备（如 Intel 5300 或 ESP32）上直接获取的原始相位数据往往由于硬件缺陷而无法直接使用。主要的误差来源包括载波频率偏移（Carrier Frequency Offset, CFO）、采样频率偏移（Sampling Frequency Offset, SFO）以及包检测延迟（Packet Detection Delay, PDD）。
+
+1) 原始相位误差模型
+
+考虑到上述硬件非理想特性，第 $k$ 个子载波上的测量相位 $\hat{\phi}_k$ 与真实相位 $\phi_k$ 之间的关系通常建模为：
+
+\begin{equation}
+\hat{\phi}_k = \phi_k + 2\pi \frac{k}{N} \delta + \beta + Z
+\end{equation}
+
+其中，$N$ 为FFT点数（子载波总数），$\delta$ 为由于采样时钟不同步引起的定时偏移（Timing Offset），$\beta$ 为由于中心频率不同步引起的相位偏移，$Z$ 为测量噪声。由于 $\delta$ 和 $\beta$ 在每个数据包中都是随机变化的，导致原始相位在 $[-\pi, \pi]$ 之间呈现杂乱无章的分布。
+
+2) 线性变换清洗算法
+
+为了恢复可用的相位信息，通常采用线性拟合的方法来消除 $\delta$ 和 $\beta$ 的影响。通过对原始相位进行线性变换（Linear Transformation），可以移除线性误差项。清洗后的相位 $\tilde{\phi}_k$ 计算如下：
+
+\begin{equation}
+\tilde{\phi}_k = \hat{\phi}_k - \alpha k - \gamma
+\end{equation}
+
+其中，$\alpha$ 和 $\gamma$ 分别是相位随子载波索引变化的斜率和截距，通常通过最小二乘法估计得出。经过清洗后的相位数据能够展现出随时间变化的连续性，从而有效地用于后续的特征提取与动作识别。
+
+\subsubsection{菲涅尔区感知模型}
+
+菲涅尔区（Fresnel Zone）模型是理解 Wi-Fi 感知物理机制的理论基础，它解释了物体位置变化如何导致接收信号强度的波动。
+
+在收发设备之间的视距（LOS）路径周围，存在一系列以收发天线为焦点的同心椭球区域，称为菲涅尔区。对于波长为 $\lambda$ 的信号，第 $n$ 个菲涅尔区边界上的点 $P$ 满足路径差条件：
+
+\begin{equation}
+|d(Tx, P) + d(P, Rx) - d(Tx, Rx)| = \frac{n\lambda}{2}
+\end{equation}
+
+其中，$Tx$ 和 $Rx$ 分别代表发射端和接收端。
+
+当目标物体穿越这些菲涅尔区时，反射信号的路径长度会发生改变，从而改变反射信号与直射信号（LOS）之间的相位差。
+
+\begin{itemize}
+    \item 相干增强：当反射信号与直射信号相位一致时，信号叠加增强。
+    \item 相干相消：当两者相位相反时，信号叠加减弱。
+\end{itemize}
+
+因此，人体的连续运动会导致接收信号在波峰和波谷之间交替变化，形成类似正弦波的波动模式。通过分析这种波动的频率（对应运动速度）和幅度（对应反射面积），可以反推目标的运动状态。
+
+\subsubsection{多径信号的特征提取}
+
+原始的 CSI 数据流是一个包含时间、频率（子载波）和空间（天线）维度的高维张量。为了输入到深度学习模型中，通常需要进行特征工程处理。
+
+多普勒频移 (Doppler Frequency Shift, DFS)：人体运动会引起无线信号的多普勒效应。DFS 特征反映了目标的运动速度，可以通过对 CSI 时间序列进行短时傅里叶变换（STFT）或离散小波变换（DWT）获得时频图（Spectrogram）。时频图中的能量分布能够清晰地刻画出动作的起止时间、速度变化及周期性特征。
+
+动态分量分离：在室内环境中，CSI 信号包含来自墙壁、家具等静止物体的静态分量（Static Component）和来自运动人体的动态分量（Dynamic Component）。为了提高信噪比，常采用 Hampel 滤波器去除离群值，并利用 主成分分析 (PCA) 或 巴特沃斯高通滤波器 滤除直流分量和低频背景噪声，从而提取出纯净的人体运动特征。
 
 \begin{texcodeonly}[]{}
   \begin{figure}[h]
