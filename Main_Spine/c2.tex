@@ -340,4 +340,127 @@ tabularray 的优点在于格式和内容分离，使用更贴合人类习惯。
 
 \xsubsection{交叉注意力机制}{Long Tables}
 
+在多模态人体活动识别任务中，不同模态的传感器数据（如惯性测量单元IMU与无线信号WiFi）往往具有显著的异构性。IMU数据通常表现为本体坐标系下的高频时间序列，反映人体局部的运动学特征；而WiFi数据则表现为世界坐标系下的频域信号，反映人体对环境电磁场的空间扰动。传统的特征融合方法（如拼接、加权求和）往往假设不同模态的特征在时空维度上已经严格对齐，忽略了模态间存在的语义鸿沟和分布差异。为了解决这一问题，本文引入了交叉注意力机制（Cross-Attention Mechanism），旨在通过动态权重的分配，实现异构模态特征在深层语义空间的交互与融合。
+
+1）基本原理与数学模型
+
+交叉注意力机制源于Transformer架构中的自注意力（Self-Attention）变体。其核心思想是利用一种模态的特征作为查询（Query），去在另一种模态的特征中检索关键信息（Key），并聚合对应的内容（Value），从而实现跨模态的信息流转与增强。
+
+假设模型包含两个不同模态的输入特征序列：模态A的特征序列 $X_A \in \mathbb{R}^{T_A \times d_A}$ 和模态B的特征序列 $X_B \in \mathbb{R}^{T_B \times d_B}$，其中 $T$ 和 $d$ 分别表示序列长度和特征维度。在交叉注意力模块中，我们首先通过线性变换将输入映射到三个不同的子空间：
+
+\begin{equation}
+Q = X_A W_Q, \quad K = X_B W_K, \quad V = X_B W_V
+\end{equation}
+
+其中，$Q$（Query）是来自模态A的查询矩阵，$K$（Key）和 $V$（Value）是来自模态B的键值矩阵。$W_Q \in \mathbb{R}^{d_A \times d_k}$，$W_K \in \mathbb{R}^{d_B \times d_k}$，$W_V \in \mathbb{R}^{d_B \times d_v}$ 为可学习的线性投影权重矩阵。
+
+接着，通过计算查询矩阵 $Q$ 与键矩阵 $K$ 的点积，并除以缩放因子 $\sqrt{d_k}$，得到模态间的相关性分数矩阵（Attention Score）。该矩阵经过Softmax归一化后，即形成了注意力权重图，用于对值矩阵 $V$ 进行加权聚合。标准的缩放点积交叉注意力（Scaled Dot-Product Cross-Attention）计算公式如下：
+
+\begin{equation}
+\text{CrossAttention}(Q, K, V) = \text{softmax}\left(\frac{Q K^T}{\sqrt{d_k}}\right) V
+\end{equation}
+
+该公式的物理意义在于：模型利用模态A中的每一个时间步特征去“询问”模态B中的所有时间步特征，根据两者在语义空间中的相似度（点积结果），动态地从模态B中提取对模态A有益的互补信息。
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\textwidth]{交叉注意力机制原理示意图.png}
+  \caption{交叉注意力机制原理示意图}
+\end{figure}
+
+2）多头交叉注意力机制
+
+为了增强模型对复杂动作模式的捕捉能力，本文进一步采用了多头交叉注意力（Multi-Head Cross-Attention, MHCA）结构。多头机制允许模型将特征投影到 $h$ 个不同的表示子空间中并行地计算注意力，从而能够捕捉模态间在不同语义维度上的关联（例如，一个头可能关注动作的起始时间对齐，另一个头可能关注动作幅度的相关性）。
+
+多头交叉注意力的计算过程如下：
+
+\begin{equation}
+\text{MHCA}(X_A, X_B) = \text{Concat}(\text{head}_1, \dots, \text{head}_h) W^O
+\end{equation}
+
+其中，每一个注意力头 $\text{head}_i$ 的计算方式为：
+
+\begin{equation}
+\text{head}_i = \text{CrossAttention}(X_A W_Q^i, X_B W_K^i, X_B W_V^i)
+\end{equation}
+
+此处，$W_Q^i, W_K^i, W_V^i$ 分别是第 $i$ 个头的投影矩阵，$W^O$ 是输出层的线性投影矩阵。通过多头机制，模型能够生成更加丰富和鲁棒的多模态融合表征。
+
+3）在多模态融合中的作用
+
+在本文提出的人体活动识别框架中，交叉注意力机制主要发挥了以下两个关键作用：
+
+第一，解决异构特征的非同步对齐问题。由于IMU和WiFi的采样率及物理响应特性不同，同一动作在两种模态下的信号波形往往存在时间偏移或非线性扭曲。交叉注意力机制不依赖于严格的时间步对应关系，而是通过全局的相似度计算，自动寻找模态B中与模态A当前状态最相关的特征片段，从而实现了一种软性的、基于内容的语义对齐。
+
+第二，实现特征的互补增强。IMU数据对快速变化的动作细节（如震颤）敏感，而WiFi数据对大范围的空间位移敏感。通过以IMU特征为Query、WiFi特征为Key/Value的交叉注意力计算，可以将WiFi中的环境空间上下文信息有效地注入到IMU的运动学特征中；反之亦然。这种双向的信息交互机制显著提升了融合特征对复杂场景下人体活动的判别能力，为后续的多任务分类奠定了坚实基础。
+
 \xsubsection{对比学习}{Long Tables}
+
+在多模态人体活动识别任务中，IMU数据反映的是人体局部的运动学状态（加速度、角速度），而Wi-Fi数据反映的是环境电磁场对人体运动的整体响应。尽管两者在物理底层表现形式上截然不同，但它们在描述同一人体活动时，在高层语义空间中应具有一致性。为了弥合异构模态之间的分布差异，并使得特征提取器能够学习到对模态私有噪声（如Wi-Fi多径效应或IMU零偏）不敏感的通用特征，本文引入了基于CLIP（Contrastive Language-Image Pre-training）范式的多模态对比学习框架。
+
+1）特征投影与规范化
+
+假设在一个训练批次（Batch）中包含 $N$ 个同步采集的样本对。对于第 $i$ 个样本，设其原始IMU数据和Wi-Fi数据分别为 $x_i^I$ 和 $x_i^W$。首先，分别利用IMU特征提取器 $f_\theta(\cdot)$ 和Wi-Fi特征提取器 $g_\phi(\cdot)$ 将原始数据映射到各自的特征空间，得到特征向量 $h_i^I$ 和 $h_i^W$。
+
+为了在统一的度量空间中计算相似度，需要通过非线性投影头（Projection Head）将特征映射到相同的维度 $d$，并进行L2归一化，以消除特征幅度的影响，仅保留方向信息。处理后的特征向量 $u_i$ 和 $v_i$ 计算如下：
+
+\begin{equation}
+u_i = \frac{W_I h_i^I}{\|W_I h_i^I\|}, \quad v_i = \frac{W_W h_i^W}{\|W_W h_i^W\|}
+\end{equation}
+
+其中，$W_I$ 和 $W_W$ 为可学习的投影矩阵，$\|\cdot\|$ 表示欧几里得范数。此时，$u_i$ 和 $v_i$ 位于同一个 $d$ 维超球面上。
+
+2）相似度矩阵构建
+
+对比学习的核心在于构建样本间的相似度矩阵，以衡量不同模态特征在语义空间中的距离。对于批次大小为 $N$ 的输入，我们将所有IMU特征向量堆叠为矩阵 $U \in \mathbb{R}^{N \times d}$，将所有Wi-Fi特征向量堆叠为矩阵 $V \in \mathbb{R}^{N \times d}$。通过矩阵乘法，可以计算得到一个 $N \times N$ 的跨模态相似度矩阵 $S$：
+
+\begin{equation}
+S = U V^T = 
+\begin{bmatrix}
+u_1^T v_1 & u_1^T v_2 & \cdots & u_1^T v_N \\
+u_2^T v_1 & u_2^T v_2 & \cdots & u_2^T v_N \\
+\vdots & \vdots & \ddots & \vdots \\
+u_N^T v_1 & u_N^T v_2 & \cdots & u_N^T v_N
+\end{bmatrix}
+\end{equation}
+
+矩阵中的每一个元素 $S_{ij} = u_i^T v_j$ 代表第 $i$ 个IMU样本与第 $j$ 个Wi-Fi样本之间的余弦相似度。该矩阵直观地描述了当前批次内所有样本跨模态的匹配情况。
+
+在此矩阵中，对角线元素（$i=j$）对应的是同一时刻采集的IMU与Wi-Fi数据，即正样本对。它们在语义上描述的是同一个动作，因此模型优化的目标是最大化对角线上的相似度数值。
+非对角线元素（$i \neq j$）对应的是不同时刻或不同动作的数据组合，即负样本对。它们在语义上是不匹配的，因此模型优化的目标是最小化非对角线上的相似度数值。
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=.6\textwidth]{对比学习原理示意图.png}
+  \caption{对比学习原理示意图}
+\end{figure}
+
+3）对称对比损失函数
+
+为了驱动模型学习上述对齐目标，本文采用对称的InfoNCE损失函数。该损失函数包含两个部分：IMU到Wi-Fi的分类损失 $\mathcal{L}_{I \rightarrow W}$ 和Wi-Fi到IMU的分类损失 $\mathcal{L}_{W \rightarrow I}$。
+
+对于第 $i$ 个样本，以IMU特征为锚点，在所有Wi-Fi特征中检索正确匹配项的损失定义为：
+
+\begin{equation}
+\mathcal{L}_{i}^{I \rightarrow W} = -\log \frac{\exp(S_{ii} / \tau)}{\sum_{j=1}^{N} \exp(S_{ij} / \tau)}
+\end{equation}
+
+同理，以Wi-Fi特征为锚点，在所有IMU特征中检索正确匹配项的损失定义为：
+
+\begin{equation}
+\mathcal{L}_{i}^{W \rightarrow I} = -\log \frac{\exp(S_{ii} / \tau)}{\sum_{j=1}^{N} \exp(S_{ji} / \tau)}
+\end{equation}
+
+其中，$\tau$ 是可学习的温度系数，用于调节Softmax分布的平滑程度，控制模型对困难负样本的挖掘力度。最终的总损失为两者的平均值：
+
+\begin{equation}
+\mathcal{L}_{CL} = \frac{1}{2N} \sum_{i=1}^{N} (\mathcal{L}_{i}^{I \rightarrow W} + \mathcal{L}_{i}^{W \rightarrow I})
+\end{equation}
+
+4）特征对齐与通用性提升
+
+通过优化上述损失函数，模型实现了隐式的互信息最大化。具体而言，该机制迫使特征提取器忽略那些仅在单一模态中存在的特异性信息（通常是噪声或环境干扰），而聚焦于两种模态中共同存在的本质特征（如动作的节奏、幅度和类别）。
+
+例如，Wi-Fi信号可能会受到室内家具摆放引起的静态多径干扰，而这一特征在IMU信号中是不存在的；IMU信号可能会包含佩戴抖动引起的震荡，而这一特征在Wi-Fi信号中也是不存在的。在构建相似度矩阵时，这些模态私有的噪声无法帮助构建正样本对的高相似度，因此会被网络在反向传播中逐渐抑制。
+
+相反，只有那些能够同时解释IMU动力学变化和Wi-Fi空间扰动的语义信息（即人体活动本身），才能在对角线上产生高响应。因此，经过对比学习预训练的特征提取器，能够输出对模态私有噪声具有鲁棒性的通用特征表示，从而显著提升下游多任务分类的准确率和泛化能力。
