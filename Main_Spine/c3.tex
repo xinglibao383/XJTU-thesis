@@ -25,6 +25,49 @@ IMU数据与Wi-Fi CSI数据在物理属性、数据结构及采样频率上存�
 
 \xsection{数据集构建}{References}
 
+\xsubsection{硬件配置}{Ref equations}
+
+本实验系统包括 Wi-Fi 收发器、IMU 设备以及 Azure Kinect。
+
+Wi-Fi 系统由一台发射器和三台接收器组成，分别布置在 3.1 m × 2.4 m 矩形区域的四个角落，设备高度为 120 cm，以保证全身动作捕捉的有效覆盖。发射器采用单天线，在 128 频道（5.64 GHz）以每秒 200 个数据包的速率广播；每个接收器配备三根天线。通过 Wi-Fi CSI Tool，我们从 30 个正交频分复用（OFDM）子载波中提取信道状态信息（CSI），并以张量形式表示，尺寸为 (200t) * 1 * 3 * 3 * 30，其中 t 为记录时长（秒），以捕捉无线信道随时间的细微变化。
+
+IMU 设备包括智能手表、智能手机、耳机以及智能眼镜，其中耳机选用 AirPods Pro，IMU 数据采样率为 25 Hz；智能手表、智能手机和智能眼镜使用市售 IMU 模块模拟，数据采样率为 50 Hz，并可通过 PC 接口实现集中控制和同步。IMU 设备的具体放置如图 1 所示。
+
+Azure Kinect 以 720P 分辨率每秒 15 帧采集 RGB、深度和红外图像，放置在发射器和第三个接收器之间，高度为 115 cm，以捕捉实验场景中个体的运动视频。可利用开源计算机视觉模型从视频中提取姿态和网格信息，为后续基于 IMU 和 Wi-Fi 的姿态估计及网格重建任务提供数据支持。实验场景如图 2 所示。在数据采集前，所有硬件设备均经过精确同步。值得注意的是，本系统选用日常生活中常见的消费级产品，实现高可用性与易部署性。
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\textwidth]{IMU佩戴位置示意图.png}
+  \caption{IMU佩戴位置示意图}
+\end{figure}
+
+\xsubsection{数据采集}{Ref equations}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\textwidth]{数据集采集场景.png}
+  \caption{数据集采集场景}
+\end{figure}
+
+\begin{table}[H]
+  \centering
+  \begin{tblr}{
+    colspec={X[1,c] X[7,c]},
+  }
+  \toprule
+  场景 & 动作 \\
+  \midrule
+
+  餐厅 & 走路、坐下、站起来、往杯子里倒水、喝水、吃药、捡起物品、从柜子里拿水果、切水果、吃水果、洗手、扔垃圾、擦桌子、坐着时伸展 \\
+  书房 & 走路、坐下、站起来、往杯子里倒水、喝水、吃药、打开和关闭台灯、操作鼠标、写字、操作键盘、读书、打开信封、接电话、站立时伸展、在黑板上写字 \\
+  卧室 & 走路、起床、坐下、躺下、站起来、读书、往杯子里倒水、喝水、吃药、站立时伸展、使用手机、打开和关闭窗户、打开和关闭窗帘、给植物浇水、站立不动、躺着不动 \\
+
+  \bottomrule
+  \end{tblr}
+\end{table}
+
+\xsubsection{数据划分}{Ref equations}
+
 \xsection{方法描述}{References}
 
 \begin{figure}[h]
