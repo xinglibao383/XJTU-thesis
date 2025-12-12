@@ -111,6 +111,10 @@ E_{i} = \frac{1}{J} \sum_{j=1}^{J} \| P_{i,j}^{pred} - P_{i,j}^{gt} \|_{2}
 
 \xsubsection{实验环境}{Level of this document}
 
+本文所有实验均在一台高性能计算服务器上完成。在硬件配置方面，该服务器配备了四块 NVIDIA GeForce RTX 4090 显卡，其强大的并行处理能力为多模态数据的高效特征提取、复杂网络模型的训练以及大规模数据的快速迭代提供了可靠的计算资源保障。
+
+在软件环境配置方面，所有算法的实现均基于 Python 3.8 编程语言。研究工作采用了 PyTorch 2.6.0 作为主要的深度学习框架，该框架支持动态图机制，便于模型的构建、调试与训练过程的灵活控制。
+
 \xsubsection{数据实验结果分析}{Level of this document}
 
 \subsubsection{数据分割实验}{Ref equations}
@@ -139,7 +143,7 @@ E_{i} = \frac{1}{J} \sum_{j=1}^{J} \| P_{i,j}^{pred} - P_{i,j}^{gt} \|_{2}
   \end{tblr}
 \end{table}
 
-\subsubsection{设备消融实验}{Ref equations}
+\subsubsection{设备消融实验}{}
 
 \begin{table}[H]
   \centering
