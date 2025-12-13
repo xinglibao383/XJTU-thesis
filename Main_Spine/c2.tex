@@ -161,180 +161,166 @@ Wi-Fi 感知的核心在于“多径效应”引起的CSI波动。当环境中�
 
 \xsection{深度学习网络}{Tables}
 
-\xsubsection{ResNet}{Normal Tables}
+\xsubsection{ResNet}{ResNet}
 
-考虑到使用成本、内容与样式分离。模板默认调用现代化的表格绘制宏包 \clist[columbiablue]{tabularray}。该宏包的使用方法请使用 \clist{texdoc tabularray}，网上也有此手册的中文翻译。请确保使用的发行版包含这一宏包（即更新至 2023 及以后的版本）。
+卷积神经网络（CNN）的深度对于提取高层语义特征至关重要。然而，随着网络层数的增加，模型往往面临“退化问题（Degradation Problem）”：即使解决了梯度消失或爆炸问题，随着深度的增加，训练集准确率达到饱和甚至下降。这一现象表明，深度网络并非易于优化。深度残差网络（ResNet）通过引入“残差学习”框架，有效地解决了这一难题，使得训练数百层深的神经网络成为可能。
 
-非跨页表格应使用 tblr 环境制作表格，使用 table 作为浮动体环境，使用 \clist{\toprule}，\clist{\midrule} 和 \clist{\bottomrule} 指定三线表的三条线：
+ResNet 的核心思想是将传统的层级映射重新表述为残差函数的学习。假设某个神经网络子模块需要拟合的潜在目标映射为 $H(x)$，其中 $x$ 为输入。若假设多个非线性层能够逐渐逼近复杂函数，那么它们也应当能够逼近残差函数 $F(x) := H(x) - x$。因此，原有的映射可以重构为：
 
-\begin{texcode}[]{}
-    \begin{table}[H]
-        \caption{tblr 基本用法}
-        \label{tbl:2-1}
-        \begin{tblr}{
-            % colspec={X[r,m,2]X[c,3]X[l,1]}
-            X[r,m,2]X[c,3]X[l,1]
-        }
-            \toprule
-            Head & Test & 测试 \\
-            \midrule
-            Class that has many accessor methods and accesses a lot of external data & ATFD is more than a few & 3 \\
-            1 & 2 & 3 \\
-            1 & 2 & 3 \\
-            \bottomrule
-        \end{tblr}
-    \end{table}
-\end{texcode}
+\begin{equation}
+    H(x) = F(x) + x
+\end{equation}
 
-tblr 环境各列的对齐方式可以以键值对的方式在必选参数中设置，或者直接作为唯一必选参数（参考 tabularray 手册第 24 页）。列类型包括 c/l/r, t/b/m, X 等。c/l/r 为默认的三种对齐方式，t/b/m 指定单元格内容超过列宽时垂直方向的对齐方式， X 类型会自动调整列宽使全表宽度与页宽一致，X 类型列的水平、垂直对齐方式以类似 X[c] 的方式在 X 后的方括号内指定。X 类型后的方括号可以指定此列宽度与其他X类列宽度的相对大小，也可使用 \clist{wd=A}直接指定列宽。推荐使用 X 作为列类型。
+在数学优化层面，相比于直接拟合原始的恒等映射（Identity Mapping, 即 $H(x)=x$），将残差 $F(x)$ 优化至趋近于零通常要容易得多。这种重构使得网络在初始化阶段即使权重被随机置零，依然可以通过恒等映射传递信息，从而不仅保证了深层网络的性能下限不低于浅层网络，更极大地平滑了优化地形。
 
-\begin{texcode}[]{}
-    \begin{tblr}{
-        colspec={|ll|X[c]|rr|},
-        cell{1}{1}={r=3,c=2}{r,m},
-        cell{1}{3}={r=2,c=3}{l,t},
-        cell{3}{Z}={}{red},
-        hline{4-6}={2pt,blue},
-    }
-        \hline
-        1-1 & 1-2 & 1-3 & 1-4 & 1-5 \\
-        \hline
-        2-1 & 2-2 & 2-3 & 2-4 & 2-5 \\
-        \hline
-        3-1 & 3-2 & MIDDLE & 3-4 & 3-5 \\
-        % \hline (4th)
-        4-1 & 4-2 & 4-3 & 4-4 & 4-5 \\
-        % \hline (5th)
-        5-1 & 5-2 & 5-3 & 5-4 & 5-5 \\
-        % \hline (6th)
-    \end{tblr}
-\end{texcode}
+ResNet 通过堆叠“残差单元（Residual Block）”来构建网络。一个基础的残差单元包含两条路径：一条是包含卷积层（Conv）、批归一化（Batch Normalization, BN）和修正线性单元（ReLU）的非线性变换路径 $F(x, \{W_i\})$；另一条是直接传递输入的“捷径连接（Shortcut Connection）”。
 
-tabularray 的优点在于格式和内容分离，使用更贴合人类习惯。单元格的合并，文字、背景、边框的样式都可以放在参数中设置。 \clist{cell{R}{C}={merge}{style}}用于设置单元格合并，其中 R,C 指定合并单元格左上角的位置，merge参数指定合并多少行多少列，style 调整合并后的单元格样式，其中 R,C 除了使用行号进行索引，可以使用 X,Y,Z 索引倒数第三、二、一行/列，可以使用 odd/even 选择 奇/偶列，还可以使用连字符(dash)选择区间，非常方便。
+其数学输出 $y$ 定义为：
 
-\xsubsection{LSTM和GRU}{Complicated tables}
+\begin{equation}
+    y = \sigma(F(x, \{W_i\}) + W_s x)
+\end{equation}
 
-在三线表中可以加辅助线，以适应较复杂表格的需要，具体使用方法请自行阅读宏包：
+其中，$\sigma$ 代表 ReLU 激活函数，$F(x, \{W_i\})$ 代表需要学习的残差映射（例如两层卷积：$W_2 \sigma(W_1 x)$）。$W_s$ 是当输入与输出维度不匹配时用于线性投影的矩阵；当维度一致时，$W_s$ 为单位矩阵，即直接进行元素级相加（Element-wise Addition）。
 
-\begin{texcode}[]{}
-\begin{table}[H]
-  \centering
-  \caption{compare with other approachs}
-  \label{table:methodcompare}
-  \begin{tblr}{
-      colspec={*{7}{X[c]}},
-      cell{1}{1}={r=2}{c,m},
-      cell{1}{2,5}={c=3}{c,m},
-      hline{2,4,6}={1pt},
-      hline{1,3,Z}={1.5pt},
-      row{4,5}={rowsep=0pt},
-      row{Z}={m,font=\bfseries},
-  }
-    Model & trigger inditification & & & Event Extraction & & \\
-    & P(\%) & R(\%) & F1(\%) & P(\%) & R(\%) & F1(\%) \\
-    Baseline1 & 76.84 & 76.84 & 76.84 & 76.84 & 76.84 & 76.84 \\
-    Baseline2  & 76.84 & 76.84 & 76.84 & 76.84 & 76.84 & 76.84 \\
-    Baseline3  & 76.84 & 76.84 & 76.84 & 76.84 & 76.84 & 76.84 \\
-    Our approach  & 76.84 & 76.84 & 76.84 & 76.84 & 76.84 & 76.84 \\
-  \end{tblr}
-\end{table}
-\end{texcode}
+从梯度传播的角度分析，假设损失函数为 $\mathcal{L}$，根据链式法则，关于输入 $x$ 的梯度可以表示为：
+
+\begin{equation}
+    \frac{\partial \mathcal{L}}{\partial x} = \frac{\partial \mathcal{L}}{\partial y} \left( \frac{\partial F}{\partial x} + 1 \right)
+\end{equation}
+
+这一公式表明，梯度包含两部分：一部分经过权重层 $\frac{\partial F}{\partial x}$，另一部分则通过捷径连接直接以常数 $1$ 无损传递。这种“梯度高速公路”机制确保了即使在极深的网络中，误差信号也能有效回传至浅层，从而避免了梯度消失问题，显著提升了视觉特征提取的鲁棒性。
+
+\xsubsection{LSTM和GRU}{LSTM And GRU}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=.6\textwidth]{lstm.png}
+    \caption{lstm模型架构图}
+\end{figure}
+
+循环神经网络（RNN）虽然具备处理时序数据的递归结构，但在面对长序列时容易出现梯度消失或梯度爆炸现象，导致网络难以捕捉长距离依赖（Long-term Dependencies）。为解决这一问题，长短期记忆网络（LSTM）与门控循环单元（GRU）通过引入门控机制（Gating Mechanism），在理论上实现了对信息流动的精确调控。
+
+LSTM 的核心思想是引入独立的细胞状态（Cell State, $C_t$）作为信息传输的主通道。该结构利用三个门控单元控制信息的遗忘与累积。具体而言，在时间步 $t$，给定输入 $x_t$ 和上一时刻隐状态 $h_{t-1}$，LSTM 的状态更新由遗忘门 $f_t$、输入门 $i_t$ 和输出门 $o_t$ 共同决定：
+
+\begin{equation}
+\begin{aligned}
+    f_t &= \sigma(W_f \cdot [h_{t-1}, x_t] + b_f) \\
+    i_t &= \sigma(W_i \cdot [h_{t-1}, x_t] + b_i) \\
+    \tilde{C}_t &= \tanh(W_C \cdot [h_{t-1}, x_t] + b_C) \\
+    C_t &= f_t \odot C_{t-1} + i_t \odot \tilde{C}_t \\
+    o_t &= \sigma(W_o \cdot [h_{t-1}, x_t] + b_o) \\
+    h_t &= o_t \odot \tanh(C_t)
+\end{aligned}
+\end{equation}
+
+其中，$\sigma$ 为 Sigmoid 激活函数，$\odot$ 表示哈达玛积。遗忘门控制历史信息的保留程度，输入门决定新信息的写入量，而输出门则控制当前时刻隐状态 $h_t$ 对细胞状态 $C_t$ 的“可见性”。
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=.6\textwidth]{gru.png}
+    \caption{gru模型架构图}
+\end{figure}
+
+作为 LSTM 的一种轻量化变体，GRU 旨在降低计算复杂度的同时保留长序列建模能力。GRU 在架构上进行了简化：它摒弃了独立的细胞状态，将隐状态与细胞状态合并，并将三个门控缩减为更新门（Update Gate, $z_t$）和重置门（Reset Gate, $r_t$）。其数学推导如下：
+
+\begin{equation}
+\begin{aligned}
+    z_t &= \sigma(W_z \cdot [h_{t-1}, x_t] + b_z) \\
+    r_t &= \sigma(W_r \cdot [h_{t-1}, x_t] + b_r) \\
+    \tilde{h}_t &= \tanh(W \cdot [r_t \odot h_{t-1}, x_t] + b) \\
+    h_t &= (1 - z_t) \odot h_{t-1} + z_t \odot \tilde{h}_t
+\end{aligned}
+\end{equation}
+
+从模型架构的角度对比，两者存在显著差异：首先，门控数量不同，LSTM 包含三个门，而 GRU 仅包含两个门，这使得 GRU 的参数量通常少于 LSTM，训练时的收敛速度往往更快；其次，状态传输机制不同，LSTM 区分了长期记忆（$C_t$）和短期记忆（$h_t$），通过输出门对记忆进行非线性过滤，而 GRU 直接暴露完整的隐状态，通过 $z_t$ 在历史状态和候选状态之间进行线性插值。这种架构上的差异使得 LSTM 在处理具有复杂内部结构的极长序列时理论上限更高，而 GRU 在样本量受限或对计算效率敏感的场景下更具优势。
 
 \xsubsection{Transformer}{Long Tables}
+
+尽管 LSTM 和 GRU 通过门控机制缓解了梯度消失问题，但其本质上的递归属性决定了计算必须沿时间步串行进行，这限制了现代硬件并行计算能力的利用，且在极长序列中信息往往仍会随距离衰减。Transformer 架构的提出彻底摒弃了循环与卷积结构，完全依赖注意力机制（Attention Mechanism）来捕捉输入序列中任意两个位置之间的全局依赖关系。
+
+Transformer 的核心在于缩放点积注意力（Scaled Dot-Product Attention）。对于输入序列的嵌入表示，模型将其线性映射为查询（Query, $\mathbf{Q}$）、键（Key, $\mathbf{K}$）和值（Value, $\mathbf{V}$）三个矩阵。注意力权重的计算通过衡量 Query 与 Key 的相似度进行，其数学表达为：
+
+\begin{equation}
+    \text{Attention}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \text{softmax}\left(\frac{\mathbf{Q}\mathbf{K}^T}{\sqrt{d_k}}\right)\mathbf{V}
+\end{equation}
+
+其中，$d_k$ 为键向量的维度。除以 $\sqrt{d_k}$ 的缩放因子是为了防止点积结果过大导致 Softmax 函数进入梯度极小的饱和区。
+
+为了捕捉不同子空间（Subspaces）中的特征交互，Transformer 引入了多头注意力机制（Multi-Head Attention）。该机制将 $\mathbf{Q}, \mathbf{K}, \mathbf{V}$ 分别投影到 $h$ 个不同的特征空间并行计算注意力，最后将结果拼接并线性投影：
+
+\begin{equation}
+\begin{aligned}
+    \text{MultiHead}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) &= \text{Concat}(\text{head}_1, \dots, \text{head}_h)\mathbf{W}^O \\
+    \text{where } \text{head}_i &= \text{Attention}(\mathbf{Q}\mathbf{W}_i^Q, \mathbf{K}\mathbf{W}_i^K, \mathbf{V}\mathbf{W}_i^V)
+\end{aligned}
+\end{equation}
+
+此外，由于 Transformer 缺乏循环结构所隐含的时序归纳偏置（Inductive Bias），模型必须显式地引入位置编码（Positional Encoding）以保留序列的顺序信息。通常采用正弦和余弦函数将绝对位置信息注入到输入嵌入中：
+
+\begin{equation}
+\begin{aligned}
+    PE_{(pos, 2i)} &= \sin(pos / 10000^{2i/d_{\text{model}}}) \\
+    PE_{(pos, 2i+1)} &= \cos(pos / 10000^{2i/d_{\text{model}}})
+\end{aligned}
+\end{equation}
+
+这种编码方式允许模型基于相对位置关注不同频率的特征模式。
+
+在模型架构层面，每个 Transformer 块由多头注意力层和前馈神经网络（Feed-Forward Networks, FFN）组成，并辅以残差连接（Residual Connection）和层归一化（Layer Normalization）。FFN 对每个位置独立进行非线性变换：
+
+\begin{equation}
+    \text{FFN}(x) = \max(0, x\mathbf{W}_1 + \mathbf{b}_1)\mathbf{W}_2 + \mathbf{b}_2
+\end{equation}
+
+Transformer 凭借其并行计算优势和全局感受野，在长距离依赖建模上表现卓越。然而，自注意力机制的计算复杂度为 $O(L^2)$（其中 $L$ 为序列长度），这意味着显存占用和计算量随序列长度呈二次方增长，这在处理超长时序数据时构成了显著的计算瓶颈。
 
 \begin{figure}[h]
   \centering
   \includegraphics[width=.5\textwidth]{transformer.png}
-  \caption{transformer}
+  \caption{transformer模型架构图}
 \end{figure}
 
-当表格过长时，使用\clist{longtblr}环境，此时不需要浮动体环境。在可选参数中需要设置\clist{theme=xjtu_std}，以调用预先设置好的续表样式，同时设置表格标题、label、脚注等，具体使用方法请自行阅读宏包。
+\xsubsection{Mamba}{Mamba}
 
-\begin{texcodeonly}[]{}
-    \begin{longtblr}[
-        theme = xjtu_std,
-        caption = {A Long Long Long Long Long Long Long Table },
-        entry = {Short Caption},
-        label = {tblr:test},
-        note{a} = {脚注},
-        note{$\dag$} = {还是脚注},
-        remark{Note} = {注释，即表格内没有标注符号的脚注},
-        remark{Source} = {还是注释},
-    ]{
-        colspec = {XX[c]X},
-        rowhead = 1, rowfoot = 0,
-    }
-    \toprule
-    Head & Head & Head \\
-    \midrule
-    Epsilon & Zeta\TblrNote{a} & Eta \\
-    Iota & Kappa\TblrNote{$\dag$} & Lambda \\
-    Nu & Xi & Omicron \\
-    \dots 
-    Foot & Foot & Foot \\
-    \bottomrule
-    \end{longtblr}
-\end{texcodeonly}
+近年来，结构化状态空间序列模型（Structured State Space Sequence Models, S4）作为一种新兴的深度学习范式，展现了在长序列建模任务中挑战 Transformer 主导地位的潜力。Mamba 架构作为 S4 的最新进阶形式，通过引入“选择性机制（Selection Mechanism）”和高效的“硬件感知算法（Hardware-aware Algorithm）”，在保持线性计算复杂度的同时，显著提升了模型对离散数据流的信息捕捉能力。本节将首先阐述其核心的连续时间状态空间模型基础，进而深入探讨 Mamba 如何通过参数化设计解决时序依赖问题。
 
-\begin{longtblr}[
-        theme = xjtu_std,
-        caption = {A Long Long Long Long Long Long Long Table },
-        entry = {Short Caption},
-        label = {tblr:test},
-        note{a} = {脚注},
-        note{$\dag$} = {还是脚注},
-        remark{Note} = {注释，即表格内没有标注符号的脚注},
-        remark{Source} = {还是注释},
-    ]{
-        colspec = {XX[c]X},
-        rowhead = 1, rowfoot = 0,
-    }
-    \toprule
-    Head & Head & Head \\
-    \midrule
-    Head & Head & Head \\
-    Alpha & Beta & Gamma \\
-    Epsilon & Zeta\TblrNote{a} & Eta \\
-    Iota & Kappa\TblrNote{$\dag$} & Lambda \\
-    Nu & Xi & Omicron \\
-    Rho & Sigma & Tau \\
-    Phi & Chi & Psi \\
-    %
-    % ......
-    Alpha & Beta & Gamma \\
-    Epsilon & Zeta & Eta \\
-    Iota & Kappa & Lambda \\
-    Nu & Xi & Omicron \\
-    Rho & Sigma & Tau \\
-    Phi & Chi & Psi \\
-    % Foot & Foot & Foot \\
-    Alpha & Beta & Gamma \\
-    \midrule
-    Epsilon & Zeta & Eta \\
-    Iota & Kappa & Lambda \\
-    Nu & Xi & Omicron \\
-    Rho & Sigma & Tau \\
-    Phi & Chi & Psi \\
-    Foot & Foot & Foot \\
-    Alpha & Beta & Gamma \\
-    Epsilon & Zeta & Eta \\
-    \midrule
-    Iota & Kappa & Lambda \\
-    Nu & Xi & Omicron \\
-    Rho & Sigma & Tau \\
-    Phi & Chi & Psi \\
-    Foot & Foot & Foot \\
-    Alpha & Beta & Gamma \\
-    Epsilon & Zeta & Eta \\
-    Iota & Kappa & Lambda \\
-    Nu & Xi & Omicron \\
-    Rho & Sigma & Tau \\
-    Phi & Chi & Psi \\
-    Foot & Foot & Foot \\
-    \bottomrule
-\end{longtblr}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=.6\textwidth]{mamba.png}
+    \caption{mamba模型架构图}
+  \end{figure}
 
-\xsubsection{Mamba}{Long Tables}
+Mamba 的理论根基源于经典的连续时间状态空间模型（State Space Models, SSM）。在处理人体活动识别或姿态预测任务时，我们将一维输入序列（如单个传感器的读数）视为连续函数 $x(t) \in \mathbb{R}$，SSM 通过隐状态 $h(t) \in \mathbb{R}^N$ 将其映射为输出 $y(t) \in \mathbb{R}$。从控制理论的角度，该过程由以下线性常微分方程（ODE）描述：
+
+\begin{equation}
+\begin{aligned}
+    h'(t) &= \mathbf{A}h(t) + \mathbf{B}x(t) \\
+    y(t) &= \mathbf{C}h(t)
+\end{aligned}
+\label{eq:continuous_ode}
+\end{equation}
+
+其中，$\mathbf{A} \in \mathbb{R}^{N \times N}$ 为状态演化矩阵，决定了系统的动态特性；$\mathbf{B} \in \mathbb{R}^{N \times 1}$ 和 $\mathbf{C} \in \mathbb{R}^{1 \times N}$ 分别为输入投影矩阵和输出投影矩阵。为了有效捕捉长距离依赖（Long-range Dependencies），矩阵 $\mathbf{A}$ 通常采用 HiPPO（High-order Polynomial Projection Operators）矩阵进行初始化。
+
+然而，人体传感器数据与姿态序列本质上是离散采样的。为了将上述连续系统应用于深度学习模型，必须对其进行离散化（Discretization）。引入时间尺度参数 $\Delta$（代表采样步长），基于零阶保持（Zero-Order Hold, ZOH）原理，假设输入 $x(t)$ 在区间 $[t, t+\Delta]$ 内保持恒定，则可以将连续参数 $(\mathbf{A}, \mathbf{B})$ 转换为离散参数 $(\overline{\mathbf{A}}, \overline{\mathbf{B}})$：
+
+\begin{equation}
+\begin{aligned}
+    \overline{\mathbf{A}} &= \exp(\Delta \mathbf{A}) \\
+    \overline{\mathbf{B}} &= (\Delta \mathbf{A})^{-1}(\exp(\Delta \mathbf{A}) - \mathbf{I}) \cdot \Delta \mathbf{B}
+\end{aligned}
+\label{eq:discretization}
+\end{equation}
+
+由此，离散后的状态方程可表示为标准的递归形式，这与循环神经网络（RNN）的推理逻辑具有数学上的等价性：
+
+\begin{equation}
+    h_t = \overline{\mathbf{A}}h_{t-1} + \overline{\mathbf{B}}x_t, \quad y_t = \mathbf{C}h_t
+\label{eq:discrete_recurrence}
+\end{equation}
+
+这种结构化的状态空间设计不仅保留了对物理过程的建模能力，更通过离散化建立了连续信号与数字计算之间的桥梁，为后续引入选择性机制奠定了坚实的数学基础。
 
 \xsection{多模态特征融合与对齐}{Figures}
 
