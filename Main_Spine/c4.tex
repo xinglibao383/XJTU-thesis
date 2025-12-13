@@ -16,72 +16,29 @@
 
 鉴于上述深层次的理论与应用挑战，本研究认为，人体姿态重构不应仅仅被视为一个简单的信号到信号的映射问题，而应被重构为一个更为宏大的序列生成与预测问题。基于此，本文提出了基于自回归机制的人体姿态重构与预测方法。该方法摒弃了传统的直接映射思路，创新性地引入了IMU预测器与闭环反馈机制，构建了一个能够自我演进的生成式架构。通过联合建模当前姿态与未来传感器数据的条件概率分布，该模型不仅能够利用历史信息平滑当前的姿态估计（重构任务），还能根据学习到的运动趋势推演未来的IMU数据并进而生成未来的姿态（预测任务）。这种将重构与预测统一在同一自回归框架下的设计，不仅显著提升了系统在复杂环境下的鲁棒性与平滑性，更为构建下一代低延迟、高保真的元宇宙交互系统提供了全新的技术路径与理论支撑。
 
-考虑到实际使用需求，即长算法分段和注释功能，模板不再使用 \clist[columbiablue]{algorithm2e} 作为默认算法排版工具，改为调用 \clist[columbiablue]{algpseudocode}。注意，这两个宏包相互冲突。算法的具体编写方式请自行查阅宏包，即\clist{texdoc algpseudocode}。
-
-\begin{texcode}[]{}
-\begin{algorithm}[H]
-  \caption{How to write algorithms}
-  \begin{algorithmic}[1]
-      \State \textbf{Input:} this text
-      \State \textbf{Output:} how to write algorithm with \LaTeX2e \Comment{Just a comment}
-      \State initialization
-      \While{not at end of this document}
-        \State read current
-        \If{understand}
-          \State go to next section
-          \State current section becomes this one
-        \Else{$k\geq k^\text{max}$}
-          \State go back to the beginning of current section
-        \EndIf
-      \EndWhile
-  \end{algorithmic}
-\end{algorithm}
-\end{texcode}
-
-\begin{texcode}[]{}
-  \begin{algorithm}[H]
-    \caption{Simulation-optimization heuristic}\label{algorithm:SOH}
-    \begin{algorithmic}[1]
-        \State \textbf{Data:} current period $t$, initial inventory $I_{t-1}$, initial capital $B_{t-1}$, demand samples
-        \State \textbf{Output:} Optimal order quantity $Q^{\ast}_{t}$
-        \State $r\leftarrow t$
-        \State $\Delta B^{\ast}\leftarrow -\infty$
-        \While{$\Delta B\leq \Delta B^{\ast}$ and $r\leq T$}
-          \State $Q\leftarrow\arg\max_{Q\geq 0}\Delta B^{Q}_{t,r}(I_{t-1},B_{t-1})$
-          \State $\Delta B\leftarrow \Delta B^{Q}_{t,r}(I_{t-1},B_{t-1})/(r-t+1)$
-          \If{$\Delta B\geq \Delta B^{\ast}$}
-            \State $Q^{\ast}\leftarrow Q$
-            \State $\Delta B^{\ast}\leftarrow \Delta B$
-          \EndIf
-          \State $r\leftarrow r+1$
-        \EndWhile
-    \end{algorithmic}
-  \end{algorithm}
-\end{texcode}
-
 \xsection{数据集构建}{Input codes}
 
-从现有文件导入源码，使用 \clist[columbiablue]{lstlisting} 宏包，本模板预先定义了一基本格式 \clist{sty_basic} 以供使用，可以自定义新的样式。
+\xsection{方法描述}{References}
 
-\begin{texcodeonly}
-\lstinputlisting[style=sty_basic,
-  language=matlab,
-  caption={标准粒子群算法},
-  label={listing:a_label}]{./Codes/pso.m}
-\end{texcodeonly}
-\lstinputlisting[style=sty_basic,
-                    language=matlab,
-                    caption={标准粒子群算法},
-                    label={listing:a_label}]{./Codes/pso.m}
+\xsubsection{网络整体架构}{Ref equations}
 
-
-\xsection{方法描述}{Input codes}
+\xsubsection{WICTIVITY模型}{Ref equations}
 
 \begin{figure}[h]
   \centering
   \includegraphics[width=\textwidth]{姿态重构模型架构图.jpg}
   \caption{人体姿态重构与预测模型架构图}
 \end{figure}
+
+\subsubsection{Embedding模块}{Ref equations}
+
+\subsubsection{姿态重构模块}{Ref equations}
+
+\subsubsection{IMU预测模块}{Ref equations}
+
+\subsubsection{自回归姿态预测模块}{Ref equations}
+
+\subsubsection{损失函数}{Ref equations}
 
 \xsection{实验与结果分析}{Input codes}
 
