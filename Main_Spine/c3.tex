@@ -287,8 +287,6 @@ WICTIVITY模型的训练本质上是一个多目标联合优化（Multi-Objectiv
 
 其中，$\mathcal{L}_{act}$、$\mathcal{L}_{id}$ 和 $\mathcal{L}_{scene}$ 分别对应活动识别、身份识别和场景识别的监督分类损失，$\mathcal{L}_{clip}$ 为跨模态对比损失。权重系数 $\alpha, \beta, \gamma$ 用于平衡三个下游任务在梯度更新中的贡献比重，而 $\lambda$ 则专门用于控制特征对齐约束的强弱，以防止过强的对齐约束破坏单模态特征的独特性。
 
-\paragraph{多任务分类损失}
-
 针对三个分类子任务，模型均采用标准的多类交叉熵损失函数（Cross-Entropy Loss）。该损失函数通过衡量预测概率分布与真实标签分布之间的差异，驱动模型学习具有判别力的决策边界。
 
 以活动分类任务为例，假设输入批次大小为 $N$，对于第 $i$ 个样本，其真实的活动类别标签为 $y_{i}^{act} \in \{1, \dots, K_{act}\}$，模型输出的预测概率分布为 $\hat{\mathbf{y}}_{i}^{act}$。活动分类损失 $\mathcal{L}_{act}$ 计算如下：
@@ -298,8 +296,6 @@ WICTIVITY模型的训练本质上是一个多目标联合优化（Multi-Objectiv
 \end{equation}
 
 其中，$K_{act}$ 表示活动类别的总数，$\mathbb{I}(\cdot)$ 为指示函数（Indicator Function），当括号内条件成立时取值为1，否则为0。$\hat{y}_{i, k}^{act}$ 表示模型预测第 $i$ 个样本属于类别 $k$ 的概率。该损失函数在数学上等价于最大化真实类别的对数似然估计（Maximum Likelihood Estimation）。身份分类损失 $\mathcal{L}_{id}$ 和场景分类损失 $\mathcal{L}_{scene}$ 的计算形式与上式完全同构，分别针对 $K_{id}$ 个身份类别和 $K_{scene}$ 个场景类别进行优化。
-
-\paragraph{跨模态对比损失}
 
 针对特征对齐模块，我们采用了对称的InfoNCE（Noise Contrastive Estimation）损失函数，即CLIP损失。该损失函数旨在通过对比学习的方式，拉近成对（Paired）IMU与CSI数据在特征空间中的距离，同时推远非成对（Unpaired）数据的距离。
 
