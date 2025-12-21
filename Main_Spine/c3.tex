@@ -146,201 +146,91 @@ WICTIVITY模型旨在学习一个非线性映射函数 $\mathcal{F}$，该函数
 
 \subsubsection{Embedding模块}{}
 
-Embedding模块作为WICTIVITY模型的感知前端，首要任务是解决IMU与Wi-Fi CSI数据在物理维度上的异构性，并将原始的时间序列信号映射至高维潜在特征空间，以便捕捉人体活动中隐含的长时序依赖（Long-term Dependency）。由于人体动作往往具有多尺度特性——例如，“跌倒”表现为毫秒级的瞬态突变，而“行走”或“场景转换”则呈现为秒级的周期性或稳态延续，传统的卷积神经网络（CNN）难以捕捉长距离依赖，而Transformer架构在处理高频长序列时面临着计算复杂度呈二次方增长（$O(L^2)$）的瓶颈。为此，本研究在Embedding模块中引入了基于选择性状态空间模型（Selective State Space Model, Mamba）的双流编码器架构，旨在以线性时间复杂度实现对多模态时序特征的高效提取。
+Embedding 模块作为 WICTIVITY 模型的感知前端，核心功能是实现异构传感器信号的标准化空间映射与高维特征表征。由于惯性测量单元（IMU）提供的动力学特征与 WiFi 信道状态信息（CSI）提供的环境感知特征在物理属性及采样频率上存在显著差异，模型首先需要通过特征嵌入操作消除模态间的异构性，为后续的特征融合奠定基础。
 
-首先，针对输入数据的维度异构问题，模型采用线性投影层进行统一化处理。设输入的原始IMU数据序列为 $\mathbf{X}_{IMU} \in \mathbb{R}^{T \times C_I}$，其中 $T$ 为时间窗口长度，$C_I$ 为包含三轴加速度与角速度的传感器通道数；输入的CSI数据序列为 $\mathbf{X}_{CSI} \in \mathbb{R}^{T \times C_W}$，其中 $C_W$ 对应Wi-Fi子载波的数量。由于 $C_I \neq C_W$，且两者的数据分布存在显著差异，我们通过可学习的线性变换将异构输入映射到维度统一的潜在空间 $D$。以IMU分支为例，其初始嵌入特征 $\mathbf{E}_{IMU}^{(0)}$ 的计算过程如下：
-
+具体的特征提取过程可以抽象为如下映射关系：
 \begin{equation}
-\mathbf{E}_{IMU}^{(0)} = \text{LayerNorm}(\mathbf{X}_{IMU}\mathbf{W}_{proj}^I + \mathbf{b}_{proj}^I) + \mathbf{P}_{pos}
+Z_{IMU} = \Phi_{IMU}(X_{IMU})
 \end{equation}
-
-其中，$\mathbf{W}_{proj}^I \in \mathbb{R}^{C_I \times D}$ 和 $\mathbf{b}_{proj}^I \in \mathbb{R}^{D}$ 为投影参数。为了弥补后续状态空间模型对绝对位置信息感知的不足，我们在投影特征上叠加了可学习的位置编码 $\mathbf{P}_{pos}$，从而增强模型对动作发生时序逻辑的解析能力。CSI分支的处理方式与此同构。
-
-在完成特征维度的对齐后，核心的时序特征提取由Mamba编码器完成。Mamba模型建立在结构化状态空间序列模型（S4）的理论基础之上，其本质是一个将一维输入信号 $x(t)$ 映射到输出 $y(t)$ 的连续时间系统。该系统通过隐状态 $\mathbf{h}(t) \in \mathbb{R}^{N}$ 捕捉历史信息，其连续动力学方程定义为：
-
 \begin{equation}
-\begin{aligned}
-\mathbf{h}'(t) &= \mathbf{A}\mathbf{h}(t) + \mathbf{B}x(t) \\
-y(t) &= \mathbf{C}\mathbf{h}(t)
-\end{aligned}
+Z_{CSI} = \Phi_{CSI}(X_{CSI})
 \end{equation}
+其中，$X_{IMU}$ 与 $X_{CSI}$ 分别代表原始的 IMU 序列与 WiFi CSI 序列，$\Phi$ 表示由线性投影层与多层状态空间模型构成的嵌入算子。
 
-其中，$\mathbf{A} \in \mathbb{R}^{N \times N}$ 为演化矩阵，决定了系统的状态更新轨迹；$\mathbf{B}$ 和 $\mathbf{C}$ 分别为输入与输出投影矩阵。然而，传感器采集的数据本质上是离散采样信号。为了将上述连续系统应用于数字化的IMU和CSI信号，本研究采用零阶保持（Zero-Order Hold, ZOH）原理对其进行离散化。引入时间尺度参数 $\Delta$（代表采样步长），将连续参数 $(\mathbf{A}, \mathbf{B})$ 转换为离散参数 $(\overline{\mathbf{A}}, \overline{\mathbf{B}})$：
+在实现细节上，模块首先利用线性投影层（Linear Projection）将异构输入的通道维度映射至统一的潜在特征维度 $D$。这一步骤在统一特征维度的同时，初步提取了不同物理通道间的局部关联性。为了增强模型对人体动作演进逻辑的解析能力，我们在嵌入特征中融入了位置编码，从而显式地引入时序方向信息。
 
-\begin{equation}
-\begin{aligned}
-\overline{\mathbf{A}} &= \exp(\mathbf{\Delta} \mathbf{A}) \\
-\overline{\mathbf{B}} &= (\mathbf{\Delta} \mathbf{A})^{-1}(\exp(\mathbf{\Delta} \mathbf{A}) - \mathbf{I}) \cdot (\mathbf{\Delta} \mathbf{B})
-\end{aligned}
-\end{equation}
-
-由此，状态空间模型的递推形式可重写为 $\mathbf{h}_t = \overline{\mathbf{A}}\mathbf{h}_{t-1} + \overline{\mathbf{B}}x_t$，这使得模型具备了类似循环神经网络（RNN）的推理效率。
-
-传统的S4模型中，参数 $\mathbf{\Delta}, \mathbf{B}, \mathbf{C}$ 对于所有时间步是共享且固定的，这导致模型表现为线性时不变（LTI）系统，难以处理非平稳的人体活动信号。WICTIVITY模型的一个关键创新在于引入了选择性扫描机制（Selective Scan Mechanism）。我们将参数 $\mathbf{B}, \mathbf{C}, \mathbf{\Delta}$ 设计为输入 $x_t$ 的函数，使其随时间动态变化，从而实现“内容感知”的特征提取：
-
-\begin{equation}
-\begin{aligned}
-\mathbf{B}_t &= s_B(x_t), \quad \mathbf{C}_t = s_C(x_t), \quad \mathbf{\Delta}_t = \text{Softplus}(\text{Parameter} + s_\Delta(x_t)) \\
-\overline{\mathbf{A}}_t &= \exp(\mathbf{\Delta}_t \mathbf{A}), \quad \overline{\mathbf{B}}_t = (\mathbf{\Delta}_t \mathbf{A})^{-1}(\exp(\mathbf{\Delta}_t \mathbf{A}) - \mathbf{I}) \cdot (\mathbf{\Delta}_t \mathbf{B}_t)
-\end{aligned}
-\end{equation}
-
-其中 $s(\cdot)$ 表示线性投影操作。这种输入依赖性设计赋予了模型动态调整“记忆”与“遗忘”策略的能力。具体而言，参数 $\mathbf{\Delta}_t$ 在物理意义上控制了模型关注的时间粒度：当检测到CSI信号中的突发波动（如环境干扰或快速动作）时，模型生成较大的 $\mathbf{\Delta}_t$，使其更关注当前瞬时输入而忽略历史状态；反之，当处理IMU信号中的周期性步态时，模型生成较小的 $\mathbf{\Delta}_t$，从而倾向于保留长期的历史状态信息。得益于Mamba特有的并行扫描算法（Parallel Scan），上述过程在训练阶段可实现并行计算，在保持线性复杂度的同时获得了媲美Transformer的建模能力。
-
-最终，针对IMU和CSI的双流编码器分别由 $L$ 层Mamba块堆叠而成。在每一个编码块内部，输入特征 $\mathbf{E}^{(l-1)}$ 依次经过层归一化（RMSNorm）、Mamba核心层处理以及残差连接，随后通过前馈神经网络（FFN）进行特征变换：
-
-\begin{equation}
-\begin{aligned}
-\mathbf{E'}^{(l)} &= \text{Mamba}(\text{RMSNorm}(\mathbf{E}^{(l-1)})) + \mathbf{E}^{(l-1)} \\
-\mathbf{E}^{(l)} &= \text{FFN}(\text{RMSNorm}(\mathbf{E'}^{(l)})) + \mathbf{E'}^{(l)}
-\end{aligned}
-\end{equation}
-
-经过 $L$ 层深层特征提取后，我们分别获得IMU的高级语义特征表示 $\mathbf{Z}_{IMU} \in \mathbb{R}^{T \times D}$ 和CSI的高级语义特征表示 $\mathbf{Z}_{CSI} \in \mathbb{R}^{T \times D}$。这种基于选择性状态空间模型的设计，不仅有效解决了多模态数据的维度适配问题，更重要的是实现了对人体活动中瞬态突变与长时依赖的精准捕捉，为后续的跨模态特征对齐提供了富含物理语义的高质量特征基座。
+模块的时序特征挖掘由双流 Mamba 编码器驱动。相较于传统的循环神经网络，该架构凭借选择性扫描机制，能够以线性计算复杂度高效捕捉长时域内的运动规律。通过多层级编码块的深度演化，模型能够从包含噪声的原始电信号中，逐层提取出具备平移不变性的运动模式特征。最终生成的特征向量 $Z_{IMU}$ 与 $Z_{CSI}$ 不远在维度上实现了对齐，更深度解构了人体活动的动力学纹理与环境电磁场的扰动特征，为后续的跨模态语义空间对齐提供了高质量的表征基座。
 
 \subsubsection{特征对齐模块}{}
 
-尽管Embedding模块已通过Mamba编码器分别提取了IMU与CSI的长时序特征，但由于两种数据源在物理采集方式上的本质差异（接触式惯性信号与非接触式射频信号），其特征向量 $\mathbf{Z}_{IMU}$ 与 $\mathbf{Z}_{CSI}$ 在特征空间中的分布往往是不对齐的。为了使模型能够理解同一时刻的IMU数据与CSI数据描述的是同一个体在同一状态下的行为，本文在特征融合之前引入了基于CLIP机制的特征对齐模块。该模块不依赖复杂的几何投影，而是直接通过计算特征间的相似度矩阵，利用对比学习的思想在特征空间内约束模态间的一致性。
+特征对齐模块旨在通过显式约束打破异构模态间的分布壁垒，使模型能够跨越物理属性的差异，学习到更具泛化性的通用表征。在 Embedding 模块分别提取出 IMU 动力学特征 $Z_{IMU}$ 与 WiFi 射频特征 $Z_{CSI}$ 后，由于两者在采集机理与量纲分布上的本质不同，直接融合往往难以诱发有效的语义共鸣。为此，本研究参考对比语言-图像预训练（CLIP）的思想，在特征融合前引入跨模态对齐机制。
 
-设经过Mamba编码器输出的一个批次（Batch）的IMU特征表示为 $\mathbf{Z}_{I} \in \mathbb{R}^{N \times D}$，CSI特征表示为 $\mathbf{Z}_{W} \in \mathbb{R}^{N \times D}$，其中 $N$ 为批次大小，$D$ 为特征通道维度。$\mathbf{Z}_{I}$ 中的每一行 $\mathbf{z}_{I, i}$ 代表第 $i$ 个样本的IMU时序特征向量，同理 $\mathbf{z}_{W, i}$ 代表对应的CSI特征向量。
-
-为了衡量两个模态特征在语义层面的关联程度，本模块构建了一个跨模态相似度矩阵（Similarity Matrix）$\mathbf{M} \in \mathbb{R}^{N \times N}$。该矩阵通过计算IMU特征集合与CSI特征集合之间的点积（Dot Product）获得，其计算过程可形式化为：
-
+设输入的一个批次数据中，特征向量集合表示为 $Z_I \in \mathbb{R}^{N \times D}$ 与 $Z_W \in \mathbb{R}^{N \times D}$，其中 $N$ 为批次大小，$D$ 为特征维度。为了度量两类模态在同一行为下的相关性，模块首先构建跨模态相似度矩阵 $M$：
 \begin{equation}
-\mathbf{M} = \mathbf{Z}_{I} \cdot (\mathbf{Z}_{W})^\top
+M = Z_I \cdot Z_W^\top
 \end{equation}
+该矩阵中的元素 $M_{i,j}$ 表征了第 $i$ 个 IMU 样本与第 $j$ 个 CSI 样本在潜在空间中的匹配程度。
 
-其中，矩阵 $\mathbf{M}$ 中的每一个元素 $M_{ij}$ 量化了第 $i$ 个IMU样本与第 $j$ 个CSI样本之间的匹配分数：
+在该相似度矩阵的约束下，对齐模块的训练逻辑遵循对比学习范式：
+其一，对于对角线元素 $M_{i,i}$，由于其描述的是同一时刻、同一物理事件的异构观测，模型需最大化其相似度，从而实现特征的对齐性。
+其二，对于非对角线元素 $M_{i,j} (i \neq j)$，由于其对应不相关的动作状态，模型需抑制其相似度能量，以保证特征分布的均匀性。
 
-\begin{equation}
-M_{ij} = \mathbf{z}_{I, i} \cdot (\mathbf{z}_{W, j})^\top
-\end{equation}
-
-在该相似度矩阵中，元素的物理意义由其在矩阵中的位置决定：
-
-\begin{enumerate}
-    \item 对角线元素： 当 $i=j$ 时，$M_{ii}$ 表示同一时刻采集的IMU与CSI数据对之间的相似度。由于它们描述的是同一个体的同一动作，这些特征在语义上应当是高度一致的。因此，在训练过程中，模型的目标是最大化对角线上的相似度数值。
-    
-    \item 非对角线元素： 当 $i \neq j$ 时，$M_{ij}$ 表示来自不同时刻或不同样本的IMU与CSI数据之间的相似度。由于它们描述的是不相关的动作或状态，这些特征在语义上应当是互斥的。因此，模型的目标是最小化非对角线上的相似度数值。
-\end{enumerate}
-
-通过构建上述相似度矩阵 $\mathbf{M}$，特征对齐模块将跨模态的语义对齐问题转化为一个分类问题：即对于每一个IMU样本，在当前的CSI样本集合中“检索”出正确的配对样本。这种机制迫使Mamba编码器在提取特征时，不仅要关注单模态内部的时序变化，还要学习能够跨越模态界限的通用语义表达。
-
-经过此模块处理后，虽然特征向量的数值并未发生直接改变，但在反向传播过程中，CLIP损失函数（详见3.3.2.5节）将利用相似度矩阵 $\mathbf{M}$ 计算梯度，从而驱动前端的Mamba编码器参数更新，使得成对的 $\mathbf{z}_{I, i}$ 与 $\mathbf{z}_{W, i}$ 在特征空间中相互靠近，为后续的特征拼接融合提供了语义一致的输入基础。
+这种基于相似度矩阵的对齐操作，迫使 Mamba 编码器在特征提取阶段自动过滤掉仅存在于单模态数据中的局部噪声（如 WiFi 的多径衰落或 IMU 的硬件温漂），转而聚焦于对人体活动具有判别力的本质特征。这种机制不仅缩减了异构模态间的分布距离，更为后续的多任务级联融合提供了一个语义一致、信息互补的特征底座。
 
 \subsubsection{特征融合模块}{}
 
-经过特征对齐模块的处理，IMU特征向量与Wi-Fi CSI特征向量在潜在空间中已实现了语义层面的分布一致性，消除了由于物理采集方式不同而产生的模态鸿沟。然而，对齐仅仅是手段，最终目的是为了综合利用多模态信息以提升感知系统的鲁棒性。在此基础上，本模块旨在构建一个联合特征空间，将包含局部运动细节的IMU特征与包含全局环境信息的CSI特征进行深度融合。针对本研究中活动识别、身份识别与场景识别的多任务需求，我们采用了特征级联（Feature Concatenation）策略，构建统一的多模态表征向量。
+特征融合模块的任务是将经过对齐处理的异构特征 $Z_{IMU}$ 与 $Z_{CSI}$ 整合为统一的全局表征。在对比学习机制的约束下，两类特征已在潜在空间内达成了语义一致性，这为后续的特征级联提供了坚实的逻辑基础。为了在融合过程中最大限度地保留各模态的特异性信息，避免因加权求和等操作导致判别性特征被稀释，本研究采用了特征级联（Concatenation）的融合策略。
 
-设经过Mamba编码器提取并经由CLIP机制对齐后的IMU特征矩阵为 $\mathbf{Z}_{I} \in \mathbb{R}^{N \times D}$，CSI特征矩阵为 $\mathbf{Z}_{W} \in \mathbb{R}^{N \times D}$，其中 $N$ 代表样本批次大小，$D$ 代表单模态的特征维度。特征融合过程定义为在通道维度（Channel Dimension）上对两个特征矩阵进行并行的级联操作。
-
-对于批次中的第 $i$ 个样本，其融合后的联合特征向量 $\mathbf{v}_{fused, i}$ 可由下式给出：
-
+融合过程通过将两个特征向量在维度上进行物理拼接实现，其形式化表述如下：
 \begin{equation}
-\mathbf{v}_{fused, i} = \text{Concat}(\mathbf{z}_{I, i}, \mathbf{z}_{W, i}) = [\mathbf{z}_{I, i} \oplus \mathbf{z}_{W, i}]
+Z_{fused} = [Z_{IMU} \oplus Z_{CSI}]
 \end{equation}
+其中，$\oplus$ 表示特征拼接算子，$Z_{fused}$ 即为融合后的联合特征向量。
 
-其中，$\oplus$ 表示向量拼接操作。由此得到的融合特征矩阵 $\mathbf{V}_{fused}$ 具有 $\mathbb{R}^{N \times 2D}$ 的维度：
-
-\begin{equation}
-\mathbf{V}_{fused} = \begin{bmatrix}
-z_{I, 1}^{(1)} & \cdots & z_{I, 1}^{(D)} & z_{W, 1}^{(1)} & \cdots & z_{W, 1}^{(D)} \\
-\vdots & \ddots & \vdots & \vdots & \ddots & \vdots \\
-z_{I, N}^{(1)} & \cdots & z_{I, N}^{(D)} & z_{W, N}^{(1)} & \cdots & z_{W, N}^{(D)}
-\end{bmatrix}
-\end{equation}
-
-采用级联融合而非逐元素相加（Element-wise Addition）或点积（Dot Product）的主要理论依据在于信息的无损保留与互补性最大化。
-
-首先，从信息论的角度来看，IMU与CSI数据包含着截然不同但互为补充的熵信息。IMU传感器佩戴于用户身体特定部位，其特征 $\mathbf{z}_{I}$ 高度聚焦于人体肢体的微观加速度与角速度变化，能够精准捕捉具有高频特性的瞬态动作（如“跌倒”、“挥手”），且对光照、遮挡等环境因素具有天然的免疫力。然而，IMU数据缺乏对外部环境的感知能力，且难以反映人体在空间中的绝对位置变化。相比之下，Wi-Fi CSI特征 $\mathbf{z}_{W}$ 捕捉的是电磁波在传播空间中的多径效应，其包含了丰富的环境反射特征与人体躯干对信号的散射特征，能够有效反映宏观的场景信息（如“卧室”、“办公室”）以及用户的体型特征（用于身份识别）。直接相加会导致这两种异构信息的混叠，从而破坏各自独特的特征分布。
-
-其次，构建 $\mathbb{R}^{2D}$ 维度的联合特征空间允许后续的分类网络自动学习特征间的非线性交互关系。级联后的向量 $\mathbf{v}_{fused}$ 前半部分保留了本体感受信息（Proprioception），后半部分保留了环境感受信息（Exteroception）。这种结构设计为后续的多任务学习提供了完备的信息基础：
-
-\begin{equation}
-\mathcal{I}(\mathbf{V}_{fused}) \approx \mathcal{I}(\mathbf{Z}_{I}) + \mathcal{I}(\mathbf{Z}_{W}) - \mathcal{I}(\mathbf{Z}_{I}; \mathbf{Z}_{W})
-\end{equation}
-
-其中 $\mathcal{I}(\cdot)$ 表示信息量。由于我们在前一模块中通过对比学习最大化了互信息 $\mathcal{I}(\mathbf{Z}_{I}; \mathbf{Z}_{W})$ 以实现对齐，此时的拼接操作实际上是在保证语义一致性的前提下，将两个视图（View）的特异性信息进行了物理结合。
-
-为了进一步增强特征的融合效果并平滑特征边界，融合后的向量通常会通过一个线性投影层或非线性激活层进行特征重组，生成最终用于多任务分类的潜变量 $\mathbf{H}$：
-
-\begin{equation}
-\mathbf{H} = \sigma(\mathbf{V}_{fused} \mathbf{W}_{fusion} + \mathbf{b}_{fusion})
-\end{equation}
-
-其中，$\mathbf{W}_{fusion} \in \mathbb{R}^{2D \times D_{hidden}}$ 为融合层的权重矩阵，$\mathbf{b}_{fusion}$ 为偏置项，$\sigma$ 为激活函数（如ReLU或GELU）。经过此步骤，模型不仅在物理维度上合并了IMU与CSI数据，更在特征流形上完成了从单模态子空间到多模态联合子空间的映射，为后续并行的活动分类、身份识别与场景分类任务提供了共享的高阶语义表征。
+通过这种方式，来自 IMU 的局部动作细节特征与来自 WiFi 的宏观环境扰动特征被完整地耦合在一起。这种多维度的特征堆叠不仅增强了系统对复杂活动的描述能力，也确保了后续多任务解码模块能够基于全量的观测信息进行精确推理。
 
 \subsubsection{分类模块}{}
 
-分类模块是WICTIVITY模型的决策输出层，其主要功能是将特征融合模块输出的联合特征向量映射到具体的任务标签空间。为了同时实现人体活动识别、身份识别与场景识别，本模块设计了三个并行且结构独立的多层感知机（Multi-Layer Perceptron, MLP）分类头。这三个分类头共享同一个融合特征输入，分别对应上述三个下游任务。
+分类模块作为 WICTIVITY 架构的推理末端，旨在利用融合后的全局表征 $Z_{fused}$ 协同完成多维度的感知任务。由于 $Z_{fused}$ 已经集成了来自 IMU 的动力学纹理与来自 WiFi 的空间电磁扰动特征，且经过对比学习的语义对齐，其内部蕴含了足以支撑多种下游判别任务的判别性信息。本模块通过设计三个并行的任务专用解码头（Task-specific Heads），分别实现人体活动识别（HAR）、用户身份识别（User ID）以及实验环境分类（Environment Classification）。
 
-设特征融合模块输出的特征向量为 $\mathbf{H} \in \mathbb{R}^{N \times D_{fusion}}$，其中 $N$ 为批次大小，$D_{fusion}$ 为融合特征的维度。对于每一个具体任务（活动、身份或场景），我们采用两层全连接网络配合非线性激活函数来构建分类器，以增强模型对特征的非线性判别能力。
-
-以活动分类任务为例，其计算过程如下：首先，融合特征 $\mathbf{H}$ 通过第一层全连接层进行降维和特征变换，并经过激活函数处理：
-
+在结构实现上，各分支均采用多层感知机（Multi-Layer Perceptron, MLP）构建，通过非线性映射将高维的联合特征映射至对应的标签概率空间。以活动识别分支为例，预测过程可表述为：
 \begin{equation}
-\mathbf{F}_{act} = \sigma(\mathbf{H} \mathbf{W}_{act}^{(1)} + \mathbf{b}_{act}^{(1)})
+P_{act} = \sigma (\text{MLP}_{act}(Z_{fused}))
 \end{equation}
+其中，$\text{MLP}_{act}$ 表示活动识别专用映射层，$\sigma$ 为 Softmax 激活函数，$P_{act}$ 为模型输出的活动类别概率分布。
 
-其中，$\mathbf{W}_{act}^{(1)}$ 和 $\mathbf{b}_{act}^{(1)}$ 分别为第一层的权重矩阵和偏置项，$\sigma(\cdot)$ 为ReLU激活函数。随后，隐层特征 $\mathbf{F}_{act}$ 输入至第二层全连接层，将特征维度映射至活动类别的数量 $K_{act}$，得到未归一化的逻辑值（Logits）：
-
+同理，身份识别分支与环境感知分支分别对融合特征进行独立的非线性解码，以获取关于用户生物特征与场景多径特征的预测结果：
 \begin{equation}
-\mathbf{O}_{act} = \mathbf{F}_{act} \mathbf{W}_{act}^{(2)} + \mathbf{b}_{act}^{(2)}
+P_{id} = \sigma (\text{MLP}_{id}(Z_{fused}))
 \end{equation}
-
-最后，通过Softmax函数将逻辑值转换为概率分布，得到最终的活动预测结果 $\hat{\mathbf{Y}}_{act}$：
-
 \begin{equation}
-\hat{\mathbf{Y}}_{act} = \text{Softmax}(\mathbf{O}_{act})
+P_{env} = \sigma (\text{MLP}_{env}(Z_{fused}))
 \end{equation}
+这种多分支并行推理的设计模式，使得模型能够在共享底层时序特征提取能力的同时，兼顾不同任务对特征侧重点的差异。通过该模块的并行解码，系统实现了从单一多模态信号输入到多维度状态感知的端到端映射，为后续的总损失函数构建与多任务联合训练奠定了输出基础。
 
-身份识别分类头和场景识别分类头的结构与计算逻辑与活动分类头完全一致，分别输出身份预测概率 $\hat{\mathbf{Y}}_{id}$ 和场景预测概率 $\hat{\mathbf{Y}}_{scene}$。通过这种并行的多头设计，模型能够在一次前向传播中同时完成对用户动作、身份和所处环境的推断，实现了高效的多任务并行处理。
+\subsubsection{损失函数}
 
-\subsubsection{损失函数}{}
+为了实现 WICTIVITY 架构在多任务学习范式下的联合优化，本研究设计了一个多目标加权损失函数。该损失函数的核心逻辑在于：利用跨模态对比学习损失约束特征底座的对齐性，同时利用多个并行分类损失确保模型对人体活动、用户身份及实验环境的判别能力。通过对全局损失函数的最小化，模型能够在异构信号映射过程中挖掘到跨模态不变的通用特征表达。
 
-WICTIVITY模型的训练本质上是一个多目标联合优化（Multi-Objective Optimization）过程。为了在统一的特征流形内协同实现高精度的多任务分类与跨模态语义对齐，模型采用了一个复合损失函数进行端到端（End-to-End）的监督训练。该目标函数由两类性质不同的损失分量构成：一类是基于标签监督的任务特定分类损失，旨在最小化活动、身份和场景预测的判别误差；另一类是基于自监督信号的CLIP对比损失，旨在最大化异构模态在特征空间中的互信息下界。
-
-为了平衡不同任务的学习速率，并有效调节自监督信号对特征流形的正则化强度，我们在总损失函数中引入了四个非负的超参数权重 $\alpha, \beta, \gamma, \lambda$。总损失函数 $\mathcal{L}_{total}$ 定义如下：
-
+本模型的总损失函数 $\mathcal{L}_{total}$ 由四个分量加权组成，其完整数学表达式如下：
 \begin{equation}
-\mathcal{L}_{total} = \alpha \mathcal{L}_{act} + \beta \mathcal{L}_{id} + \gamma \mathcal{L}_{scene} + \lambda \mathcal{L}_{clip}
+\mathcal{L}_{total} = \alpha \mathcal{L}_{act} + \beta \mathcal{L}_{id} + \gamma \mathcal{L}_{env} + \zeta \mathcal{L}_{cl}
 \end{equation}
+其中，$\alpha, \beta, \gamma$ 和 $\zeta$ 分别为调节活动识别、身份鉴定、环境感知以及对比对齐任务重要程度的加权系数。
 
-其中，$\mathcal{L}_{act}$、$\mathcal{L}_{id}$ 和 $\mathcal{L}_{scene}$ 分别对应活动识别、身份识别和场景识别的监督分类损失，$\mathcal{L}_{clip}$ 为跨模态对比损失。权重系数 $\alpha, \beta, \gamma$ 用于平衡三个下游任务在梯度更新中的贡献比重，而 $\lambda$ 则专门用于控制特征对齐约束的强弱，以防止过强的对齐约束破坏单模态特征的独特性。
-
-针对三个分类子任务，模型均采用标准的多类交叉熵损失函数（Cross-Entropy Loss）。该损失函数通过衡量预测概率分布与真实标签分布之间的差异，驱动模型学习具有判别力的决策边界。
-
-以活动分类任务为例，假设输入批次大小为 $N$，对于第 $i$ 个样本，其真实的活动类别标签为 $y_{i}^{act} \in \{1, \dots, K_{act}\}$，模型输出的预测概率分布为 $\hat{\mathbf{y}}_{i}^{act}$。活动分类损失 $\mathcal{L}_{act}$ 计算如下：
-
+在公式中，跨模态对比损失 $\mathcal{L}_{cl}$ 作用于特征对齐模块生成的相似度矩阵 $M$。为了实现 IMU 与 WiFi 特征在潜在空间中的语义统一，我们采用对称交叉熵准则对相似度矩阵的行（IMU 维度）与列（CSI 维度）同时进行约束，其定义为：
 \begin{equation}
-\mathcal{L}_{act} = - \frac{1}{N} \sum_{i=1}^{N} \sum_{k=1}^{K_{act}} \mathbb{I}(y_{i}^{act} = k) \log(\hat{y}_{i, k}^{act})
+\mathcal{L}_{cl} = \frac{1}{2} \left[ -\frac{1}{N} \sum_{i=1}^{N} \log \frac{\exp(M_{i,i}/\tau)}{\sum_{j=1}^{N} \exp(M_{i,j}/\tau)} - \frac{1}{N} \sum_{i=1}^{N} \log \frac{\exp(M_{i,i}/\tau)}{\sum_{j=1}^{N} \exp(M_{j,i}/\tau)} \right]
 \end{equation}
+其中 $N$ 为批次大小，$\tau$ 为可学习的温度参数。该损失项强制模型最大化对角线上的正样本对得分，并抑制非对角线的噪声干扰。
 
-其中，$K_{act}$ 表示活动类别的总数，$\mathbb{I}(\cdot)$ 为指示函数（Indicator Function），当括号内条件成立时取值为1，否则为0。$\hat{y}_{i, k}^{act}$ 表示模型预测第 $i$ 个样本属于类别 $k$ 的概率。该损失函数在数学上等价于最大化真实类别的对数似然估计（Maximum Likelihood Estimation）。身份分类损失 $\mathcal{L}_{id}$ 和场景分类损失 $\mathcal{L}_{scene}$ 的计算形式与上式完全同构，分别针对 $K_{id}$ 个身份类别和 $K_{scene}$ 个场景类别进行优化。
-
-针对特征对齐模块，我们采用了对称的InfoNCE（Noise Contrastive Estimation）损失函数，即CLIP损失。该损失函数旨在通过对比学习的方式，拉近成对（Paired）IMU与CSI数据在特征空间中的距离，同时推远非成对（Unpaired）数据的距离。
-
-具体而言，CLIP损失包含两个方向的优化目标：从IMU特征检索CSI特征的损失 $\mathcal{L}_{I \to W}$，以及从CSI特征检索IMU特征的损失 $\mathcal{L}_{W \to I}$。设批次内的相似度矩阵为 $\mathbf{M} \in \mathbb{R}^{N \times N}$，其中元素 $M_{ij}$ 表示第 $i$ 个IMU样本与第 $j$ 个CSI样本的余弦相似度 logits。
-
-在IMU检索CSI的方向上，对于第 $i$ 个IMU样本，其对应的正样本是第 $i$ 个CSI样本（对角线元素），其余 $N-1$ 个CSI样本均为负样本（非对角线元素）。模型通过Softmax函数计算正样本对的匹配概率，并最小化其负对数似然：
-
+下游分类任务的损失项（$\mathcal{L}_{act}, \mathcal{L}_{id}, \mathcal{L}_{env}$）则统一遵循多分类交叉熵准则。以活动识别损失为例，通过对比预测概率分布 $P_{act}$ 与真实标签向量 $Y_{act}$ 的散度，驱动模型从级联特征 $Z_{fused}$ 中提取特定的运动动力学信息：
 \begin{equation}
-\mathcal{L}_{I \to W} = - \frac{1}{N} \sum_{i=1}^{N} \log \frac{\exp(M_{ii} / \tau)}{\sum_{j=1}^{N} \exp(M_{ij} / \tau)}
+\mathcal{L}_{act} = -\frac{1}{N} \sum_{n=1}^{N} \sum_{k=1}^{K} Y_{act, n, k} \log(P_{act, n, k})
 \end{equation}
+其中 $K$ 代表活动类别的总数。同理，身份识别与环境分类损失亦采用上述形式构建。
 
-同理，在CSI检索IMU的方向上，对于第 $i$ 个CSI样本，其对应的正样本是第 $i$ 个IMU样本。损失函数计算如下：
-
-\begin{equation}
-\mathcal{L}_{W \to I} = - \frac{1}{N} \sum_{i=1}^{N} \log \frac{\exp(M_{ii} / \tau)}{\sum_{j=1}^{N} \exp(M_{ji} / \tau)}
-\end{equation}
-
-其中，$\tau$ 为温度系数（Temperature Parameter），用于调节概率分布的平滑程度。最终的CLIP损失 $\mathcal{L}_{clip}$ 为上述两个非对称损失的算术平均值：
-
-\begin{equation}
-\mathcal{L}_{clip} = \frac{1}{2} (\mathcal{L}_{I \to W} + \mathcal{L}_{W \to I})
-\end{equation}
-
-通过联合最小化上述总损失 $\mathcal{L}_{total}$，WICTIVITY模型能够在监督信号的指引下学习任务相关的判别性特征，同时利用自监督的对比信号挖掘模态间的共性语义，从而显著增强模型在复杂环境下的泛化能力与鲁棒性。
+通过这种联合优化策略，WICTIVITY 模型不仅能够在训练过程中实现模态间的表征共鸣，还能够通过多任务的相互正则化作用，提升模型在复杂场景下的鲁棒性与泛化精度。
 
 \xsection{实验与结果分析}{References}
 
