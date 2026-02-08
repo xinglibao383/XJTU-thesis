@@ -239,6 +239,6 @@
 \contentsline {chapter}{致谢}{70}{section*.253}%
 \contentsline {chapter}{参考文献}{71}{section*.256}%
 \contentsline {chapter}{攻读学位期间取得的研究成果}{71}{section*.258}%
-\contentsline {chapter}{答辩委员会会议决议}{71}{section*.260}%
-\contentsline {chapter}{常规评阅人名单}{72}{section*.264}%
+\contentsline {chapter}{答辩委员会会议决议}{72}{section*.261}%
+\contentsline {chapter}{常规评阅人名单}{73}{section*.265}%
 \contentsfinish 
