@@ -1,9 +1,9 @@
-This is XeTeX, Version 3.141592653-2.6-0.999997 (TeX Live 2025) (preloaded format=xelatex 2025.11.12)  24 JAN 2026 19:11
+This is XeTeX, Version 3.141592653-2.6-0.999997 (TeX Live 2025) (preloaded format=xelatex 2025.11.12)  8 FEB 2026 15:29
 entering extended mode
  \write18 enabled.
  file:line:error style messages enabled.
  %&-line parsing enabled.
-**/mnt/mydata/yh/liming/workspace/XJTU-thesis/main.tex
+**/mnt/mydata/yh/liming/workspace/XJTU-thesis/main
 (/mnt/mydata/yh/liming/workspace/XJTU-thesis/main.tex
 LaTeX2e <2025-11-01>
 L3 programming layer <2025-10-24>
@@ -2423,7 +2423,7 @@ Package: appendix 2020/02/08 v1.2c extra appendix facilities
 Package translations Info: No language package found. I am going to use `english' as default language. on input line 143.
 \@quotelevel=\count693
 \@quotereset=\count694
- (Build/main.aux (Build/Main_Spine/c1.aux) (Build/Main_Spine/c2.aux) (Build/Main_Spine/c3.aux) (Build/Main_Spine/c4.aux) (Build/Main_Spine/c5.aux))
+ (Build//main.aux (Build//Main_Spine/c1.aux) (Build//Main_Spine/c2.aux) (Build//Main_Spine/c3.aux) (Build//Main_Spine/c4.aux) (Build//Main_Spine/c5.aux))
 \openout1 = `main.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 143.
@@ -2521,7 +2521,7 @@ Package biblatex Info: Automatic encoding selection.
 
 Package biblatex Info: Trying to load bibliographic data...
 Package biblatex Info: ... file 'main.bbl' found.
- (Build/main.bbl)
+ (Build//main.bbl)
 Package biblatex Info: Reference section=0 on input line 143.
 Package biblatex Info: Reference segment=0 on input line 143.
 File: Materials/VI/XJTU.pdf Graphic file (type pdf)
@@ -2712,37 +2712,43 @@ File: ./Materials/VI/活动识别模型架构图.jpg Graphic file (type bmp)
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-[23] [24] [25] [26] [27]
+[23] [24] [25] [26] [27] [28] [29]
 File: ./Materials/VI/confusion_matrix.png Graphic file (type bmp)
 <./Materials/VI/confusion_matrix.png>
 
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-[28] [29] [30] [31] [32] [33] [34] [35] [36] [37] [38] [39] [40] [41]) [42]
+[30]
+Overfull \vbox (72.50629pt too high) has occurred while \output is active []
+
+ [31] [32] [33] [34] [35] [36] [37] [38] [39] [40] [41] [42]
+File: ./Materials/VI/跨域少样本适配策略实验结果.png Graphic file (type bmp)
+<./Materials/VI/跨域少样本适配策略实验结果.png>
+) [43] [44]
 \openout2 = `Main_Spine/c4.aux'.
 
  (./Main_Spine/c4.tex
 Chapter 4.
-[43
+[45
 
 
 
 
-] [44]
+] [46]
 File: ./Materials/VI/人体姿态重构与预测样本.png Graphic file (type bmp)
 <./Materials/VI/人体姿态重构与预测样本.png>
- [45]
+ [47]
 File: ./Materials/VI/人体姿态重构与预测方法整体流程.png Graphic file (type bmp)
 <./Materials/VI/人体姿态重构与预测方法整体流程.png>
 
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-[46] [47]
+[48] [49]
 File: ./Materials/VI/姿态重构模型架构图.jpg Graphic file (type bmp)
 <./Materials/VI/姿态重构模型架构图.jpg>
- [48] [49] [50] [51] [52] [53] [54]
+ [50] [51] [52] [53] [54] [55] [56]
 LaTeX Font Info:    Font shape `TU/XITSMath(2)/b/n' will be
 (Font)              scaled to size 12.00128pt on input line 230.
 LaTeX Font Info:    Font shape `TU/XITSMath(2)/b/n' will be
@@ -2755,7 +2761,7 @@ LaTeX Font Info:    Font shape `TU/XITSMath(3)/b/n' will be
 (Font)              scaled to size 8.99904pt on input line 230.
 LaTeX Font Info:    Font shape `TU/XITSMath(3)/b/n' will be
 (Font)              scaled to size 7.19922pt on input line 230.
- [55] [56] [57] [58] [59] [60] [61] [62] [63] [64]
+ [57] [58] [59] [60] [61] [62] [63] [64] [65] [66]
 
 Package fontspec Info: 
 (fontspec)             Script 'CJK' not explicitly supported within font
@@ -2775,17 +2781,17 @@ Package fontspec Info:
 (fontspec)             - 'normal' (m/n) with NFSS spec.:
 (fontspec)             <->"[FandolFang-Regular.otf]/OT:script=hani;language=dflt;"
 
- [65]) [66] [67]
+ [67]) [68] [69]
 \openout2 = `Main_Spine/c5.aux'.
 
  (./Main_Spine/c5.tex
 Chapter 5.
-[68
+[70
 
 
 
 
-]) [69] (./Main_Miscellaneous/acknowledegment.tex) [70
+]) [71] (./Main_Miscellaneous/acknowledegment.tex) [72
 
 
 
@@ -2802,34 +2808,38 @@ LaTeX Warning: Empty bibliography on input line 184.
 Package biblatex Info: Reference section=1 on input line 195.
 Package biblatex Info: Setting label 'refsection:1' on input line 195.
 Package biblatex Info: Reference section=0 on input line 195.
-[71
+[73
 
 
 
-] (./Main_Miscellaneous/decision.tex) [72
+] (./Main_Miscellaneous/decision.tex) [74
 
 
-] [73
+] [75
 
 
-] [74
+] [76
 
 ] (Build/main.aux (Build/Main_Spine/c1.aux) (Build/Main_Spine/c2.aux) (Build/Main_Spine/c3.aux) (Build/Main_Spine/c4.aux) (Build/Main_Spine/c5.aux))
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2022/08/05>
  ***********
+
+
+LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+
 Package logreq Info: Writing requests to 'main.run.xml'.
 \openout1 = `main.run.xml'.
 
  ) 
 Here is how much of TeX's memory you used:
- 72655 strings out of 468179
- 1619200 string characters out of 5425862
- 2824141 words of memory out of 5000000
- 100181 multiletter control sequences out of 15000+600000
+ 72667 strings out of 468179
+ 1619568 string characters out of 5425862
+ 2824140 words of memory out of 5000000
+ 100190 multiletter control sequences out of 15000+600000
  653487 words of font info for 229 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
- 105i,12n,155p,2517b,5143s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 105i,12n,155p,2513b,5143s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on Build/main.xdv (88 pages, 1706860 bytes).
+Output written on Build/main.pdf (90 pages).

@@ -112,133 +112,136 @@
 \contentsline {subsubsection}{\numberline {3.3.2.4}分类模块}{26}{section*.110}%
 \contentsline {subsubsection}{\numberline {3.3.2.5}损失函数}{26}{section*.111}%
 \setcounter {tocdepth}{-5}
-\contentsline {section}{\numberline {3.4}实验与结果分析}{27}{section*.112}%
+\contentsline {subsection}{\numberline {3.3.3}跨域少样本适配策略}{27}{section*.112}%
 \setcounter {tocdepth}{2}
-\contentsline {section}{\numberline {3.4}实验与结果分析}{27}{section*.113}%
+\contentsline {subsection}{\numberline {3.3.3}跨域少样本适配策略}{27}{section*.113}%
 \setcounter {tocdepth}{-5}
-\contentsline {subsection}{\numberline {3.4.1}评价指标}{27}{section*.115}%
+\contentsline {section}{\numberline {3.4}实验与结果分析}{29}{section*.115}%
 \setcounter {tocdepth}{2}
-\contentsline {subsection}{\numberline {3.4.1}评价指标}{27}{section*.116}%
-\contentsline {paragraph}{\numberline {3.4.1.0.1}准确率}{27}{section*.118}%
-\contentsline {paragraph}{\numberline {3.4.1.0.2}混淆矩阵}{28}{section*.119}%
+\contentsline {section}{\numberline {3.4}实验与结果分析}{29}{section*.116}%
 \setcounter {tocdepth}{-5}
-\contentsline {subsection}{\numberline {3.4.2}实验环境}{28}{section*.120}%
+\contentsline {subsection}{\numberline {3.4.1}评价指标}{29}{section*.118}%
 \setcounter {tocdepth}{2}
-\contentsline {subsection}{\numberline {3.4.2}实验环境}{28}{section*.121}%
+\contentsline {subsection}{\numberline {3.4.1}评价指标}{29}{section*.119}%
+\contentsline {paragraph}{\numberline {3.4.1.0.1}准确率}{29}{section*.121}%
+\contentsline {paragraph}{\numberline {3.4.1.0.2}混淆矩阵}{29}{section*.122}%
 \setcounter {tocdepth}{-5}
-\contentsline {subsection}{\numberline {3.4.3}数据实验结果分析}{28}{section*.125}%
+\contentsline {subsection}{\numberline {3.4.2}实验环境}{30}{section*.123}%
 \setcounter {tocdepth}{2}
-\contentsline {subsection}{\numberline {3.4.3}数据实验结果分析}{28}{section*.126}%
-\contentsline {subsubsection}{\numberline {3.4.3.1}模态消融实验}{28}{section*.128}%
-\contentsline {subsubsection}{\numberline {3.4.3.2}设备消融实验}{31}{section*.131}%
-\contentsline {subsubsection}{\numberline {3.4.3.3}数据分割实验}{32}{section*.134}%
+\contentsline {subsection}{\numberline {3.4.2}实验环境}{30}{section*.124}%
 \setcounter {tocdepth}{-5}
-\contentsline {subsection}{\numberline {3.4.4}网络架构实验结果分析}{34}{section*.137}%
+\contentsline {subsection}{\numberline {3.4.3}数据实验结果分析}{30}{section*.128}%
 \setcounter {tocdepth}{2}
-\contentsline {subsection}{\numberline {3.4.4}网络架构实验结果分析}{34}{section*.138}%
-\contentsline {subsubsection}{\numberline {3.4.4.1}骨干网络选择实验}{34}{section*.140}%
-\contentsline {subsubsection}{\numberline {3.4.4.2}模态融合方案选择实验}{35}{section*.143}%
+\contentsline {subsection}{\numberline {3.4.3}数据实验结果分析}{30}{section*.129}%
+\contentsline {subsubsection}{\numberline {3.4.3.1}模态消融实验}{30}{section*.131}%
+\contentsline {subsubsection}{\numberline {3.4.3.2}设备消融实验}{33}{section*.134}%
+\contentsline {subsubsection}{\numberline {3.4.3.3}数据分割实验}{34}{section*.137}%
 \setcounter {tocdepth}{-5}
-\contentsline {subsection}{\numberline {3.4.5}消融实验结果分析}{36}{section*.146}%
+\contentsline {subsection}{\numberline {3.4.4}网络架构实验结果分析}{36}{section*.140}%
 \setcounter {tocdepth}{2}
-\contentsline {subsection}{\numberline {3.4.5}消融实验结果分析}{36}{section*.147}%
-\contentsline {subsubsection}{\numberline {3.4.5.1}标准化消融实验}{36}{section*.149}%
-\contentsline {subsubsection}{\numberline {3.4.5.2}对比学习消融实验}{38}{section*.152}%
-\contentsline {subsubsection}{\numberline {3.4.5.3}损失函数权重消融实验}{38}{section*.155}%
+\contentsline {subsection}{\numberline {3.4.4}网络架构实验结果分析}{36}{section*.141}%
+\contentsline {subsubsection}{\numberline {3.4.4.1}骨干网络选择实验}{36}{section*.143}%
+\contentsline {subsubsection}{\numberline {3.4.4.2}模态融合方案选择实验}{37}{section*.146}%
 \setcounter {tocdepth}{-5}
-\contentsline {subsection}{\numberline {3.4.6}跨域实验结果分析}{39}{section*.158}%
+\contentsline {subsection}{\numberline {3.4.5}消融实验结果分析}{38}{section*.149}%
 \setcounter {tocdepth}{2}
-\contentsline {subsection}{\numberline {3.4.6}跨域实验结果分析}{39}{section*.159}%
-\contentsline {subsubsection}{\numberline {3.4.6.1}跨场景实验}{40}{section*.161}%
-\contentsline {subsubsection}{\numberline {3.4.6.2}跨人实验}{40}{section*.164}%
+\contentsline {subsection}{\numberline {3.4.5}消融实验结果分析}{38}{section*.150}%
+\contentsline {subsubsection}{\numberline {3.4.5.1}标准化消融实验}{38}{section*.152}%
+\contentsline {subsubsection}{\numberline {3.4.5.2}对比学习消融实验}{40}{section*.155}%
+\contentsline {subsubsection}{\numberline {3.4.5.3}损失函数权重消融实验}{40}{section*.158}%
 \setcounter {tocdepth}{-5}
-\contentsline {section}{\numberline {3.5}本章小结}{42}{section*.167}%
+\contentsline {subsection}{\numberline {3.4.6}跨域实验结果分析}{41}{section*.161}%
 \setcounter {tocdepth}{2}
-\contentsline {section}{\numberline {3.5}本章小结}{42}{section*.168}%
+\contentsline {subsection}{\numberline {3.4.6}跨域实验结果分析}{41}{section*.162}%
+\contentsline {subsubsection}{\numberline {3.4.6.1}跨人实验}{42}{section*.164}%
 \setcounter {tocdepth}{-5}
-\contentsline {chapter}{\numberline {4}基于自回归的人体姿态重构与预测}{43}{section*.170}%
+\contentsline {section}{\numberline {3.5}本章小结}{44}{section*.169}%
 \setcounter {tocdepth}{2}
-\contentsline {chapter}{\numberline {4}基于自回归的人体姿态重构与预测}{43}{section*.171}%
+\contentsline {section}{\numberline {3.5}本章小结}{44}{section*.170}%
 \setcounter {tocdepth}{-5}
-\contentsline {section}{\numberline {4.1}问题描述}{43}{section*.173}%
+\contentsline {chapter}{\numberline {4}基于自回归的人体姿态重构与预测}{45}{section*.172}%
 \setcounter {tocdepth}{2}
-\contentsline {section}{\numberline {4.1}问题描述}{43}{section*.174}%
+\contentsline {chapter}{\numberline {4}基于自回归的人体姿态重构与预测}{45}{section*.173}%
 \setcounter {tocdepth}{-5}
-\contentsline {section}{\numberline {4.2}数据集构建}{45}{section*.176}%
+\contentsline {section}{\numberline {4.1}问题描述}{45}{section*.175}%
 \setcounter {tocdepth}{2}
-\contentsline {section}{\numberline {4.2}数据集构建}{45}{section*.177}%
+\contentsline {section}{\numberline {4.1}问题描述}{45}{section*.176}%
 \setcounter {tocdepth}{-5}
-\contentsline {section}{\numberline {4.3}方法描述}{46}{section*.181}%
+\contentsline {section}{\numberline {4.2}数据集构建}{47}{section*.178}%
 \setcounter {tocdepth}{2}
-\contentsline {section}{\numberline {4.3}方法描述}{46}{section*.182}%
+\contentsline {section}{\numberline {4.2}数据集构建}{47}{section*.179}%
 \setcounter {tocdepth}{-5}
-\contentsline {subsection}{\numberline {4.3.1}方法整体流程}{46}{section*.184}%
+\contentsline {section}{\numberline {4.3}方法描述}{48}{section*.183}%
 \setcounter {tocdepth}{2}
-\contentsline {subsection}{\numberline {4.3.1}方法整体流程}{46}{section*.185}%
+\contentsline {section}{\numberline {4.3}方法描述}{48}{section*.184}%
 \setcounter {tocdepth}{-5}
-\contentsline {subsection}{\numberline {4.3.2}AIPose模型}{47}{section*.189}%
+\contentsline {subsection}{\numberline {4.3.1}方法整体流程}{48}{section*.186}%
 \setcounter {tocdepth}{2}
-\contentsline {subsection}{\numberline {4.3.2}AIPose模型}{47}{section*.190}%
-\contentsline {subsubsection}{\numberline {4.3.2.1}Embedding模块}{48}{section*.194}%
-\contentsline {subsubsection}{\numberline {4.3.2.2}姿态重构模块}{50}{section*.195}%
-\contentsline {subsubsection}{\numberline {4.3.2.3}IMU预测模块}{51}{section*.196}%
-\contentsline {subsubsection}{\numberline {4.3.2.4}自回归姿态预测模块}{53}{section*.197}%
-\contentsline {subsubsection}{\numberline {4.3.2.5}损失函数}{54}{section*.198}%
+\contentsline {subsection}{\numberline {4.3.1}方法整体流程}{48}{section*.187}%
 \setcounter {tocdepth}{-5}
-\contentsline {section}{\numberline {4.4}实验与结果分析}{56}{section*.199}%
+\contentsline {subsection}{\numberline {4.3.2}AIPose模型}{49}{section*.191}%
 \setcounter {tocdepth}{2}
-\contentsline {section}{\numberline {4.4}实验与结果分析}{56}{section*.200}%
+\contentsline {subsection}{\numberline {4.3.2}AIPose模型}{49}{section*.192}%
+\contentsline {subsubsection}{\numberline {4.3.2.1}Embedding模块}{50}{section*.196}%
+\contentsline {subsubsection}{\numberline {4.3.2.2}姿态重构模块}{52}{section*.197}%
+\contentsline {subsubsection}{\numberline {4.3.2.3}IMU预测模块}{53}{section*.198}%
+\contentsline {subsubsection}{\numberline {4.3.2.4}自回归姿态预测模块}{55}{section*.199}%
+\contentsline {subsubsection}{\numberline {4.3.2.5}损失函数}{56}{section*.200}%
 \setcounter {tocdepth}{-5}
-\contentsline {subsection}{\numberline {4.4.1}评价指标}{56}{section*.202}%
+\contentsline {section}{\numberline {4.4}实验与结果分析}{58}{section*.201}%
 \setcounter {tocdepth}{2}
-\contentsline {subsection}{\numberline {4.4.1}评价指标}{56}{section*.203}%
+\contentsline {section}{\numberline {4.4}实验与结果分析}{58}{section*.202}%
 \setcounter {tocdepth}{-5}
-\contentsline {subsection}{\numberline {4.4.2}实验环境}{57}{section*.205}%
+\contentsline {subsection}{\numberline {4.4.1}评价指标}{58}{section*.204}%
 \setcounter {tocdepth}{2}
-\contentsline {subsection}{\numberline {4.4.2}实验环境}{57}{section*.206}%
+\contentsline {subsection}{\numberline {4.4.1}评价指标}{58}{section*.205}%
 \setcounter {tocdepth}{-5}
-\contentsline {subsection}{\numberline {4.4.3}数据实验结果分析}{57}{section*.208}%
+\contentsline {subsection}{\numberline {4.4.2}实验环境}{59}{section*.207}%
 \setcounter {tocdepth}{2}
-\contentsline {subsection}{\numberline {4.4.3}数据实验结果分析}{57}{section*.209}%
-\contentsline {subsubsection}{\numberline {4.4.3.1}数据分割实验}{57}{section*.211}%
-\contentsline {subsubsection}{\numberline {4.4.3.2}设备消融实验}{59}{section*.214}%
+\contentsline {subsection}{\numberline {4.4.2}实验环境}{59}{section*.208}%
 \setcounter {tocdepth}{-5}
-\contentsline {subsection}{\numberline {4.4.4}骨干网络选择实验结果分析}{60}{section*.217}%
+\contentsline {subsection}{\numberline {4.4.3}数据实验结果分析}{59}{section*.210}%
 \setcounter {tocdepth}{2}
-\contentsline {subsection}{\numberline {4.4.4}骨干网络选择实验结果分析}{60}{section*.218}%
+\contentsline {subsection}{\numberline {4.4.3}数据实验结果分析}{59}{section*.211}%
+\contentsline {subsubsection}{\numberline {4.4.3.1}数据分割实验}{59}{section*.213}%
+\contentsline {subsubsection}{\numberline {4.4.3.2}设备消融实验}{61}{section*.216}%
 \setcounter {tocdepth}{-5}
-\contentsline {subsection}{\numberline {4.4.5}标准化消融实验结果分析}{61}{section*.222}%
+\contentsline {subsection}{\numberline {4.4.4}骨干网络选择实验结果分析}{62}{section*.219}%
 \setcounter {tocdepth}{2}
-\contentsline {subsection}{\numberline {4.4.5}标准化消融实验结果分析}{61}{section*.223}%
+\contentsline {subsection}{\numberline {4.4.4}骨干网络选择实验结果分析}{62}{section*.220}%
 \setcounter {tocdepth}{-5}
-\contentsline {subsection}{\numberline {4.4.6}跨域实验结果分析}{63}{section*.227}%
+\contentsline {subsection}{\numberline {4.4.5}标准化消融实验结果分析}{63}{section*.224}%
 \setcounter {tocdepth}{2}
-\contentsline {subsection}{\numberline {4.4.6}跨域实验结果分析}{63}{section*.228}%
-\contentsline {subsubsection}{\numberline {4.4.6.1}跨场景实验}{63}{section*.230}%
-\contentsline {subsubsection}{\numberline {4.4.6.2}跨人实验}{64}{section*.233}%
+\contentsline {subsection}{\numberline {4.4.5}标准化消融实验结果分析}{63}{section*.225}%
 \setcounter {tocdepth}{-5}
-\contentsline {subsection}{\numberline {4.4.7}最大预测长度实验结果分析}{65}{section*.236}%
+\contentsline {subsection}{\numberline {4.4.6}跨域实验结果分析}{65}{section*.229}%
 \setcounter {tocdepth}{2}
-\contentsline {subsection}{\numberline {4.4.7}最大预测长度实验结果分析}{65}{section*.237}%
+\contentsline {subsection}{\numberline {4.4.6}跨域实验结果分析}{65}{section*.230}%
+\contentsline {subsubsection}{\numberline {4.4.6.1}跨场景实验}{65}{section*.232}%
+\contentsline {subsubsection}{\numberline {4.4.6.2}跨人实验}{66}{section*.235}%
 \setcounter {tocdepth}{-5}
-\contentsline {section}{\numberline {4.5}本章小结}{66}{section*.241}%
+\contentsline {subsection}{\numberline {4.4.7}最大预测长度实验结果分析}{67}{section*.238}%
 \setcounter {tocdepth}{2}
-\contentsline {section}{\numberline {4.5}本章小结}{66}{section*.242}%
+\contentsline {subsection}{\numberline {4.4.7}最大预测长度实验结果分析}{67}{section*.239}%
 \setcounter {tocdepth}{-5}
-\contentsline {chapter}{\numberline {5}结论与展望}{68}{section*.244}%
+\contentsline {section}{\numberline {4.5}本章小结}{68}{section*.243}%
 \setcounter {tocdepth}{2}
-\contentsline {chapter}{\numberline {5}结论与展望}{68}{section*.245}%
+\contentsline {section}{\numberline {4.5}本章小结}{68}{section*.244}%
 \setcounter {tocdepth}{-5}
-\contentsline {section}{\numberline {5.1}结论}{68}{section*.247}%
+\contentsline {chapter}{\numberline {5}结论与展望}{70}{section*.246}%
 \setcounter {tocdepth}{2}
-\contentsline {section}{\numberline {5.1}结论}{68}{section*.248}%
+\contentsline {chapter}{\numberline {5}结论与展望}{70}{section*.247}%
 \setcounter {tocdepth}{-5}
-\contentsline {section}{\numberline {5.2}展望}{68}{section*.250}%
+\contentsline {section}{\numberline {5.1}结论}{70}{section*.249}%
 \setcounter {tocdepth}{2}
-\contentsline {section}{\numberline {5.2}展望}{68}{section*.251}%
-\contentsline {chapter}{致谢}{70}{section*.253}%
-\contentsline {chapter}{参考文献}{71}{section*.256}%
-\contentsline {chapter}{攻读学位期间取得的研究成果}{71}{section*.258}%
-\contentsline {chapter}{答辩委员会会议决议}{72}{section*.261}%
-\contentsline {chapter}{常规评阅人名单}{73}{section*.265}%
+\contentsline {section}{\numberline {5.1}结论}{70}{section*.250}%
+\setcounter {tocdepth}{-5}
+\contentsline {section}{\numberline {5.2}展望}{70}{section*.252}%
+\setcounter {tocdepth}{2}
+\contentsline {section}{\numberline {5.2}展望}{70}{section*.253}%
+\contentsline {chapter}{致谢}{72}{section*.255}%
+\contentsline {chapter}{参考文献}{73}{section*.258}%
+\contentsline {chapter}{攻读学位期间取得的研究成果}{73}{section*.260}%
+\contentsline {chapter}{答辩委员会会议决议}{74}{section*.263}%
+\contentsline {chapter}{常规评阅人名单}{75}{section*.267}%
 \contentsfinish 
