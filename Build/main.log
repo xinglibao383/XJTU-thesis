@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999997 (TeX Live 2025) (preloaded format=xelatex 2025.11.12)  11 MAR 2026 11:12
+This is XeTeX, Version 3.141592653-2.6-0.999997 (TeX Live 2025) (preloaded format=xelatex 2025.11.12)  11 MAR 2026 12:55
 entering extended mode
  \write18 enabled.
  file:line:error style messages enabled.
@@ -2653,40 +2653,40 @@ Chapter 1.
 
 
 
-] [2] [3] [4] [5]) [6]
+] [2] [3] [4]) [5]
 \openout2 = `Main_Spine/c2.aux'.
 
  (./Main_Spine/c2.tex
 Chapter 2.
-[7
+[6
 
 
 
 
-] [8] [9]
+] [7] [8]
 File: ./Materials/VI/transformer.png Graphic file (type bmp)
 <./Materials/VI/transformer.png>
 File: ./Materials/VI/mamba.png Graphic file (type bmp)
 <./Materials/VI/mamba.png>
- [10] [11]
+ [9] [10]
 File: ./Materials/VI/对比学习原理示意图.png Graphic file (type bmp)
 <./Materials/VI/对比学习原理示意图.png>
- [12] [13] [14]) [15]
+ [11] [12] [13]) [14]
 \openout2 = `Main_Spine/c3.aux'.
 
  (./Main_Spine/c3.tex
 Chapter 3.
-[16
+[15
 
 
 
 
-] [17]
+] [16]
 File: ./Materials/VI/数据集采集场景.png Graphic file (type bmp)
 <./Materials/VI/数据集采集场景.png>
 File: ./Materials/VI/IMU佩戴位置示意图.png Graphic file (type bmp)
 <./Materials/VI/IMU佩戴位置示意图.png>
- [18]
+ [17]
 File: ./Materials/VI/人体活动识别方法样本.png Graphic file (type bmp)
 <./Materials/VI/人体活动识别方法样本.png>
 
@@ -2698,57 +2698,57 @@ File: ./Materials/VI/活动样本分布图.png Graphic file (type bmp)
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-[19]
+[18]
 File: ./Materials/VI/人体活动识别方法整体流程.png Graphic file (type bmp)
 <./Materials/VI/人体活动识别方法整体流程.png>
 
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-[20] [21] [22]
+[19] [20] [21]
 File: ./Materials/VI/活动识别模型架构图.jpg Graphic file (type bmp)
 <./Materials/VI/活动识别模型架构图.jpg>
 
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-[23] [24] [25] [26] [27] [28] [29]
+[22] [23] [24] [25] [26] [27] [28]
 File: ./Materials/VI/confusion_matrix.png Graphic file (type bmp)
 <./Materials/VI/confusion_matrix.png>
 
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-[30]
+[29]
 Overfull \vbox (72.50629pt too high) has occurred while \output is active []
 
- [31] [32] [33] [34] [35] [36] [37] [38] [39] [40] [41] [42]
+ [30] [31] [32] [33] [34] [35] [36] [37] [38] [39] [40] [41]
 File: ./Materials/VI/跨域少样本适配策略实验结果.png Graphic file (type bmp)
 <./Materials/VI/跨域少样本适配策略实验结果.png>
-) [43] [44]
+) [42] [43]
 \openout2 = `Main_Spine/c4.aux'.
 
  (./Main_Spine/c4.tex
 Chapter 4.
-[45
+[44
 
 
 
 
-] [46]
+] [45]
 File: ./Materials/VI/人体姿态重构与预测样本.png Graphic file (type bmp)
 <./Materials/VI/人体姿态重构与预测样本.png>
- [47]
+ [46]
 File: ./Materials/VI/人体姿态重构与预测方法整体流程.png Graphic file (type bmp)
 <./Materials/VI/人体姿态重构与预测方法整体流程.png>
 
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-[48] [49]
+[47] [48]
 File: ./Materials/VI/姿态重构模型架构图.jpg Graphic file (type bmp)
 <./Materials/VI/姿态重构模型架构图.jpg>
- [50] [51] [52] [53] [54] [55] [56]
+ [49] [50] [51] [52] [53] [54] [55]
 LaTeX Font Info:    Font shape `TU/XITSMath(2)/b/n' will be
 (Font)              scaled to size 12.00128pt on input line 230.
 LaTeX Font Info:    Font shape `TU/XITSMath(2)/b/n' will be
@@ -2761,7 +2761,7 @@ LaTeX Font Info:    Font shape `TU/XITSMath(3)/b/n' will be
 (Font)              scaled to size 8.99904pt on input line 230.
 LaTeX Font Info:    Font shape `TU/XITSMath(3)/b/n' will be
 (Font)              scaled to size 7.19922pt on input line 230.
- [57] [58] [59] [60] [61] [62] [63] [64] [65] [66]
+ [56] [57] [58] [59] [60] [61] [62] [63] [64] [65]
 
 Package fontspec Info: 
 (fontspec)             Script 'CJK' not explicitly supported within font
@@ -2781,17 +2781,17 @@ Package fontspec Info:
 (fontspec)             - 'normal' (m/n) with NFSS spec.:
 (fontspec)             <->"[FandolFang-Regular.otf]/OT:script=hani;language=dflt;"
 
- [67]) [68] [69]
+ [66]) [67] [68]
 \openout2 = `Main_Spine/c5.aux'.
 
  (./Main_Spine/c5.tex
 Chapter 5.
-[70
+[69
 
 
 
 
-]) [71] (./Main_Miscellaneous/acknowledegment.tex) [72
+]) [70] (./Main_Miscellaneous/acknowledegment.tex) [71
 
 
 
@@ -2808,23 +2808,30 @@ LaTeX Warning: Empty bibliography on input line 184.
 Package biblatex Info: Reference section=1 on input line 195.
 Package biblatex Info: Setting label 'refsection:1' on input line 195.
 Package biblatex Info: Reference section=0 on input line 195.
-[73
+[72
 
 
 
-] (./Main_Miscellaneous/decision.tex) [74
+] (./Main_Miscellaneous/decision.tex) [73
+
+
+] [74
 
 
 ] [75
-
-
-] [76
 
 ] (Build/main.aux (Build/Main_Spine/c1.aux) (Build/Main_Spine/c2.aux) (Build/Main_Spine/c3.aux) (Build/Main_Spine/c4.aux) (Build/Main_Spine/c5.aux))
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2022/08/05>
  ***********
+
+
+LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+
+
+Package biblatex Warning: Please rerun LaTeX.
+
 Package logreq Info: Writing requests to 'main.run.xml'.
 \openout1 = `main.run.xml'.
 
@@ -2832,10 +2839,10 @@ Package logreq Info: Writing requests to 'main.run.xml'.
 Here is how much of TeX's memory you used:
  72667 strings out of 468179
  1619568 string characters out of 5425862
- 2824141 words of memory out of 5000000
+ 2824112 words of memory out of 5000000
  100190 multiletter control sequences out of 15000+600000
  653487 words of font info for 229 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
  105i,12n,155p,2513b,5143s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on Build/main.pdf (90 pages).
+Output written on Build/main.pdf (89 pages).
