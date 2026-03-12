@@ -60,7 +60,7 @@ H(f,t) = \sum_{p=1}^{P} \alpha_p(t) e^{-j2\pi f \tau_p(t)}
 
 因此，通过对CSI信号进行时序建模，可以从无线信号的变化中提取人体运动相关特征，从而实现人体行为识别和环境感知等任务。
 
-\xsection{深度学习时序建模网络}{Tables}
+\xsection{深度学习时序建模网络}{Deep Learning Sequence Modeling Networks}
 
 \xsubsection{Transformer}{Transformer}
 
@@ -143,7 +143,7 @@ y_t = C h_t
 
 Mamba模型结构如图2-1(b)所示。由于人体活动识别任务通常涉及较长时间范围的传感器数据序列，Mamba在保证建模能力的同时能够降低计算复杂度，因此适用于对长时序人体运动数据进行特征建模。
 
-\xsection{多模态特征融合与对齐}{Figures}
+\xsection{多模态特征融合与对齐}{Multimodal Feature Alignment and Fusion}
 
 在人体感知任务中，不同类型的传感器通常能够从不同角度反映人体运动信息。例如，惯性测量单元（IMU）能够直接记录人体肢体运动过程中的加速度和角速度变化，反映人体运动的动力学特征；而基于WiFi信号的感知方法则通过分析信道状态信息（CSI）的变化，捕捉人体运动对无线传播环境产生的影响，从而获得环境层面的感知信息。相比单一模态传感器，多模态传感数据能够从不同维度描述人体行为状态，为人体活动识别任务提供更加丰富的信息。
 
