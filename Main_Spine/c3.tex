@@ -403,13 +403,45 @@ M_{ij}=\sum_{k=1}^{N}\mathbb{I}(y_k=i \land \hat{y}_k=j)
 
 通过观察混淆矩阵中的对角线元素可以评估各类别的识别准确情况，而非对角线元素则反映了不同类别之间的混淆关系，从而为模型性能分析提供更加直观的依据。
 
-\xsubsection{实验环境}{Level of this document}
+\xsubsection{实验环境}{Experimental Environment}
+
+本研究所有实验均在 Linux 服务器环境下完成。实验平台运行 Ubuntu 24.04.2 LTS 操作系统，服务器配备 Intel Xeon Gold 6530 处理器和 251\,GB 系统内存，并搭载 4 块 NVIDIA GeForce RTX 4090 GPU 用于深度学习模型训练。在软件环境方面，实验基于 Python 3.8.20 实现，深度学习框架采用 PyTorch 2.0.1，并结合 CUDA 11.7 实现 GPU 加速计算。
+
+在模型训练过程中，采用 Adam 优化器对网络参数进行更新，初始学习率设置为 $1\times10^{-4}$，权重衰减系数为 $1\times10^{-4}$。模型训练轮数设置为 300，批大小为 512。为了将连续时间序列数据转换为模型输入样本，本文采用滑动窗口方式对原始数据进行分割，其中窗口长度设置为 50，滑动步长设置为 25。
+
+\xsubsection{主实验结果}{Overall Performance}
+
+为了验证所提出模型在多任务人体感知问题中的整体性能，本文首先对模型在测试集上的识别结果进行统计，并分别计算人体活动识别、身份识别以及场景识别三个任务的分类准确率。实验结果如表~\ref{tab:main_result} 所示。
+
+\begin{table}[H]
+  \centering
+  \caption{WICTIVITY模型在三个任务上的识别结果}
+  \label{tab:main_result}
+  \begin{tblr}{
+    colspec={X[c] X[c] X[c] X[c]},
+  }
+  \toprule
+  模型 & 活动准确率 & 身份准确率 & 场景准确率 \\
+  \midrule
+
+  WICTIVITY & 96.06\% & 99.93\% & 99.99\% \\
+
+  \bottomrule
+  \end{tblr}
+\end{table}
+
+从表~\ref{tab:main_result}可以看出，所提出的WICTIVITY模型在三个任务上均取得了较高的识别准确率。其中，人体活动识别准确率达到96.06\%，身份识别准确率达到99.93\%，场景识别准确率达到99.99\%。实验结果表明，多模态融合方法能够有效利用IMU与WiFi CSI信号之间的互补信息，从而实现稳定的人体活动识别性能。
+
+为了进一步分析模型在不同类别上的识别情况，本文绘制了人体活动识别任务的混淆矩阵，如图~\ref{fig:confusion_matrix}所示。通过观察混淆矩阵可以发现，大部分样本集中在矩阵的对角线位置，说明模型在多数动作类别上具有较好的识别能力。少量非对角线元素反映了部分相似动作之间仍然存在一定程度的混淆，这主要是由于部分动作在运动模式或执行方式上具有较高相似性所导致。
 
 \begin{figure}[h]
   \centering
   \includegraphics[width=\textwidth]{confusion_matrix.png}
-  \caption{transformer}
+  \caption{混淆矩阵}
+  \label{fig:confusion_matrix}
 \end{figure}
+
+总体而言，主实验结果表明，所提出的多模态人体活动识别模型能够在复杂室内环境中取得较好的识别效果，为后续的模型结构分析与消融实验提供了可靠的实验基础。
 
 \xsubsection{数据实验结果分析}{}
 
