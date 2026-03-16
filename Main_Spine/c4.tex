@@ -1,8 +1,8 @@
 % !TeX root = ../main.tex
 
-\xchapter{基于自回归的人体姿态重构与预测}{Autoregressive Human Pose Reconstruction and Prediction}
+\xchapter{基于自回归机制的人体姿态重构与预测}{Autoregressive Human Pose Reconstruction and Prediction}
 
-本章围绕基于IMU信号的人体姿态重构与预测问题展开研究。第4.1节对人体姿态重构与预测任务进行问题描述，分析现有方法主要关注当前姿态重构而对未来姿态预测关注不足。第4.2节介绍实验数据集的构建过程，包括姿态数据的获取方式，以及IMU与姿态数据的预处理和数据划分方法。第4.3节对本文提出的AIPose方法进行介绍，给出整体方法框架，并详细说明模型结构及其自回归姿态预测机制。第4.4节通过实验对所提出方法进行评估，从方法对比、参数分析、模型消融以及泛化能力等方面分析模型性能。最后，第4.5节对本章研究内容进行总结。
+本章围绕基于自回归机制的人体姿态重构与预测问题展开研究。第4.1节对人体姿态重构与预测任务进行问题描述，分析现有方法主要关注当前姿态重构而对未来姿态预测关注不足。第4.2节介绍实验数据集的构建过程，包括姿态数据的获取方式，以及IMU与姿态数据的预处理和数据划分方法。第4.3节对本文提出的AIPose方法进行介绍，给出整体方法框架，并详细说明模型结构及其自回归姿态预测机制。第4.4节通过实验对所提出方法进行评估，从方法对比、参数分析、模型消融以及泛化能力等方面分析模型性能。最后，第4.5节对本章研究内容进行总结。
 
 \xsection{问题描述}{Problem Description}
 
@@ -32,6 +32,93 @@
   \caption{OpenPose人体关键点位置与名称示意图}
   \label{fig:openpose_keypoints}
 \end{figure}
+
+\subsection{数据处理与样本构建}
+
+为了构建用于模型训练的时序样本，需要对IMU数据与人体姿态数据进行统一处理。由于两种模态的采样频率不同，在样本构建过程中需要首先建立时间对应关系，然后通过滑动窗口从连续序列中提取训练样本。
+
+设IMU时间序列为
+\begin{equation}
+\mathbf{X}=\{x_1,x_2,\ldots,x_T\}, \quad x_t\in\mathbb{R}^{C},
+\end{equation}
+
+人体姿态序列为
+\begin{equation}
+\mathbf{P}=\{p_1,p_2,\ldots,p_N\}, \quad p_i\in\mathbb{R}^{K\times3},
+\end{equation}
+
+其中 $C$ 表示IMU通道数。本研究使用5个IMU设备，每个设备包含三轴加速度和三轴角速度，共6个通道，因此 $C=30$。$K=25$ 表示人体关键点数量。
+
+由于样本窗口长度均以姿态帧数为单位定义，而IMU与姿态数据的采样频率不同，因此需要将姿态时间长度转换为对应的IMU时间长度，以保证两种模态在时间维度上的一致性。设IMU采样频率为 $f_{\mathrm{imu}}$，姿态数据帧率为 $f_{\mathrm{pose}}$，则两种模态之间的时间尺度比例定义为
+\begin{equation}
+r=\frac{f_{\mathrm{imu}}}{f_{\mathrm{pose}}}.
+\end{equation}
+
+在某一参考时刻 $t$，设
+$L_{\mathrm{input}}$ 表示输入窗口长度，
+$L_{\mathrm{rec}}$ 表示姿态重构窗口长度，
+$L_{\mathrm{pred}}$ 表示姿态预测窗口长度，
+三者均以姿态帧数为单位。
+
+模型输入的IMU序列表示为
+\begin{equation}
+\mathbf{X}_{\mathrm{input}}
+=
+\mathbf{X}\!\left[t-r(L_{\mathrm{input}}+L_{\mathrm{rec}}):\,t-rL_{\mathrm{rec}}\right].
+\end{equation}
+
+未来IMU序列表示为
+\begin{equation}
+\mathbf{X}_{\mathrm{future}}
+=
+\mathbf{X}\!\left[t-rL_{\mathrm{rec}}:\,t\right].
+\end{equation}
+
+当前姿态序列（用于姿态重构任务）表示为
+\begin{equation}
+\mathbf{P}_{\mathrm{rec}}
+=
+\mathbf{P}\!\left[t-(L_{\mathrm{rec}}+L_{\mathrm{pred}}):\,t-L_{\mathrm{pred}}\right].
+\end{equation}
+
+未来姿态序列（用于姿态预测任务）表示为
+\begin{equation}
+\mathbf{P}_{\mathrm{pred}}
+=
+\mathbf{P}\!\left[t-L_{\mathrm{pred}}:\,t\right].
+\end{equation}
+
+综合上述定义，一个训练样本可以表示为
+\begin{equation}
+\mathcal{S}=\{\mathbf{X}_{\mathrm{input}},\mathbf{X}_{\mathrm{future}},\mathbf{P}_{\mathrm{rec}},\mathbf{P}_{\mathrm{pred}}\},
+\end{equation}
+
+图~\ref{fig:sample_construction} 展示了样本构建过程的时间结构示意图，其中标出了IMU序列与姿态序列在时间轴上的对应关系。
+
+% \begin{figure}[h]
+%   \centering
+%   \includegraphics[width=\textwidth]{sample_construction.png}
+%   \caption{人体姿态重构与预测任务的样本构建示意图}
+%   \label{fig:sample_construction}
+% \end{figure}
+
+在姿态数据处理中，由于关键点检测算法可能受到遮挡或图像质量影响，部分关键点在个别帧中可能无法被检测到。对于置信度为零的关键点，采用相邻帧中最接近的有效关键点进行填补，以保证姿态序列在时间维度上的连续性。
+
+此外，不同参与者在身高、体型以及摄像机距离等方面存在差异，导致人体关键点坐标在空间尺度上存在明显变化。因此需要对姿态坐标进行尺度归一化处理。具体而言，以人体躯干中心关键点作为参考点进行平移，并以左右肩关节之间的距离作为尺度因子进行归一化：
+\begin{equation}
+\hat{p}_{i,k}=\tanh\left(\frac{p_{i,k}-p_{i,c}}{\|p_{i,l}-p_{i,r}\|_2}\right).
+\end{equation}
+
+图~\ref{fig:pose_normalization} 展示了姿态归一化处理前后的对比结果。归一化前不同个体的姿态在空间位置和尺度上存在明显差异，而经过中心平移与肩宽归一化之后，不同样本的人体姿态被映射到统一坐标范围。
+
+% \begin{figure}[h]
+%   \centering
+%   \includegraphics[width=\textwidth]{pose_normalization.png}
+%   \caption{姿态归一化前后对比示意图}
+%   \label{fig:pose_normalization}
+% \end{figure}
+
+通过上述数据处理与样本构建步骤，可以将原始IMU数据与姿态数据转换为统一格式的训练样本，为后续人体姿态重构与预测模型的训练提供数据基础。
 
 \xsection{方法描述}{Method Description}
 
