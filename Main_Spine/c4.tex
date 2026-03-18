@@ -111,12 +111,12 @@ $L_{\mathrm{pred}}$ 表示姿态预测窗口长度，
 
 图~\ref{fig:pose_normalization} 展示了姿态归一化处理前后的对比结果。归一化前不同个体的姿态在空间位置和尺度上存在明显差异，而经过中心平移与肩宽归一化之后，不同样本的人体姿态被映射到统一坐标范围。
 
-% \begin{figure}[h]
-%   \centering
-%   \includegraphics[width=\textwidth]{pose_normalization.png}
-%   \caption{姿态归一化前后对比示意图}
-%   \label{fig:pose_normalization}
-% \end{figure}
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\textwidth]{姿态中心化归一化示意图.png}
+  \caption{姿态中心化归一化示意图}
+  \label{fig:pose_normalization}
+\end{figure}
 
 通过上述数据处理与样本构建步骤，可以将原始IMU数据与姿态数据转换为统一格式的训练样本，为后续人体姿态重构与预测模型的训练提供数据基础。
 
@@ -126,7 +126,7 @@ $L_{\mathrm{pred}}$ 表示姿态预测窗口长度，
 
 为实现基于自回归机制的人体姿态重构与预测，本文提出一种姿态建模方法AIPose。该方法以IMU时序信号为输入，通过统一特征表示同时完成当前姿态重构与未来姿态预测任务。整体方法框架如图~\ref{fig:aipose_framework}所示。
 
-\begin{figure}[H]
+\begin{figure}[h]
   \centering
   \includegraphics[width=\textwidth]{人体姿态重构与预测方法整体流程.png}
   \caption{人体姿态重构与预测方法整体流程}
@@ -155,7 +155,7 @@ $L_{\mathrm{pred}}$ 表示姿态预测窗口长度，
 
 在上述整体方法框架的基础上，本文构建了AIPose模型，用于实现基于自回归机制的人体姿态重构与预测。该模型以IMU时序数据为输入，通过共享的时序特征表示同时支持当前姿态重构与未来姿态预测两个任务。模型的整体结构如图~\ref{fig:aipose_arch}所示。
 
-\begin{figure}[H]
+\begin{figure}[h]
   \centering
   \includegraphics[width=\textwidth]{姿态重构模型架构图.jpg}
   \caption{人体姿态重构与预测模型架构图}
@@ -268,6 +268,12 @@ AIPose模型主要由IMU时序特征提取模块、姿态重构模块、IMU时�
 
 其中 $\|\cdot\|_2$ 表示欧氏距离。该指标用于衡量预测关键点与真实关键点之间的平均空间误差，数值越小表示模型预测精度越高。
 
+需要说明的是，由于模型输出的姿态坐标是在归一化空间中表示（第4.2.2节中采用 $\tanh$ 函数将关键点坐标约束在 $(-1,1)$ 范围内），因此在计算MPJPE之前，需要将预测结果与真实值从归一化空间映射回原始尺度空间。
+
+具体而言，首先对模型输出进行截断处理，将其限制在 $(-0.9999,\,0.9999)$ 范围内，以避免在后续反变换过程中数值溢出；随后通过反双曲正切函数 $\mathrm{atanh}(\cdot)$ 将数据从 $\tanh$ 空间映射回未压缩的连续空间。最后，根据样本对应的尺度因子对关键点坐标进行恢复，从而得到与真实姿态一致的坐标表示。
+
+在完成上述反归一化处理后，基于恢复后的姿态坐标计算MPJPE，从而保证评价指标能够真实反映模型在实际空间中的预测误差。
+
 在具体实验中，分别对当前姿态重构结果与未来姿态预测结果计算MPJPE，以评估模型在不同任务下的性能表现。
 
 \xsubsection{方法对比实验}{Method Comparison}
@@ -320,10 +326,10 @@ AIPose模型主要由IMU时序特征提取模块、姿态重构模块、IMU时�
   \toprule
   主干网络1 & 主干网络2 & 姿态重构MPJPE & 姿态预测MPJPE \\
   \midrule
-  resnet & transformer & 47.8203 & 54.1138 \\
-  resnet & lstm        & 49.4344 & 55.9392 \\
-  resnet & gru         & 48.9044 & 54.9700 \\
-  resnet & mamba       & 76.8240 & 81.0473 \\
+  ResNet & Transformer & 47.8203 & 54.1138 \\
+  ResNet & LSTM        & 49.4344 & 55.9392 \\
+  ResNet & GRU         & 48.9044 & 54.9700 \\
+  ResNet & Mamba       & 76.8240 & 81.0473 \\
   \bottomrule
   \end{tblr}
 \end{table}
