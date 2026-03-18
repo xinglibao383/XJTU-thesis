@@ -358,3 +358,13 @@ TSWLatexianTemp*
 !.vscode
 .vscode/*
 !.vscode/settings.json
+
+
+# keep Build/main.pdf
+!/Build/
+!/Build/main.pdf
+
+# keep Materials/VI and all its contents
+!/Materials/
+!/Materials/VI/
+!/Materials/VI/**
