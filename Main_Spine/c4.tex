@@ -26,7 +26,7 @@
 
 为了从视频序列中获得人体姿态信息，本文采用OpenPose算法对RGB视频进行处理，从每一帧图像中检测人体关键点位置。OpenPose基于Body25人体模型，可以识别人体25个关键点，包括头部、躯干以及四肢等重要关节位置。各关键点的位置与名称如图\ref{fig:openpose_keypoints}所示。通过对视频序列逐帧处理，可以得到随时间变化的人体二维关键点序列，从而形成与IMU数据时间同步的人体姿态数据。
 
-\begin{figure}[H]
+\begin{figure}[h]
   \centering
   \includegraphics[width=0.4\textwidth]{openpose_keypoints.png}
   \caption{OpenPose人体关键点位置与名称示意图}
@@ -113,7 +113,7 @@ $L_{\mathrm{pred}}$ 表示姿态预测窗口长度，
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=\textwidth]{姿态中心化归一化示意图.png}
+  \includegraphics[width=\textwidth]{姿态中心化标准化对比示意图.png}
   \caption{姿态中心化归一化示意图}
   \label{fig:pose_normalization}
 \end{figure}
