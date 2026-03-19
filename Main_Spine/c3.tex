@@ -40,7 +40,7 @@
 
 数据集共包含16名志愿者在不同场景下完成的30类日常动作，共采集853段连续动作序列，总时长约16小时。不同场景中包含的具体动作类别如表3-1所示。
 
-\begin{table}[H]
+\begin{table}[h]
   \centering
   \caption{场景动作类别}
   \begin{tblr}{
@@ -432,14 +432,59 @@ M^{(\%)}_{ij}=100\times \tilde{M}_{ij}
 
 为了进一步观察模型在不同动作类别上的识别情况，本文绘制了人体活动识别任务的归一化混淆矩阵，如图~\ref{fig:confusion_matrix}所示。可以看到，大部分样本集中在矩阵对角线位置，说明模型在多数动作类别上能够实现正确识别。少量非对角线元素反映出部分相似动作之间仍存在一定混淆，这主要与动作模式之间的相似性有关。
 
-整体结果表明，WICTIVITY模型在人体活动识别、身份识别和场景识别三个任务上均具有较好的识别性能，能够较好地支持复杂室内环境下的人体活动感知。
-
 \begin{figure}[h]
   \centering
   \includegraphics[width=\textwidth]{confusion_matrix.png}
   \caption{人体活动识别任务的归一化混淆矩阵}
   \label{fig:confusion_matrix}
 \end{figure}
+
+整体结果表明，WICTIVITY模型在人体活动识别、身份识别和场景识别三个任务上均具有较好的识别性能，能够较好地支持复杂室内环境下的人体活动感知。
+
+\xsubsection{方法对比实验}{Baseline Activity Recognition Accuracy Comparison}
+
+为进一步验证本文所提出方法在人体活动识别任务中的有效性，本文选取了三种具有代表性的传感器人体活动识别方法作为对比基线，分别为 Attend and Discriminate（AAD）、TinyHAR 和 HARMamba。其中，AAD 强调判别式时序特征学习，TinyHAR 代表轻量化卷积建模方法，HARMamba 则代表近期基于 SSM 的时序建模方法。
+
+需要说明的是，上述公开方法原始设计大多面向单流传感器输入，而本文任务同时使用 IMU 与 WiFi CSI 两种模态数据。为保证实验设置的一致性与结果的可比性，本文在相同数据划分、相同滑窗参数和相同评价指标下，对这些方法进行了统一适配。具体而言，首先将 IMU 与 WiFi CSI 数据在通道维进行拼接，构成统一的多变量时间序列输入；随后采用各对比方法作为时序特征提取主干网络，并接入统一的分类输出层完成训练与评估。对于对比方法，本文未引入跨模态对比学习损失与基于类别原型的少样本适配机制，以避免额外训练策略对比较公平性产生影响。
+
+各方法在 XRFV2 数据集上的活动识别结果如表~\ref{tab:baseline_compare_ch3} 所示。可以看出，三种对比方法中，HARMamba 的性能最好，活动识别准确率达到 92.10\%；AAD 次之，为 91.72\%；TinyHAR 的活动识别准确率为 89.71\%。相比之下，本文提出的 WICTIVITY 在第 50 个训练轮次达到 96.06\% 的活动识别准确率，显著优于上述三种代表性方法。
+
+\begin{table}[h]
+  \centering
+  \caption{方法对比实验结果}
+  \label{tab:baseline_compare_ch3}
+  \begin{tblr}{
+    colspec={X[c] X[c] X[c]},
+  }
+  \toprule
+  方法 & 最佳轮次 & 活动准确率 \\
+  \midrule
+
+  Attend and Discriminate   & 272 & 91.72\% \\
+  TinyHAR                   & 298 & 89.71\% \\
+  HARMamba                  & 232 & 92.10\% \\
+  WICTIVITY (Ours)          & 100 & \textbf{96.06\%} \\
+
+  \bottomrule
+  \end{tblr}
+\end{table}
+
+从结果差异来看，本文方法相较于 AAD、TinyHAR 和 HARMamba 分别提升了 4.34、6.35 和 3.96 个百分点。这表明，在 IMU 与 WiFi CSI 构成的异构双模态场景下，仅依赖早期拼接输入和单一时序建模主干，虽然能够在一定程度上学习多变量序列的统计特征，但仍难以充分刻画不同模态之间的语义对应关系与互补信息。本文方法通过跨模态对比学习将 IMU 运动特征与 WiFi 射频感知特征映射到统一语义空间，并进一步利用交叉注意力机制建模两种模态之间的细粒度交互关系，从而提升了融合表示的判别能力，最终取得了更好的识别结果。
+
+此外，从模型收敛情况来看，三种基线模型的最佳验证准确率分别出现在第 272、298 和 232 个训练轮次，而本文方法在第 50 个训练轮次即可达到最佳结果。这说明本文方法不仅在最终识别精度上更具优势，同时在训练收敛效率上也表现出一定优势。其原因在于，跨模态对齐机制能够在训练早期对两种模态的表征学习施加更加明确的约束，使得模型更快学习到与活动类别相关的稳定判别特征。
+
+图~\ref{fig:baseline_compare_ch3} 给出了各方法在验证集上的性能可视化结果。从图中可以更加直观地看出，本文方法在整体活动识别准确率上保持领先，进一步验证了所提出多模态对齐与融合策略的有效性。综合表~\ref{tab:baseline_compare_ch3} 与图~\ref{fig:baseline_compare_ch3} 的结果可以认为，本文方法在多模态人体活动识别任务中具有更强的特征建模能力和更好的识别性能。
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.9\textwidth]{Baseline Activity Recognition Accuracy Comparison.png}
+  \caption{方法对比实验结果}
+  \label{fig:baseline_compare_ch3}
+\end{figure}
+
+进一步来看，本文方法的优势并不仅仅体现在识别准确率的提升上，更体现在其对异构模态信息的有效利用上。与对比方法主要依赖单一主干网络从拼接后的序列中提取统一表示不同，本文方法首先分别对 IMU 与 WiFi CSI 两种模态进行特征建模，再通过跨模态对齐与交叉注意力融合获得更加稳定且具有判别性的联合表示。因此，在包含复杂活动模式、环境差异以及个体差异的多模态人体活动识别任务中，本文方法能够表现出更好的适应性与更高的识别精度。
+
+总体而言，本组对比实验表明，尽管 AAD、TinyHAR 和 HARMamba 在传感器人体活动识别任务中均具有一定代表性，但当任务扩展到 IMU 与 WiFi CSI 构成的异构双模态场景时，传统的早期融合方式仍存在模态交互不足和特征对齐不充分的问题。相比之下，本文提出的 WICTIVITY 通过引入跨模态对比学习和交叉注意力融合机制，能够更充分地挖掘两种模态之间的互补信息，从而取得更优的活动识别结果。这也从侧面说明，面向异构传感器的人体活动识别任务，合理的跨模态对齐与融合策略是提升模型性能的关键。
 
 \xsubsection{模型结构对比实验}{Model Architecture Comparison Experiments}
 
@@ -449,7 +494,7 @@ M^{(\%)}_{ij}=100\times \tilde{M}_{ij}
 
 在多模态人体活动识别任务中，时序建模能力对模型性能具有重要影响。为了评估不同序列建模结构对识别效果的影响，本文将模型中的时序编码器分别替换为多种常见网络结构，包括ResNet18、LSTM、GRU以及Transformer，并保持其余网络结构与训练参数一致，从而保证实验的公平性。不同骨干网络的实验结果如表~\ref{tab:backbone_compare}所示。
 
-\begin{table}[H]
+\begin{table}[h]
   \centering
   \caption{骨干网络选择实验结果}
   \label{tab:backbone_compare}
@@ -482,7 +527,7 @@ M^{(\%)}_{ij}=100\times \tilde{M}_{ij}
 
 为了分析不同模态融合策略对模型性能的影响，本文进一步比较了两种常见的融合方法：特征拼接（Concatenation）以及跨模态注意力融合（Cross-Attention）。在实验过程中，其余模型结构和训练参数保持一致，仅改变模态融合模块。不同融合策略的实验结果如表~\ref{tab:fusion_compare}所示。
 
-\begin{table}[H]
+\begin{table}[h]
   \centering
   \caption{模态融合策略对比实验结果}
   \label{tab:fusion_compare}
@@ -512,7 +557,7 @@ M^{(\%)}_{ij}=100\times \tilde{M}_{ij}
 
 为了评估不同传感模态对识别性能的影响，本文分别使用IMU数据、WiFi CSI数据以及两者融合数据进行实验。同时，为了分析不同WiFi信号表示方式对模型性能的影响，进一步比较了原始CSI、CSI幅度信息以及CSI相位信息三种表示方式。实验结果如表~\ref{tab:modality_ablation}所示。
 
-\begin{table}[H]
+\begin{table}[h]
   \centering
   \caption{模态消融实验结果}
   \label{tab:modality_ablation}
@@ -548,7 +593,7 @@ M^{(\%)}_{ij}=100\times \tilde{M}_{ij}
 
 为了进一步分析不同传感设备对模型性能的影响，本文在完整系统基础上逐一移除不同IMU设备以及WiFi接收节点，并重新训练模型进行测试。实验结果如表~\ref{tab:device_ablation}所示。
 
-\begin{table}[H]
+\begin{table}[h]
   \centering
   \caption{设备消融实验结果}
   \label{tab:device_ablation}
@@ -603,7 +648,7 @@ M^{(\%)}_{ij}=100\times \tilde{M}_{ij}
 
 其中 \(\mu_c\) 和 \(\sigma_c\) 分别表示第 \(c\) 个通道的均值与标准差，\(\hat{X}_{b,c,t}\) 表示标准化后的数据。
 
-\begin{table}[H]
+\begin{table}[h]
   \centering
   \caption{标准化消融实验结果}
   \label{tab:norm_ablation}
@@ -627,7 +672,7 @@ M^{(\%)}_{ij}=100\times \tilde{M}_{ij}
 
 因此，在确定最终实验设置时，本文不仅考察总体准确率，还综合考虑混淆矩阵所反映的类别区分能力。综合上述结果，尽管按通道 Z-score 标准化能够带来轻微的总体准确率提升，但其会削弱模型对不同活动类别的细粒度判别能力。综合来看，按通道 Z-score 标准化虽然能够带来一定的总体准确率提升，但其在活动识别任务中会导致类别预测分布明显集中，削弱模型对不同类别的细粒度区分能力。这表明，在类别分布不平衡的条件下，仅依据总体准确率难以全面评价标准化策略对模型性能的影响。
 
-\begin{figure}[H]
+\begin{figure}[h]
   \centering
   \includegraphics[width=\textwidth]{normalize_confusion_matrix.png}
   \caption{采用按通道 Z-score 标准化后的活动识别归一化混淆矩阵}
@@ -638,7 +683,7 @@ M^{(\%)}_{ij}=100\times \tilde{M}_{ij}
 
 为了验证跨模态对比学习模块的作用，本文移除该模块并重新训练模型进行对比实验。实验结果如表~\ref{tab:cl_ablation}所示。
 
-\begin{table}[H]
+\begin{table}[h]
   \centering
   \caption{对比学习消融实验结果}
   \label{tab:cl_ablation}
@@ -662,7 +707,7 @@ M^{(\%)}_{ij}=100\times \tilde{M}_{ij}
 
 在多任务学习框架中，不同任务之间的损失权重设置可能影响模型训练过程。为此，本文进一步对损失函数权重进行消融实验。实验结果如表~\ref{tab:loss_ablation}所示。
 
-\begin{table}[H]
+\begin{table}[h]
   \centering
   \caption{损失函数权重消融实验结果}
   \label{tab:loss_ablation}
