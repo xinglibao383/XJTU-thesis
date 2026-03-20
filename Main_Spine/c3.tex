@@ -443,7 +443,7 @@ M^{(\%)}_{ij}=100\times \tilde{M}_{ij}
 
 \xsubsection{方法对比实验}{Baseline Activity Recognition Accuracy Comparison}
 
-为进一步验证本文所提出方法在人体活动识别任务中的有效性，本文选取了三种具有代表性的传感器人体活动识别方法作为对比基线，分别为 Attend and Discriminate（AAD）、TinyHAR 和 HARMamba。其中，AAD 强调判别式时序特征学习，TinyHAR 代表轻量化卷积建模方法，HARMamba 则代表近期基于 SSM 的时序建模方法。
+为进一步验证本文所提出方法在人体活动识别任务中的有效性，本文选取了三种具有代表性的传感器人体活动识别方法作为对比基线，分别为 Attend and Discriminate（AAD）\cite{abedin2021attend}、TinyHAR \cite{zhou2022tinyhar} 和 HARMamba \cite{li2024harmamba}。其中，AAD 强调判别式时序特征学习，TinyHAR 代表轻量化卷积建模方法，HARMamba 则代表近期基于 SSM 的时序建模方法。
 
 需要说明的是，上述公开方法原始设计大多面向单流传感器输入，而本文任务同时使用 IMU 与 WiFi CSI 两种模态数据。为保证实验设置的一致性与结果的可比性，本文在相同数据划分、相同滑窗参数和相同评价指标下，对这些方法进行了统一适配。具体而言，首先将 IMU 与 WiFi CSI 数据在通道维进行拼接，构成统一的多变量时间序列输入；随后采用各对比方法作为时序特征提取主干网络，并接入统一的分类输出层完成训练与评估。对于对比方法，本文未引入跨模态对比学习损失与基于类别原型的少样本适配机制，以避免额外训练策略对比较公平性产生影响。
 
