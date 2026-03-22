@@ -66,7 +66,7 @@
   \label{fig:action_duration}
 \end{figure}
 
-\xsubsection{数据处理与数据划分}{Data Processing and Dataset Split}
+\xsubsection{数据处理与样本构建}{Data Processing and Sample Construction}
 
 为了将连续采集的多模态传感器数据转换为适用于模型训练的输入样本，本文对原始时间序列进行了数据处理与数据划分。具体而言，针对连续时间序列，本文采用滑动窗口方法构建固定长度的时序样本，在原始序列上设置长度为 $T$ 的时间窗口，并按照预设步长沿时间轴滑动，每个窗口对应一个独立样本。对于每个时间窗口，其对应的IMU与WiFi CSI片段在时间维度上严格同步，从而形成一一对应的多模态输入样本。若某个窗口覆盖了多个动作片段，则采用基于持续时间占比的标签分配策略，即将窗口内占比最大的动作类别作为该样本标签，以降低动作切换边界处的标注噪声。
 
@@ -74,39 +74,22 @@
 
 \xsubsection{整体方法框架}{Overall Framework}
 
-为充分利用IMU与WiFi CSI在人体行为感知中的互补信息，本文提出一种基于多模态对齐与融合的人体活动识别方法WIHAR。该方法以同步采集的IMU与WiFi CSI时序数据为输入，通过双分支编码、跨模态对齐、跨模态融合和多任务分类四个阶段完成活动识别。整体框架如图~\ref{fig:framework}所示。
+为充分利用 IMU 与 WiFi CSI 在人体行为感知中的互补信息，本文提出一种基于多模态对齐与融合的人体活动识别方法 WIHAR。该方法以同步采集的 IMU 与 WiFi CSI 时序数据为输入，通过特征编码、跨模态语义对齐以及多模态特征融合，实现对人体活动的准确识别。整体框架如图~\ref{fig:framework}所示。
 
 \begin{figure}[h]
-  \centering
-  \includegraphics[width=\textwidth]{人体活动识别方法整体流程.png}
-  \caption{WIHAR方法整体流程图}
-  \label{fig:framework}
+\centering
+\includegraphics[width=\textwidth]{人体活动识别方法整体流程.png}
+\caption{WIHAR方法整体流程图}
+\label{fig:framework}
 \end{figure}
 
-设IMU输入序列表示为
-\[
-X_I \in \mathbb{R}^{B \times T \times C_I},
-\]
-WiFi CSI输入序列表示为
-\[
-X_W \in \mathbb{R}^{B \times T \times C_W},
-\]
-其中 $B$ 表示批次大小，$T$ 表示时间窗口长度，$C_I$ 与 $C_W$ 分别表示IMU与CSI特征维度。在XRFV2数据集中，每个时间步的IMU数据由5个设备的三轴加速度与三轴角速度构成，因此 $C_I = 30$；WiFi CSI数据由3个接收器、每个接收器3根天线以及30个OFDM子载波的幅度与相位信息共同构成，因此 $C_W = 540$。
+模型输入样本按照第3.2.2节所述的数据分割策略构建，其中 IMU 与 WiFi CSI 数据在时间维度上保持同步，并作为多模态输入送入特征提取网络。
 
-模型输入样本由第3.2.2节所述的数据分割策略构建，IMU与WiFi CSI数据在时间维度上保持同步对齐，并作为多模态输入送入后续网络。
+在特征编码阶段，两种模态数据分别输入独立的 Mamba 编码器，以提取对应的时序特征表示。考虑到 IMU 与 WiFi CSI 在感知机理和统计特性上的差异，模型在训练过程中引入跨模态对比学习约束，将同一样本的两种模态特征映射到共享语义空间，从而增强不同模态表示之间的语义一致性。在此基础上，通过交叉注意力机制建模模态间的细粒度交互关系，以获得更加充分的多模态融合特征。
 
-在特征提取阶段，IMU与WiFi数据分别输入两个独立的Mamba编码器，得到对应的时序特征表示：
-\[
-F_I = E_I(X_I), \qquad
-F_W = E_W(X_W),
-\]
-其中 $E_I(\cdot)$ 与 $E_W(\cdot)$ 分别表示IMU编码器与WiFi编码器。
+在分类阶段，模型在融合特征上同时构建活动识别、身份识别与场景识别三个分类头，通过多任务联合学习进一步提升特征表示的判别能力。模型的总体损失函数由多任务分类损失与跨模态对比损失共同组成，其具体定义见第3.3.2.5节。
 
-考虑到两种模态在感知机理和统计分布上存在显著差异，模型在训练阶段引入跨模态对比学习约束，以缩小同一样本在两种模态下的表示差异，提升共享语义空间中的一致性。在此基础上，进一步采用交叉注意力机制建模模态间的细粒度交互关系，得到融合后的多模态表示。
-
-最终，模型在共享融合特征上设置活动识别、身份识别和场景识别三个分类头，通过多任务联合学习增强特征表示的判别性。模型总损失由多任务分类损失和跨模态对比损失共同构成，其具体定义见第3.3.2.5节。
-
-\xsubsection{WIHAR模型架构}{Architecture of the WIHAR Model}
+\xsubsection{WIHAR模型}{WIHAR Model}
 
 在上一节给出整体方法框架的基础上，本节进一步对WIHAR模型的具体实现进行说明。模型整体架构如图~\ref{fig:WIHAR_architecture}所示，主要包括时序特征提取、跨模态特征对齐、跨模态特征融合以及多任务分类四个部分。下面分别介绍各模块的结构与实现方法。
 
@@ -121,15 +104,12 @@ F_W = E_W(X_W),
 
 IMU传感器与WiFi CSI信号均为连续时序数据，因此需要借助时序建模方法提取其中的动态特征。本文采用Mamba序列模型作为时序特征提取器，对两种模态的输入序列分别进行编码。
 
-设IMU模态输入序列为
+设 IMU 和 WiFi CSI 模态输入序列分别为
 \begin{equation}
-X_I \in \mathbb{R}^{B \times T \times C_I},
-\end{equation}
-WiFi CSI模态输入序列为
-\begin{equation}
+X_I \in \mathbb{R}^{B \times T \times C_I}, \qquad
 X_W \in \mathbb{R}^{B \times T \times C_W},
 \end{equation}
-其中 $B$ 表示批大小，$T$ 表示时间序列长度，$C_I$ 与 $C_W$ 分别表示IMU与WiFi CSI信号的特征维度。
+其中 $B$ 表示批大小，$T$ 表示时间序列长度，$C_I$ 与 $C_W$ 分别表示 IMU 与 WiFi CSI 信号的特征维度。
 
 在模型中，两种模态分别通过独立的Mamba编码器进行时序特征提取：
 \begin{equation}
@@ -366,7 +346,7 @@ M^{(\%)}_{ij}=100\times \tilde{M}_{ij}
 
 整体结果表明，WIHAR模型在人体活动识别、身份识别和场景识别三个任务上均取得了较好表现，能够支持复杂室内环境下的人体活动感知。
 
-\xsubsection{方法对比实验}{Method Comparison Experiments Experiments}
+\xsubsection{方法对比实验}{Method Comparison Experiments}
 
 为验证所提方法在多模态人体活动识别任务中的有效性，本文选取三种具有代表性的传感器HAR方法作为对比基线，分别为 Attend and Discriminate（AAD）\cite{abedin2021attend}、TinyHAR\cite{zhou2022tinyhar} 和 HARMamba\cite{li2024harmamba}。其中，AAD强调判别式时序特征学习，TinyHAR代表轻量化时序建模方法，HARMamba则代表近期基于Mamba的HAR模型。
 
@@ -409,7 +389,7 @@ M^{(\%)}_{ij}=100\times \tilde{M}_{ij}
 
 为了验证本文所提出模型结构设计的合理性，本节从骨干网络选型与模态融合策略两个方面进行对比实验。通过比较不同序列建模方法以及不同模态融合方式在多模态人体活动识别任务中的表现，分析所提出模型结构各组成部分对整体性能的影响。
 
-\subsubsection{骨干网络实验}{}
+\subsubsection{骨干网络选择实验}{}
 
 在多模态人体活动识别任务中，时序建模能力对模型性能具有重要影响。为了评估不同序列建模结构对识别效果的影响，本文将模型中的时序编码器分别替换为多种常见网络结构，包括ResNet18、LSTM、GRU以及Transformer，并保持其余网络结构与训练参数一致，从而保证实验的公平性。不同骨干网络的实验结果如表~\ref{tab:backbone_compare}所示。
 
@@ -440,7 +420,7 @@ M^{(\%)}_{ij}=100\times \tilde{M}_{ij}
 
 在身份识别与场景识别任务上，各种模型均取得了较高的准确率，说明共享表示中包含较强的个体与环境信息。综合来看，Mamba在三个任务上整体表现较为稳定，因此本文最终选择Mamba作为模型的时序特征提取骨干网络。
 
-\subsubsection{融合策略实验}{}
+\subsubsection{融合策略对比实验}{}
 
 为了分析不同模态融合方式对模型性能的影响，本文进一步比较了特征拼接与交叉注意力两种融合策略。在实验中，其余网络结构和训练参数保持一致，仅替换模态融合模块。实验结果如表~\ref{tab:fusion_compare}所示。
 
