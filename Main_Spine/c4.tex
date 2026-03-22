@@ -30,8 +30,8 @@
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=0.6\textwidth]{OpenPose25点模型.png}
-  \caption{OpenPose25点模型}
+  \includegraphics[width=0.6\textwidth]{OpenPose 25点模型.png}
+  \caption{OpenPose 25点模型}
   \label{fig:openpose_keypoints}
 \end{figure}
 
@@ -144,7 +144,7 @@ AIPose的输入为一段连续的IMU观测序列。首先，模型利用时序�
 \begin{figure}[h]
   \centering
   \includegraphics[width=\textwidth]{姿态重构模型架构图.jpg}
-  \caption{人体姿态重构与预测模型架构图}
+  \caption{AIPose模型架构图}
   \label{fig:aipose_arch}
 \end{figure}
 
@@ -257,7 +257,7 @@ AIPose主要由IMU时序特征提取模块、姿态重构模块、IMU时序预�
 
 在具体实验中，分别对当前姿态重构结果与未来姿态预测结果计算MPJPE，以评估模型在两个任务下的性能表现。
 
-\xsubsection{方法对比实验}{Method Comparison}
+\xsubsection{方法对比实验}{Method Comparison Experiments}
 
 为了评估AIPose在基于IMU的人体姿态建模任务中的性能，本文选取了近年来具有代表性的惯性人体姿态方法作为对比对象，包括PIP\cite{yi2022physical}、TIP\cite{jiang2022transformer}、IMUPoser\cite{mollyn2023imuposer}、DynaIP\cite{zhang2024dynamic}、ASIP\cite{wu2024accurate}以及MobilePoser\cite{xu2024mobileposer}。
 
@@ -297,7 +297,7 @@ AIPose主要由IMU时序特征提取模块、姿态重构模块、IMU时序预�
   \label{fig:baseline_reconstruction_curve}
 \end{figure}
 
-\xsubsection{IMU观测窗口长度实验}{IMU Observation Window Length Analysis}
+\xsubsection{IMU观测窗口长度实验}{IMU Observation Window Length Experiments}
 
 为分析IMU输入序列长度对模型性能的影响，本文设置不同长度的IMU观测窗口进行对比实验。在实验中，保持模型结构及其他训练参数不变，仅调整输入IMU序列长度，并分别计算对应的姿态重构误差与姿态预测误差。
 
@@ -334,7 +334,7 @@ AIPose主要由IMU时序特征提取模块、姿态重构模块、IMU时序预�
 %   \end{tblr}
 % \end{table}
 
-\xsubsection{骨干网络选择实验}{Backbone Network Analysis}
+\xsubsection{骨干网络选择实验}{Backbone Network Comparison Experiments}
 
 为分析不同时序建模结构对模型性能的影响，本文对IMU时序预测模块中的骨干网络进行对比实验。
 
@@ -367,7 +367,7 @@ AIPose主要由IMU时序特征提取模块、姿态重构模块、IMU时序预�
 %   \end{tblr}
 % \end{table}
 
-\xsubsection{传感器消融实验}{Sensor Ablation Study}
+\xsubsection{传感器消融实验}{Sensor Ablation Experiments}
 
 为分析不同IMU传感器对模型性能的贡献，本文设计传感器消融实验。通过在输入数据中去除部分传感器数据，观察模型在姿态重构与姿态预测任务上的性能变化，从而评估各传感器的重要性。
 
@@ -405,7 +405,7 @@ AIPose主要由IMU时序特征提取模块、姿态重构模块、IMU时序预�
 
 总体来看，不同IMU设备在人体姿态建模中发挥的作用并不完全相同，其中部分关键传感器对模型性能影响更为显著。该结果表明，合理的传感器配置对于提升模型性能具有重要意义。
 
-\xsubsection{数据标准化实验}{Data Normalization Analysis}
+\xsubsection{数据标准化实验}{Data Normalization Experiments}
 
 为分析数据标准化策略对模型性能的影响，本文设计标准化实验，分别考察IMU数据与姿态数据的统计标准化对模型性能的影响。
 
@@ -440,7 +440,7 @@ AIPose主要由IMU时序特征提取模块、姿态重构模块、IMU时序预�
 %   \end{tblr}
 % \end{table}
 
-\xsubsection{模型泛化能力实验}{Generalization Evaluation}
+\xsubsection{模型泛化能力实验}{Generalization Experiments}
 
 为评估所提出模型在不同数据分布下的泛化能力，本文设计跨场景与跨受试者实验。两组实验均采用留一法评估方式，即在训练阶段使用除目标测试集合之外的数据进行训练，并在测试阶段仅在未参与训练的数据上进行评估。
 
@@ -523,7 +523,7 @@ AIPose主要由IMU时序特征提取模块、姿态重构模块、IMU时序预�
 
 总体而言，模型在跨受试者条件下能够保持相对稳定的性能，说明其在不同个体之间具有一定的泛化能力。但与同分布测试相比，跨受试者实验仍存在明显性能下降，这也说明个体差异仍是影响IMU姿态建模稳定性的关键因素之一。
 
-\xsubsection{最大预测长度实验}{Maximum Prediction Horizon Analysis}
+\xsubsection{最大预测长度实验}{Maximum Prediction Horizon Experiments}
 
 为分析模型在时间维度上的预测性能变化，本文对不同时间区间内的姿态误差进行统计，从而评估模型在当前重构与未来预测任务中的表现差异。
 
