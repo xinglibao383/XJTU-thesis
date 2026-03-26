@@ -51,26 +51,20 @@
 
 其中 $C$ 表示IMU通道数。本研究使用5个IMU设备，每个设备包含三轴加速度和三轴角速度，共6个通道，因此 $C=30$。$K=25$ 表示人体关键点数量。
 
-由于样本窗口长度均以姿态帧数为单位定义，而IMU与姿态数据的采样频率不同，因此需要将姿态时间长度转换为对应的IMU时间长度，以保证两种模态在时间维度上的一致性。设IMU采样频率为 $f_{\mathrm{imu}}$，姿态数据帧率为 $f_{\mathrm{pose}}$，则两种模态之间的时间尺度比例定义为
-\begin{equation}
-r=\frac{f_{\mathrm{imu}}}{f_{\mathrm{pose}}}.
-\end{equation}
-
-在某一参考时刻 $t$，设
-$L_{\mathrm{input}}$ 表示输入窗口长度，
+在样本构建中，各窗口长度均以秒为单位。设IMU采样频率为 $f_{\mathrm{imu}}$，姿态数据帧率为 $f_{\mathrm{pose}}$，在某一参考时刻 $t$，
+$L_{\mathrm{input}}$ 表示IMU输入窗口长度，
 $L_{\mathrm{rec}}$ 表示姿态重构窗口长度，
-$L_{\mathrm{pred}}$ 表示姿态预测窗口长度，
-三者均以姿态帧数为单位。
+$L_{\mathrm{pred}}$ 表示姿态预测窗口长度。
 
 在此基础上，模型输入的IMU序列与未来IMU序列分别表示为
 \begin{equation}
 \begin{aligned}
 \mathbf{X}_{\mathrm{input}}
 &=
-\mathbf{X}\!\left[t-r(L_{\mathrm{input}}+L_{\mathrm{rec}}):\,t-rL_{\mathrm{rec}}\right],\\
+\mathbf{X}\!\left[(t-(L_{\mathrm{input}}+L_{\mathrm{rec}}))f_{\mathrm{imu}}:\,(t-L_{\mathrm{rec}})f_{\mathrm{imu}}\right],\\
 \mathbf{X}_{\mathrm{future}}
 &=
-\mathbf{X}\!\left[t-rL_{\mathrm{rec}}:\,t\right].
+\mathbf{X}\!\left[(t-L_{\mathrm{rec}})f_{\mathrm{imu}}:\,tf_{\mathrm{imu}}\right].
 \end{aligned}
 \end{equation}
 
@@ -79,10 +73,10 @@ $L_{\mathrm{pred}}$ 表示姿态预测窗口长度，
 \begin{aligned}
 \mathbf{P}_{\mathrm{rec}}
 &=
-\mathbf{P}\!\left[t-(L_{\mathrm{rec}}+L_{\mathrm{pred}}):\,t-L_{\mathrm{pred}}\right],\\
+\mathbf{P}\!\left[(t-(L_{\mathrm{rec}}+L_{\mathrm{pred}}))f_{\mathrm{pose}}:\,(t-L_{\mathrm{pred}})f_{\mathrm{pose}}\right],\\
 \mathbf{P}_{\mathrm{pred}}
 &=
-\mathbf{P}\!\left[t-L_{\mathrm{pred}}:\,t\right].
+\mathbf{P}\!\left[(t-L_{\mathrm{pred}})f_{\mathrm{pose}}:\,tf_{\mathrm{pose}}\right].
 \end{aligned}
 \end{equation}
 
@@ -231,7 +225,7 @@ AIPose主要由IMU时序特征提取模块、姿态重构模块、IMU时序预�
 
 在模型训练过程中，采用Adam优化器对网络参数进行更新，初始学习率设置为 $1\times10^{-3}$，训练轮数为200，批大小为256。损失函数采用L1损失，并对姿态重构、IMU序列预测以及未来姿态预测三个子任务分别赋予权重系数 $\alpha=1$、$\beta=1$ 和 $\gamma=1$。
 
-在数据构建方面，采用滑动窗口方式对原始时序数据进行划分。输入窗口长度 $L_{\mathrm{input}}=60$，姿态重构窗口长度 $L_{\mathrm{rec}}=15$，姿态预测窗口长度 $L_{\mathrm{pred}}=30$，滑动步长设置为15。根据第4.2节中的时间尺度比例 $r$，对应IMU序列长度为 $rL_{\mathrm{input}}$。数据按预设方案划分为训练集与测试集，测试集仅用于最终评估。
+在数据构建方面，采用滑动窗口方式对原始时序数据进行划分。IMU输入窗口长度 $L_{\mathrm{input}}$ 为 4s，姿态重构窗口长度 $L_{\mathrm{rec}}$ 为 1s，姿态预测窗口长度 $L_{\mathrm{pred}}$ 为 1s，滑动步长设置为 1s。数据按预设方案划分为训练集与测试集，测试集仅用于最终评估。
 
 在模型结构设置中，IMU时序特征提取模块采用ResNet18结构，IMU时序预测模块采用Transformer结构，其隐藏层维度为128，层数为2，注意力头数为4，Dropout率为0.1。人体关键点数量设置为25，输出为二维坐标形式。
 
@@ -299,7 +293,7 @@ AIPose主要由IMU时序特征提取模块、姿态重构模块、IMU时序预�
 
 为分析IMU输入序列长度对模型性能的影响，本文设置不同长度的IMU观测窗口进行对比实验。在实验中，保持模型结构及其他训练参数不变，仅调整输入IMU序列长度，并分别计算对应的姿态重构误差与姿态预测误差。
 
-实验结果如图~\ref{fig:imu_input_len}所示，从图中可以看出，随着IMU输入长度增加，模型误差整体呈下降趋势。当输入长度由15增加到60时，姿态重构误差和姿态预测误差均明显下降，说明适当延长观测窗口有助于模型获得更充分的时序信息。继续增大输入长度时，模型性能仍有提升，但改进幅度相对减小，同时会带来更长的观测时延和更高的计算开销。
+实验结果如图~\ref{fig:imu_input_len}所示，从图中可以看出，随着IMU输入长度增加，模型误差整体呈下降趋势。当输入长度由 1s 增加到 4s 时，姿态重构误差和姿态预测误差均明显下降，说明适当延长观测窗口有助于模型获得更充分的时序信息。继续增大输入长度时，模型性能仍有提升，但改进幅度相对减小，同时会带来更长的观测时延和更高的计算开销。
 
 \begin{figure}[H]
   \centering
