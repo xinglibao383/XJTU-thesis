@@ -95,7 +95,7 @@
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=\textwidth]{活动识别模型架构图.jpg}
+  \includegraphics[width=\textwidth]{活动识别模型架构图.png}
   \caption{WIHAR模型架构图}
   \label{fig:WIHAR_architecture}
 \end{figure}
@@ -242,11 +242,11 @@ CE(\hat{y}_a, y_a),
 \end{equation}
 其中 $CE(\cdot)$ 表示交叉熵损失函数。
 
-此外，为了增强不同模态特征之间的一致性，模型在训练过程中引入跨模态对比学习损失 $L_{CL}$，用于约束IMU与WiFi CSI特征在共享语义空间中的表示一致性。该损失的具体定义已在第3.3.2.2节中给出。
+此外，为了增强不同模态特征之间的一致性，模型在训练过程中引入跨模态对比学习损失 $L_{CLIP}$，用于约束IMU与WiFi CSI特征在共享语义空间中的表示一致性。该损失的具体定义已在第3.3.2.2节中给出。
 
 综合上述两部分损失，模型的整体优化目标可表示为
 \begin{equation}
-L = \alpha L_{cls} + \beta L_{CL},
+L = \alpha L_{cls} + \beta L_{CLIP},
 \end{equation}
 其中 $\alpha$ 与 $\beta$ 为权重系数，用于平衡分类任务与跨模态对齐任务之间的影响。
 
