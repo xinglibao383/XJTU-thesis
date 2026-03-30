@@ -290,43 +290,6 @@ AIPose主要由IMU时序特征提取模块、姿态重构模块、IMU时序预�
   \label{fig:baseline_reconstruction_curve}
 \end{figure}
 
-\xsubsection{IMU观测窗口长度实验}{IMU Observation Window Length Experiments}
-
-为分析IMU输入序列长度对模型性能的影响，本文设置不同长度的IMU观测窗口进行对比实验。在实验中，保持模型结构及其他训练参数不变，仅调整输入IMU序列长度，并分别计算对应的姿态重构误差与姿态预测误差。
-
-实验结果如图~\ref{fig:imu_input_len}所示，从图中可以看出，随着IMU输入长度增加，模型误差整体呈下降趋势。当输入长度由 1s 增加到 4s 时，姿态重构误差和姿态预测误差均明显下降，说明适当延长观测窗口有助于模型获得更充分的时序信息。继续增大输入长度时，模型性能仍有提升，但改进幅度相对减小，同时会带来更长的观测时延和更高的计算开销。
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=0.9\textwidth]{imu_input_len.png}
-  \caption{IMU观测窗口长度实验结果}
-  \label{fig:imu_input_len}
-\end{figure}
-
-% \begin{table}[h]
-%   \centering
-%   \caption{不同IMU观测窗口长度下的模型性能}
-%   \label{tab:window_length}
-%   \begin{tblr}{
-%     colspec={X[c] X[c] X[c]},
-%   }
-%   \toprule
-%   IMU输入长度 & 姿态重构MPJPE & 姿态预测MPJPE \\
-%   \midrule
-%   15  & 78.1419 & 81.7890 \\
-%   30  & 63.0527 & 69.1466 \\
-%   45  & 56.0555 & 63.0849 \\
-%   60  & 47.8203 & 54.1138 \\
-%   75  & 48.6763 & 54.1706 \\
-%   90  & 48.7303 & 53.8068 \\
-%   105 & 47.3098 & 51.6719 \\
-%   120 & 47.4721 & 52.1078 \\
-%   135 & 48.6094 & 53.8773 \\
-%   150 & 47.9178 & 52.9400 \\
-%   \bottomrule
-%   \end{tblr}
-% \end{table}
-
 \xsubsection{骨干网络选择实验}{Backbone Network Comparison Experiments}
 
 为分析不同时序建模结构对模型性能的影响，本文对IMU时序预测模块中的骨干网络进行对比实验。
@@ -356,6 +319,80 @@ AIPose主要由IMU时序特征提取模块、姿态重构模块、IMU时序预�
 %   ResNet & LSTM        & 49.4344 & 55.9392 \\
 %   ResNet & GRU         & 48.9044 & 54.9700 \\
 %   ResNet & Mamba       & 76.8240 & 81.0473 \\
+%   \bottomrule
+%   \end{tblr}
+% \end{table}
+
+\xsubsection{样本构建与数据处理实验}{Sample Construction and Data Processing Experiments}
+
+\subsubsection{样本构建实验}{}
+
+为分析IMU输入序列长度对模型性能的影响，本文设置不同长度的IMU观测窗口进行对比实验。在实验中，保持模型结构及其他训练参数不变，仅调整输入IMU序列长度，并分别计算对应的姿态重构误差与姿态预测误差。
+
+实验结果如图~\ref{fig:imu_input_len}所示，从图中可以看出，随着IMU输入长度增加，模型误差整体呈下降趋势。当输入长度由 1s 增加到 4s 时，姿态重构误差和姿态预测误差均明显下降，说明适当延长观测窗口有助于模型获得更充分的时序信息。继续增大输入长度时，模型性能仍有提升，但改进幅度相对减小，同时会带来更长的观测时延和更高的计算开销。
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\textwidth]{imu_input_len.png}
+  \caption{样本构建实验结果}
+  \label{fig:imu_input_len}
+\end{figure}
+
+% \begin{table}[h]
+%   \centering
+%   \caption{不同IMU观测窗口长度下的模型性能}
+%   \label{tab:window_length}
+%   \begin{tblr}{
+%     colspec={X[c] X[c] X[c]},
+%   }
+%   \toprule
+%   IMU输入长度 & 姿态重构MPJPE & 姿态预测MPJPE \\
+%   \midrule
+%   15  & 78.1419 & 81.7890 \\
+%   30  & 63.0527 & 69.1466 \\
+%   45  & 56.0555 & 63.0849 \\
+%   60  & 47.8203 & 54.1138 \\
+%   75  & 48.6763 & 54.1706 \\
+%   90  & 48.7303 & 53.8068 \\
+%   105 & 47.3098 & 51.6719 \\
+%   120 & 47.4721 & 52.1078 \\
+%   135 & 48.6094 & 53.8773 \\
+%   150 & 47.9178 & 52.9400 \\
+%   \bottomrule
+%   \end{tblr}
+% \end{table}
+
+\subsubsection{数据标准化实验}{}
+
+为分析数据标准化策略对模型性能的影响，本文设计标准化实验，分别考察IMU数据与姿态数据的统计标准化对模型性能的影响。
+
+需要说明的是，第4.2.2节中的姿态中心化与尺度归一化属于样本构建阶段的基础预处理，而本节讨论的“数据标准化”是指在此基础上，是否进一步对IMU输入和姿态目标进行统计意义上的标准化处理。因此，两者含义不同。
+
+在实验中，模型结构及训练参数保持一致，仅调整输入数据的预处理方式。具体而言，分别设置IMU数据与姿态数据是否进行标准化处理，形成四种组合情况，并在各设置下计算模型的姿态重构误差与姿态预测误差。
+
+实验结果如图~\ref{fig:normalization_ablation}所示，从图中可以看出，数据标准化策略对模型性能具有明显影响。相比不进行标准化处理，对IMU数据进行标准化能够有效降低模型误差，说明统一IMU数据的数值分布有助于提升时序特征建模的稳定性。当仅对姿态数据进行标准化时，模型性能反而出现明显下降，这说明单独改变目标空间的数值分布并不能直接提升学习效果，反而可能增加映射学习的难度。当同时对IMU数据与姿态数据进行标准化处理时，模型取得最佳性能，说明在当前任务设置下，输入空间与目标空间采用更一致的数值尺度，有助于模型建立稳定映射关系。
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.9\textwidth]{normalization_ablation.png}
+  \caption{数据标准化实验结果}
+  \label{fig:normalization_ablation}
+\end{figure}
+
+% \begin{table}[h]
+%   \centering
+%   \caption{数据标准化消融实验结果}
+%   \label{tab:normalization}
+%   \begin{tblr}{
+%     colspec={X[c] X[c] X[c] X[c]},
+%   }
+%   \toprule
+%   IMU标准化 & 姿态标准化 & 姿态重构MPJPE & 姿态预测MPJPE \\
+%   \midrule
+%   否 & 否 & 60.7588 & 74.1964 \\
+%   否 & 是 & 79.7920 & 86.5976 \\
+%   是 & 否 & 58.5465 & 70.5447 \\
+%   是 & 是 & 50.6833 & 56.4806 \\
 %   \bottomrule
 %   \end{tblr}
 % \end{table}
@@ -398,42 +435,7 @@ AIPose主要由IMU时序特征提取模块、姿态重构模块、IMU时序预�
 
 总体来看，不同IMU设备在人体姿态建模中发挥的作用并不完全相同，其中部分关键传感器对模型性能影响更为显著。该结果表明，合理的传感器配置对于提升模型性能具有重要意义。
 
-\xsubsection{数据标准化实验}{Data Normalization Experiments}
-
-为分析数据标准化策略对模型性能的影响，本文设计标准化实验，分别考察IMU数据与姿态数据的统计标准化对模型性能的影响。
-
-需要说明的是，第4.2.2节中的姿态中心化与尺度归一化属于样本构建阶段的基础预处理，而本节讨论的“数据标准化”是指在此基础上，是否进一步对IMU输入和姿态目标进行统计意义上的标准化处理。因此，两者含义不同。
-
-在实验中，模型结构及训练参数保持一致，仅调整输入数据的预处理方式。具体而言，分别设置IMU数据与姿态数据是否进行标准化处理，形成四种组合情况，并在各设置下计算模型的姿态重构误差与姿态预测误差。
-
-实验结果如图~\ref{fig:normalization_ablation}所示，从图中可以看出，数据标准化策略对模型性能具有明显影响。相比不进行标准化处理，对IMU数据进行标准化能够有效降低模型误差，说明统一IMU数据的数值分布有助于提升时序特征建模的稳定性。当仅对姿态数据进行标准化时，模型性能反而出现明显下降，这说明单独改变目标空间的数值分布并不能直接提升学习效果，反而可能增加映射学习的难度。当同时对IMU数据与姿态数据进行标准化处理时，模型取得最佳性能，说明在当前任务设置下，输入空间与目标空间采用更一致的数值尺度，有助于模型建立稳定映射关系。
-
-\begin{figure}[h]
-  \centering
-  \includegraphics[width=0.9\textwidth]{normalization_ablation.png}
-  \caption{数据标准化实验结果}
-  \label{fig:normalization_ablation}
-\end{figure}
-
-% \begin{table}[h]
-%   \centering
-%   \caption{数据标准化消融实验结果}
-%   \label{tab:normalization}
-%   \begin{tblr}{
-%     colspec={X[c] X[c] X[c] X[c]},
-%   }
-%   \toprule
-%   IMU标准化 & 姿态标准化 & 姿态重构MPJPE & 姿态预测MPJPE \\
-%   \midrule
-%   否 & 否 & 60.7588 & 74.1964 \\
-%   否 & 是 & 79.7920 & 86.5976 \\
-%   是 & 否 & 58.5465 & 70.5447 \\
-%   是 & 是 & 50.6833 & 56.4806 \\
-%   \bottomrule
-%   \end{tblr}
-% \end{table}
-
-\xsubsection{模型泛化能力实验}{Generalization Experiments}
+\xsubsection{泛化实验}{Generalization Experiments}
 
 为评估所提出模型在不同数据分布下的泛化能力，本文设计跨场景与跨受试者实验。两组实验均采用留一法评估方式，即在训练阶段使用除目标测试集合之外的数据进行训练，并在测试阶段仅在未参与训练的数据上进行评估。
 
