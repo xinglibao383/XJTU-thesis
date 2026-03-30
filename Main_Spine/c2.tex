@@ -119,7 +119,7 @@ y_t = C h_t
 
 Mamba模型结构如图\ref{fig:transformer_mamba}（b）所示。对于人体活动识别这类长时序传感器建模任务，Mamba能够在兼顾建模能力与计算效率的前提下提取序列特征，因此适合作为多模态人体活动识别中的时序编码模块之一。
 
-\xsection{多模态特征融合与对齐}{Multimodal Feature Alignment and Fusion}
+\xsection{多模态特征对齐与融合}{Multimodal Feature Alignment and Fusion}
 
 在人体感知任务中，不同类型的传感器通常从不同角度反映人体运动信息。例如，IMU能够直接记录人体肢体运动过程中的加速度和角速度变化，反映人体运动的局部动力学特征；而基于WiFi CSI的感知方法则通过分析CSI的变化，捕捉人体运动对无线传播环境产生的扰动，从而获得环境层面的感知信息。相比单一模态传感器，多模态传感数据能够从不同维度描述人体行为状态，为人体活动识别任务提供更丰富的信息来源\cite{ni2024survey}。
 
