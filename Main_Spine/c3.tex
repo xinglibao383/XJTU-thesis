@@ -126,34 +126,28 @@ F_I, F_W \in \mathbb{R}^{B \times T \times D},
 
 \subsubsection{跨模态特征对齐}{}
 
-IMU传感器数据与WiFi CSI信号来源于不同的感知模态，两者在数据分布及特征表达空间上存在明显差异。如果直接进行特征融合，可能导致不同模态之间的语义不一致，从而影响融合特征的表达能力。因此，在进行跨模态特征融合之前，需要先对两种模态的特征表示进行对齐，使其在共享语义空间中具有更高的一致性。
-
-为实现这一目标，本文采用基于对比学习的跨模态特征对齐策略。具体而言，对于同一时间窗口内同步采集的IMU与WiFi CSI数据，其特征表示应在特征空间中尽可能接近，而来自不同样本的数据对则应在特征空间中保持较大的距离。
-
-设经过Mamba编码器得到的IMU与WiFi CSI时序特征分别为
+如第2.3节所述，对比学习能够在共享语义空间中实现跨模态特征对齐。基于该思想，本文在WIHAR模型中引入CLIP式对比学习约束，以减小IMU与WiFi CSI特征之间的分布偏差。与第二章中从输入层构建跨模态对应关系不同，本文在特征层进行对齐：首先利用Mamba编码器分别提取IMU与WiFi CSI的时序特征表示，然后在样本级别构建跨模态对比关系。设编码后的时序特征为
 \begin{equation}
 F_I, F_W \in \mathbb{R}^{B \times T \times D},
 \end{equation}
-其中 $B$ 表示批大小，$T$ 表示时间序列长度，$D$ 表示特征维度。为了获得每个样本的全局特征表示，首先对时间维度进行平均池化：
+其中 $B$ 表示批大小，$T$ 表示时间序列长度，$D$ 表示特征维度。为获得样本级全局表示，对时间维度进行平均池化：
 \begin{equation}
 f_I = \text{MeanPool}_T(F_I), \qquad
 f_W = \text{MeanPool}_T(F_W),
 \end{equation}
-其中 $\text{MeanPool}_T(\cdot)$ 表示沿时间维度进行平均池化操作，从而得到单模态特征表示 $f_I, f_W \in \mathbb{R}^{B \times D}$。
-
-为了消除特征尺度对相似度计算的影响，对特征向量进行 $L_2$ 归一化：
+并对特征进行 $L_2$ 归一化：
 \begin{equation}
 \tilde{f}_I = \frac{f_I}{\|f_I\|_2}, \qquad
 \tilde{f}_W = \frac{f_W}{\|f_W\|_2}.
 \end{equation}
 
-随后计算批内样本之间的跨模态相似度矩阵：
+在此基础上，构建批内跨模态相似度矩阵：
 \begin{equation}
 S = \frac{\tilde{f}_I \tilde{f}_W^{T}}{\tau},
 \end{equation}
-其中 $S \in \mathbb{R}^{B \times B}$ 表示样本之间的相似度矩阵，$\tau$ 为温度系数，用于调节相似度分布的平滑程度。
+其中 $S \in \mathbb{R}^{B \times B}$，$\tau$ 为温度系数。
 
-对于第 $i$ 个样本，其IMU特征与对应WiFi CSI特征构成正样本对，而与其他样本的WiFi CSI特征构成负样本对。由此，跨模态对齐损失可表示为
+进一步采用对称的CLIP式对比学习损失进行优化，其形式定义为：
 \begin{equation}
 L_{CLIP}
 =
@@ -169,7 +163,7 @@ L_{CLIP}
 \right).
 \end{equation}
 
-通过该对比学习策略，模型能够在训练过程中逐渐缩小同一时间窗口内IMU与WiFi CSI特征之间的距离，同时拉开不同样本之间的特征差异，从而实现跨模态特征空间的有效对齐，为后续跨模态特征融合提供更加一致的语义表示。
+通过在特征层引入该对比约束，模型能够在训练过程中逐步对齐IMU与WiFi CSI的全局表示，从而为后续跨模态特征融合提供更加一致的语义基础。
 
 \subsubsection{跨模态特征融合}{}
 
