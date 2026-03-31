@@ -398,7 +398,7 @@ M^{(\%)}_{ij}=100\times \tilde{M}_{ij}
     colspec={X[c] X[c]},
   }
   \toprule
-  模态融合策略 & 活动准确率 \\
+  模态融合策略 & 活动识别准确率 \\
   \midrule
   拼接       & 79.83\% \\
   交叉注意力 & \textbf{96.11\%} \\
@@ -457,7 +457,7 @@ L_a = - \sum_{c=1}^{C_a} w_c \, y_a^{(c)} \log \hat{y}_a^{(c)},
     colspec={X[c] X[c]},
   }
   \toprule
-  使用权重 & 活动准确率 \\
+  使用权重 & 活动识别准确率 \\
   \midrule
   是 & \textbf{96.06\%} \\
   否 & 94.76\% \\
@@ -477,7 +477,7 @@ L_a = - \sum_{c=1}^{C_a} w_c \, y_a^{(c)} \log \hat{y}_a^{(c)},
     colspec={X[c] X[c]},
   }
   \toprule
-  使用对比学习 & 活动准确率 \\
+  使用对比学习 & 活动识别准确率 \\
   \midrule
   是 & \textbf{96.06\%} \\
   否 & 94.06\% \\
@@ -595,7 +595,7 @@ L_a = - \sum_{c=1}^{C_a} w_c \, y_a^{(c)} \log \hat{y}_a^{(c)},
     colspec={X[c] X[c]},
   }
   \toprule
-  标准化设置 & 活动准确率 \\
+  标准化设置 & 活动识别准确率 \\
   \midrule
   不使用标准化 & 95.92\% \\
   按通道Z-score标准化 & \textbf{96.43\%} \\
@@ -632,7 +632,7 @@ L_a = - \sum_{c=1}^{C_a} w_c \, y_a^{(c)} \log \hat{y}_a^{(c)},
     colspec={X[c] X[c] X[c]},
   }
   \toprule
-  模态1 & 模态2 & 活动准确率 \\
+  模态1 & 模态2 & 活动识别准确率 \\
   \midrule
   IMU & - & 92.96\% \\
   WiFi CSI & - & 87.96\% \\
@@ -684,7 +684,7 @@ L_a = - \sum_{c=1}^{C_a} w_c \, y_a^{(c)} \log \hat{y}_a^{(c)},
     colspec={X[c] X[c] X[c]},
   }
   \toprule
-  传感器 & 传感器编号 & 活动准确率 \\
+  传感器 & 传感器编号 & 活动识别准确率 \\
   \midrule
   -    & -    & \textbf{96.06\%} \\
   IMU  & 0    & 94.86\% \\
