@@ -320,9 +320,9 @@ M^{(\%)}_{ij}=100\times \tilde{M}_{ij}
 
 \xsubsection{方法对比实验}{Method Comparison Experiments}
 
-为验证所提方法在人体活动识别任务中的有效性，本文选取三种具有代表性的传感器 HAR 方法作为对比基线，分别为 Attend and Discriminate（AAD）\cite{abedin2021attend}、TinyHAR\cite{zhou2022tinyhar} 和 HARMamba\cite{li2024harmamba}。其中，AAD强调判别式时序特征学习，TinyHAR代表轻量化时序建模方法，HARMamba则代表近期基于Mamba的HAR模型。需要说明的是，上述基线方法原设计主要面向单流传感器输入，而本文任务同时使用 IMU 与 WiFi CSI 两种模态。为保证比较公平，本文在相同数据划分、相同滑窗参数和相同评价指标下，对这些方法进行了统一适配：将 IMU 与 WiFi CSI 在通道维上拼接为统一输入序列，随后采用各基线方法作为时序特征提取主干，并接入统一分类头完成训练与评估。此外，本文未对基线方法额外引入跨模态对比学习、交叉注意力融合或少样本适配机制。
+为系统评估所提出方法在人体活动识别任务中的性能，本文选取三种具有代表性的传感器HAR方法作为对比基线，包括 Attend and Discriminate（AAD）\cite{abedin2021attend}、TinyHAR\cite{zhou2022tinyhar} 以及 HARMamba\cite{li2024harmamba}。这些方法分别代表了判别式时序建模、轻量化模型设计以及基于新型序列建模结构的研究方向。考虑到上述方法主要针对单模态输入设计，而本文任务涉及IMU与WiFi CSI构成的异构双模态数据，实验中对所有对比方法进行了统一适配。具体而言，将两种模态在通道维进行拼接，形成统一输入序列，并在相同的数据划分、滑动窗口设置及评价指标下进行训练与测试。同时，对比方法均未引入额外的跨模态对齐或融合机制，以保证评估的公平性。
 
-各方法在 XRFV2 数据集上的活动识别结果如表~\ref{tab:baseline_compare_ch3}所示。三种基线中，HARMamba 表现最好，活动识别准确率为 92.10\%；AAD 和 TinyHAR 分别为 91.72\% 和 89.71\%。相比之下，本文提出的WIHAR取得了 96.06\%的最高活动识别准确率，优于所有对比方法。
+各方法在XRFV2数据集上的活动识别结果如表~\ref{tab:baseline_compare_ch3}所示。可以看出，WIHAR在该任务中取得了96.06\%的最高准确率，显著优于所有对比方法。其中，表现最优的基线方法HARMamba准确率为92.10\%，AAD和TinyHAR分别为91.72\%和89.71\%。相较之下，WIHAR在整体性能上均有明显提升。
 
 \begin{table}[h]
   \centering
@@ -342,16 +342,16 @@ M^{(\%)}_{ij}=100\times \tilde{M}_{ij}
   \end{tblr}
 \end{table}
 
-图~\ref{fig:baseline_compare_ch3}展示了各方法在测试集上的活动识别准确率可视化结果。从图中可以直观地看出，WIHAR在整体活动识别准确率上保持领先，进一步验证了所提出多模态对齐与融合策略的有效性。
+进一步地，为分析模型在训练过程中的动态表现，图~\ref{fig:baseline_compare_ch3}展示了不同方法在测试集上的识别准确率随训练轮数的变化情况。可以观察到，WIHAR在训练初期即快速提升至较高准确率，并在较少的训练轮数内完成收敛，表现出更快的收敛速度。同时，在整个训练过程中，其性能曲线始终高于其他对比方法，并保持较为平稳的变化趋势，体现出较好的训练稳定性。相比之下，其余方法在收敛速度和最终性能上均存在不同程度的不足。AAD与HARMamba虽能逐步逼近较高精度，但收敛过程相对缓慢，且在训练中存在一定波动；TinyHAR则整体性能偏低，表明在复杂多模态输入条件下，其特征表达能力受到限制。这些现象说明，在异构模态场景中，简单的特征拼接难以充分建模模态间的关系，从而影响模型性能。
 
 \begin{figure}[h]
   \centering
   \includegraphics[width=0.9\textwidth]{Baseline Activity Recognition Accuracy Comparison.png}
-  \caption{各方法活动识别准确率对比}
+  \caption{各方法活动识别准确率随训练轮数变化曲线}
   \label{fig:baseline_compare_ch3}
 \end{figure}
 
-为了进一步观察 WIHAR 模型在不同动作类别上的识别情况，本文绘制了人体活动识别任务的归一化混淆矩阵，如图~\ref{fig:confusion_matrix}所示。可以看到，大部分样本集中在矩阵对角线位置，说明模型在多数动作类别上能够实现正确识别。少量非对角线元素反映出部分相似动作之间仍存在一定混淆，这主要与动作模式本身的相似性有关。
+为了进一步评估模型在细粒度动作层面的识别能力，图~\ref{fig:confusion_matrix}给出了WIHAR在测试集上的归一化混淆矩阵。从图中可以看出，大多数类别的样本集中分布在对角线位置，表明模型能够对不同动作进行有效区分。少量类别之间存在混淆，主要出现在动作模式相似的类别之间，反映了该任务本身的复杂性。
 
 \begin{figure}[h]
   \centering
@@ -360,7 +360,7 @@ M^{(\%)}_{ij}=100\times \tilde{M}_{ij}
   \label{fig:confusion_matrix}
 \end{figure}
 
-总体而言，本实验结果表明，尽管AAD、TinyHAR和HARMamba在传感器人体活动识别任务中具有一定代表性，但在IMU与WiFi CSI构成的异构双模态场景下，传统早期融合方法仍存在模态交互不足和特征对齐不充分的问题。相比之下，WIHAR通过跨模态对比学习和交叉注意力融合机制，更充分地挖掘两种模态之间的互补信息，从而取得更优的活动识别性能。
+综上所述，在IMU与WiFi CSI构成的双模态人体活动识别任务中，WIHAR在识别精度、收敛速度以及训练稳定性等方面均优于现有方法。这表明，通过显式建模模态间关系并进行有效融合，可以显著提升多模态人体活动识别的性能。
 
 \xsubsection{模型架构与训练策略实验}{Model Architecture and Training Strategy Experiments}
 
