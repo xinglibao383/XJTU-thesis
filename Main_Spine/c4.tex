@@ -298,7 +298,7 @@ AIPose主要由IMU时序特征提取模块、姿态重构模块、IMU时序预�
 
 实验结果如图~\ref{fig:imu_generator}所示，从图中可以看出，不同时序建模结构对模型性能具有明显影响。其中，采用Transformer结构时，模型在姿态重构与姿态预测任务上均取得最优结果；GRU与LSTM次之，而Mamba结构的性能明显低于其他方法。该结果表明，在当前任务设置下，Transformer更适合用于未来IMU序列建模。
 
-\begin{figure}[H]
+\begin{figure}[h]
   \centering
   \includegraphics[width=0.9\textwidth]{imu_generator.png}
   \caption{骨干网络选择实验结果}
@@ -331,7 +331,7 @@ AIPose主要由IMU时序特征提取模块、姿态重构模块、IMU时序预�
 
 实验结果如图~\ref{fig:imu_input_len}所示，从图中可以看出，随着IMU输入长度增加，模型误差整体呈下降趋势。当输入长度由 1s 增加到 4s 时，姿态重构误差和姿态预测误差均明显下降，说明适当延长观测窗口有助于模型获得更充分的时序信息。继续增大输入长度时，模型性能仍有提升，但改进幅度相对减小，同时会带来更长的观测时延和更高的计算开销。
 
-\begin{figure}[H]
+\begin{figure}[h]
   \centering
   \includegraphics[width=0.9\textwidth]{imu_input_len.png}
   \caption{样本构建实验结果}
@@ -405,7 +405,7 @@ AIPose主要由IMU时序特征提取模块、姿态重构模块、IMU时序预�
 
 实验结果如图~\ref{fig:remove_device}所示，从图中可以看出，当不移除任何传感器时，模型性能最为稳定。移除单个传感器后，整体误差均有所上升，但不同传感器对性能的影响程度存在差异。其中，移除编号为0的传感器时，姿态重构与预测误差均出现较明显增加，说明该传感器在模型建模过程中具有较高的重要性。相比之下，移除编号为2或4的传感器对模型性能影响相对较小，表明部分传感器之间可能存在一定的信息冗余。当同时移除多个传感器（如2和4）时，模型性能下降更加明显，说明多传感器信息融合对于姿态建模具有重要作用。
 
-\begin{figure}[h]
+\begin{figure}[H]
   \centering
   \includegraphics[width=0.9\textwidth]{remove_device.png}
   \caption{传感器消融实验结果}
