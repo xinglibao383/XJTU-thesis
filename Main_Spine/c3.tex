@@ -360,35 +360,28 @@ M^{(\%)}_{ij}=100\times \tilde{M}_{ij}
 
 \subsubsection{骨干网络选择实验}{}
 
-为了评估不同时序建模结构对人体活动识别性能的影响，本文将双分支编码器中的主干网络分别替换为ResNet18、LSTM、GRU、Transformer和Mamba，并保持其余网络结构、训练轮数和优化参数一致。这样可以保证不同结果主要反映时序建模能力差异，而不是来自训练细节或参数设置的变化。实验结果如图~\ref{fig:har_backbones}所示。
+为了评估不同时序建模结构对人体活动识别性能的影响，本文将双分支编码器中的主干网络分别替换为ResNet18、LSTM、GRU、Transformer和Mamba，并保持其余网络结构、训练轮数和优化参数一致。这样可以保证不同结果主要反映时序建模能力差异，而不是来自训练细节或参数设置的变化。实验结果如表~\ref{tab:backbone_compare}所示。
 
-\begin{figure}[h]
+\begin{table}[h]
   \centering
-  \includegraphics[width=0.9\textwidth]{har_backbones.png}
   \caption{骨干网络选择实验结果}
-  \label{fig:har_backbones}
-\end{figure}
+  \label{tab:backbone_compare}
+  \begin{tblr}{
+    colspec={X[c] X[c] X[c] X[c]},
+  }
+  \toprule
+  骨干网络 & 活动识别准确率 \\
+  \midrule
+  ResNet18    & 88.44\% \\
+  Mamba       & \textbf{96.06\%} \\
+  LSTM        & 91.43\% \\
+  GRU         & 92.90\% \\
+  Transformer & 95.06\% \\
+  \bottomrule
+  \end{tblr}
+\end{table}
 
-% \begin{table}[h]
-%   \centering
-%   \caption{骨干网络实验结果}
-%   \label{tab:backbone_compare}
-%   \begin{tblr}{
-%     colspec={X[c] X[c] X[c] X[c]},
-%   }
-%   \toprule
-%   骨干网络 & 活动准确率 & 身份准确率 & 场景准确率 \\
-%   \midrule
-%   ResNet18    & 88.44\% & 98.75\% & 99.99\% \\
-%   Mamba       & \textbf{96.06\%} & 99.93\% & 99.99\% \\
-%   LSTM        & 91.43\% & 99.68\% & 99.91\% \\
-%   GRU         & 92.90\% & 99.90\% & 99.99\% \\
-%   Transformer & 95.06\% & \textbf{99.95\%} & 99.97\% \\
-%   \bottomrule
-%   \end{tblr}
-% \end{table}
-
-从图~\ref{fig:har_backbones}可以看到，各类骨干网络的表现差异较为清晰。ResNet18的活动识别准确率仅为88.44\%，说明单纯依赖局部卷积堆叠，难以充分建模跨时间步的长程依赖。将骨干替换为循环结构后，LSTM和GRU的准确率分别提升到91.43\%和92.90\%，表明显式时序建模确实能够改善识别效果。进一步采用Transformer后，准确率提升到95.06\%，说明自注意力在捕获长距离动作依赖方面更具优势。本文采用的Mamba取得了最高的96.06\%，相比Transformer进一步提升1.00个百分点，相比GRU和LSTM分别提升3.16和4.63个百分点。
+从表~\ref{tab:backbone_compare}可以看到，各类骨干网络的表现差异较为清晰。ResNet18的活动识别准确率仅为88.44\%，说明单纯依赖局部卷积堆叠，难以充分建模跨时间步的长程依赖。将骨干替换为循环结构后，LSTM和GRU的准确率分别提升到91.43\%和92.90\%，表明显式时序建模确实能够改善识别效果。进一步采用Transformer后，准确率提升到95.06\%，说明自注意力在捕获长距离动作依赖方面更具优势。本文采用的Mamba取得了最高的96.06\%，相比Transformer进一步提升1.00个百分点，相比GRU和LSTM分别提升3.16和4.63个百分点。
 
 综合来看，随着时序建模能力增强，模型性能呈现出较稳定的提升趋势，而Mamba在当前任务中取得了最佳平衡：既能有效建模长时序动态，又能保持较好的训练稳定性。因此，本文在后续实验中选择Mamba作为默认时序编码骨干。
 
