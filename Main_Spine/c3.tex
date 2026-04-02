@@ -314,6 +314,29 @@ M^{(\%)}_{ij}=100\times \tilde{M}_{ij}
 
 其中，$M^{(\%)}_{ij}$表示以百分数形式展示的混淆矩阵元素，其标注值取整数。需要说明的是，该处理仅改变数值的显示形式，不影响混淆矩阵本身所反映的类别预测分布关系。通过分析该矩阵，可以更加直观地评估模型在不同类别上的识别效果，并进一步观察类别之间的误判关系。
 
+\xsubsection{数据集划分策略}{Dataset Splitting Strategy}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.45\textwidth]{标准数据集划分.png}
+  \caption{标准数据集划分}
+  \label{fig:dataset_common}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.8\textwidth]{跨受试者数据集划分.png}
+  \caption{跨受试者数据集划分}
+  \label{fig:dataset_cross_person}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.7\textwidth]{跨场景数据集划分.png}
+  \caption{跨场景数据集划分}
+  \label{fig:dataset_cross_env}
+\end{figure}
+
 \xsubsection{方法对比实验}{Method Comparison Experiments}
 
 为系统评估WIHAR在多模态人体活动识别任务中的性能，本文选取了三种具有代表性的HAR方法作为对比基线：Attend and Discriminate（AAD）\cite{abedin2021attend}、TinyHAR\cite{zhou2022tinyhar}以及HARMamba\cite{li2024harmamba}。考虑到这些方法主要面向单模态输入，而本文任务使用的是IMU与WiFi CSI构成的异构双模态数据，实验中对所有基线都进行了统一适配：将两种模态在通道维进行拼接，并在相同的数据划分、滑动窗口设置和评价指标下重新训练。因而，本节比较的重点不是复现原论文在各自数据集上的最好成绩，而是在统一实验条件下考察不同方法的相对建模能力。
