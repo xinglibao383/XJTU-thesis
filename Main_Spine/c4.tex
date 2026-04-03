@@ -315,13 +315,13 @@ PCK 用于衡量预测关键点是否足够接近真实位置。设关键点判�
   \end{tblr}
 \end{table}
 
-为了进一步观察不同方法在训练过程中的表现，图~\ref{fig:baseline_reconstruction_curve}给出了各方法在测试集上的姿态重构MPJPE随训练轮数变化的曲线。可以看出，AIPose在训练早期即表现出较快的误差下降速度，整体收敛过程也较为平稳，进一步说明AIPose在当前姿态重构任务上具有较好的训练稳定性。
+为了进一步观察不同方法在训练过程中的表现，图~\ref{fig:aipose_baselines}给出了各方法在测试集上的姿态重构MPJPE随训练轮数变化的曲线。可以看出，AIPose在训练早期即表现出较快的误差下降速度，整体收敛过程也较为平稳，进一步说明AIPose在当前姿态重构任务上具有较好的训练稳定性。
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=0.9\textwidth]{Baseline Pose Reconstruction MPJPE Comparison.png}
-  \caption{不同方法在当前姿态重构任务上的MPJPE收敛曲线}
-  \label{fig:baseline_reconstruction_curve}
+  \includegraphics[width=0.9\textwidth]{aipose_baselines.png}
+  \caption{不同方法在当前姿态重构任务中的 MPJPE}
+  \label{fig:aipose_baselines}
 \end{figure}
 
 \xsubsection{骨干网络选择实验}{Backbone Network Comparison Experiments}
