@@ -309,11 +309,19 @@ PCK 用于衡量预测关键点是否足够接近真实位置。设关键点判�
   TIP~\cite{jiang2022transformer}      & 72.0478          & 13.63          & 21.66          & 35.91          \\
   IMUPoser~\cite{mollyn2023imuposer}   & 92.7077          & 9.27           & 14.62          & 24.92          \\
   DynaIP~\cite{zhang2024dynamic}       & 76.1834          & 13.02          & 20.25          & 33.07          \\
+  ASIP~\cite{wu2024accurate}           & 70.9250          & 14.14          & 22.13          & 35.83          \\
   MobilePoser~\cite{xu2024mobileposer} & 96.5019          & 9.01           & 14.01          & 23.64          \\
   AIPose (Ours)                        & \textbf{52.2019} & \textbf{16.13} & \textbf{26.86} & \textbf{44.55} \\
   \bottomrule
   \end{tblr}
 \end{table}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\textwidth]{aipose_mpjpe_perjoint.png}
+  \caption{不同方法在当前姿态重构任务中各关键点的 MPJPE}
+  \label{fig:aipose_mpjpe_perjoint}
+\end{figure}
 
 为了进一步观察不同方法在训练过程中的表现，图~\ref{fig:aipose_baselines}给出了各方法在测试集上的姿态重构MPJPE随训练轮数变化的曲线。可以看出，AIPose在训练早期即表现出较快的误差下降速度，整体收敛过程也较为平稳，进一步说明AIPose在当前姿态重构任务上具有较好的训练稳定性。
 
