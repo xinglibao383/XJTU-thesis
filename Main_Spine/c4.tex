@@ -232,9 +232,14 @@ AIPose主要由IMU时序特征提取模块、姿态重构模块、IMU时序预�
 
 \xsubsection{评价指标}{Evaluation Metrics}
 
-为评估模型在人体姿态重构与预测任务中的性能，本文采用平均关节位置误差（Mean Per Joint Position Error, MPJPE）作为评价指标。
+为全面地评估模型在人体姿态重构与预测任务中的性能，本文采用平均关节位置误差（Mean Per Joint Position Error, MPJPE）、关键点正确率（Percentage of Correct Keypoints, PCK）以及逐关节平均位置误差（Per-joint MPJPE）作为评价指标。MPJPE用于从整体误差角度衡量预测结果与真实姿态之间的平均偏差；PCK用于衡量预测关键点落入容忍范围内的比例；Per-joint MPJPE则用于分析不同关节部位上的误差分布，从而更细致地刻画模型性能。
 
-设预测姿态序列为 $\hat{\mathbf{P}} \in \mathbb{R}^{B \times T \times K \times 2}$，真实姿态序列为 $\mathbf{P}$，其中 $B$ 表示批大小，$T$ 表示时间长度，$K$ 表示关键点数量，则MPJPE定义为
+设预测姿态序列为 $\hat{\mathbf{P}} \in \mathbb{R}^{B \times T \times K \times 2}$，真实姿态序列为 $\mathbf{P}$，其中 $B$ 表示批大小，$T$ 表示时间长度，$K$ 表示关键点数量。
+
+\subsubsection{MPJPE}{}
+
+MPJPE定义为
+
 \begin{equation}
 \text{MPJPE} =
 \frac{1}{B T K}
@@ -246,11 +251,41 @@ AIPose主要由IMU时序特征提取模块、姿态重构模块、IMU时序预�
 \right\|_2.
 \end{equation}
 
-其中$\|\cdot\|_2$表示欧氏距离。该指标用于衡量预测关键点与真实关键点之间在图像平面中的平均欧氏距离。由于本文在反归一化后恢复到原始图像坐标系进行计算，因此MPJPE的单位为像素（px）；数值越小表示模型预测精度越高。
+其中，$\|\cdot\|_2$ 表示欧氏距离。该指标用于衡量预测关键点与真实关键点之间在图像平面中的平均欧氏距离。由于本文在反归一化后恢复到原始图像坐标系进行计算，因此MPJPE的单位为像素（px）；数值越小表示模型预测精度越高。
 
-需要说明的是，由于模型输出的姿态坐标在归一化空间中表示，因此在计算MPJPE之前，需要将预测结果与真实值映射回同一坐标尺度。具体而言，先对模型输出进行截断处理，将其限制在 $(-0.9999,\,0.9999)$ 范围内，以避免后续反变换时出现数值不稳定；随后通过反双曲正切函数 $\mathrm{atanh}(\cdot)$ 将数据从 $\tanh$ 空间映射回连续空间，并结合样本对应的尺度因子恢复关键点坐标，最终计算MPJPE。
+\subsubsection{PCK}{}
 
-在具体实验中，分别对当前姿态重构结果与未来姿态预测结果计算MPJPE，以评估模型在两个任务下的性能表现。
+PCK用于衡量预测关键点是否落入给定容忍阈值内。设阈值为 $\delta$，则PCK定义为
+
+\begin{equation}
+\text{PCK}(\delta)=
+\frac{
+\left|\left\{(b,t,k)\mid \left\|\hat{p}_{b,t,k}-p_{b,t,k}\right\|_2 < \delta \right\}\right|
+}{BTK}.
+\end{equation}
+
+其中，$\delta$ 为预设的关键点判定阈值。当预测关键点与真实关键点之间的欧氏距离小于 $\delta$ 时，认为该关键点预测正确。与MPJPE侧重平均误差不同，PCK更关注“预测是否足够接近真实位置”，因此能够从命中率角度补充反映模型的关键点定位能力；数值越大表示模型性能越好。
+
+\subsubsection{Per-joint MPJPE}{}
+
+为进一步分析不同身体部位上的误差分布，本文对每个关键点分别计算平均关节位置误差。对于第 $k$ 个关键点，其 Per-joint MPJPE 定义为
+
+\begin{equation}
+\text{MPJPE}^{(k)}=
+\frac{1}{BT}
+\sum_{b=1}^{B}
+\sum_{t=1}^{T}
+\left\|
+\hat{p}_{b,t,k} - p_{b,t,k}
+\right\|_2,
+\qquad k=1,2,\ldots,K.
+\end{equation}
+
+该指标能够反映模型在不同关节部位上的误差差异。例如，躯干、肩部与腕部等关键点在运动幅度、遮挡情况和可辨识性上往往存在差异，因此其预测误差也可能不同。通过分析 Per-joint MPJPE，可以更细致地评估模型对不同关节的建模能力，并为后续模型改进提供依据。
+
+需要说明的是，由于模型输出的姿态坐标在归一化空间中表示，因此在计算上述指标之前，需要将预测结果与真实值映射回同一坐标尺度。具体而言，先对模型输出进行截断处理，将其限制在 $(-0.9999,\,0.9999)$ 范围内，以避免后续反变换时出现数值不稳定；随后通过反双曲正切函数 $\mathrm{atanh}(\cdot)$ 将数据从 $\tanh$ 空间映射回连续空间，并结合样本对应的尺度因子恢复关键点坐标，最终计算各项指标。
+
+在具体实验中，分别对当前姿态重构结果与未来姿态预测结果计算上述指标，以从整体误差、关键点命中率以及关节级误差分布三个角度评估模型性能。
 
 \xsubsection{方法对比实验}{Method Comparison Experiments}
 
