@@ -232,13 +232,13 @@ AIPose主要由IMU时序特征提取模块、姿态重构模块、IMU时序预�
 
 \xsubsection{评价指标}{Evaluation Metrics}
 
-为全面地评估模型在人体姿态重构与预测任务中的性能，本文采用平均关节位置误差（Mean Per Joint Position Error, MPJPE）、关键点正确率（Percentage of Correct Keypoints, PCK）以及逐关节平均位置误差（Per-joint MPJPE）作为评价指标。MPJPE用于从整体误差角度衡量预测结果与真实姿态之间的平均偏差；PCK用于衡量预测关键点落入容忍范围内的比例；Per-joint MPJPE则用于分析不同关节部位上的误差分布，从而更细致地刻画模型性能。
+为全面地评估模型在人体姿态重构与预测任务中的性能，本文采用平均关节位置误差（Mean Per Joint Position Error, MPJPE）、关键点正确率（Percentage of Correct Keypoints, PCK）以及逐关节平均位置误差（Per-joint MPJPE）作为评价指标。MPJPE 用于从整体误差角度衡量预测结果与真实姿态之间的平均偏差；PCK 用于统计预测关键点落入容忍范围内的比例；Per-joint MPJPE 则用于分析不同关节部位上的误差分布，从而更细致地刻画模型性能。
 
 设预测姿态序列为 $\hat{\mathbf{P}} \in \mathbb{R}^{B \times T \times K \times 2}$，真实姿态序列为 $\mathbf{P}$，其中 $B$ 表示批大小，$T$ 表示时间长度，$K$ 表示关键点数量。
 
 \subsubsection{MPJPE}{}
 
-MPJPE定义为
+MPJPE 定义为
 
 \begin{equation}
 \text{MPJPE} =
@@ -251,20 +251,20 @@ MPJPE定义为
 \right\|_2.
 \end{equation}
 
-其中，$\|\cdot\|_2$ 表示欧氏距离。该指标用于衡量预测关键点与真实关键点之间在图像平面中的平均欧氏距离。由于本文在反归一化后恢复到原始图像坐标系进行计算，因此MPJPE的单位为像素（px）；数值越小表示模型预测精度越高。
+其中，$\|\cdot\|_2$ 表示欧氏距离。该指标用于衡量预测关键点与真实关键点之间在图像平面中的平均欧氏距离。由于本文在反归一化后恢复到原始图像坐标系进行计算，因此 MPJPE 的单位为像素（px）；数值越小表示模型预测精度越高。
 
 \subsubsection{PCK}{}
 
-PCK用于衡量预测关键点是否落入给定容忍阈值内。设阈值为 $\delta$，则PCK定义为
+PCK 用于衡量预测关键点是否足够接近真实位置。设关键点判定阈值为 $\delta_{\mathrm{PCK}}$，则 PCK 定义为
 
 \begin{equation}
-\text{PCK}(\delta)=
+\text{PCK}(\delta_{\mathrm{PCK}})=
 \frac{
-\left|\left\{(b,t,k)\mid \left\|\hat{p}_{b,t,k}-p_{b,t,k}\right\|_2 < \delta \right\}\right|
+\left|\left\{(b,t,k)\mid \left\|\hat{p}_{b,t,k}-p_{b,t,k}\right\|_2 \leq \delta_{\mathrm{PCK}} \right\}\right|
 }{BTK}.
 \end{equation}
 
-其中，$\delta$ 为预设的关键点判定阈值。当预测关键点与真实关键点之间的欧氏距离小于 $\delta$ 时，认为该关键点预测正确。与MPJPE侧重平均误差不同，PCK更关注“预测是否足够接近真实位置”，因此能够从命中率角度补充反映模型的关键点定位能力；数值越大表示模型性能越好。
+其中，$\delta_{\mathrm{PCK}}$ 为在原始图像坐标系下设定的关键点判定阈值，单位为像素（px）。当预测关键点与真实关键点之间的欧氏距离不超过 $\delta_{\mathrm{PCK}}$ 时，认为该关键点预测正确。与 MPJPE 更关注平均误差不同，PCK 从命中率角度补充反映模型的关键点定位能力，数值越大表示模型性能越好。
 
 \subsubsection{Per-joint MPJPE}{}
 
@@ -281,11 +281,11 @@ PCK用于衡量预测关键点是否落入给定容忍阈值内。设阈值为 $
 \qquad k=1,2,\ldots,K.
 \end{equation}
 
-该指标能够反映模型在不同关节部位上的误差差异。例如，躯干、肩部与腕部等关键点在运动幅度、遮挡情况和可辨识性上往往存在差异，因此其预测误差也可能不同。通过分析 Per-joint MPJPE，可以更细致地评估模型对不同关节的建模能力，并为后续模型改进提供依据。
+该指标能够反映模型在不同关节部位上的误差差异。例如，躯干、肩部、肘部与腕部等关键点在运动幅度、遮挡情况和可辨识性上往往存在差异，因此其预测误差也可能不同。通过分析 Per-joint MPJPE，可以更细致地评估模型对不同关节的建模能力，并为后续模型改进提供依据。
 
-需要说明的是，由于模型输出的姿态坐标在归一化空间中表示，因此在计算上述指标之前，需要将预测结果与真实值映射回同一坐标尺度。具体而言，先对模型输出进行截断处理，将其限制在 $(-0.9999,\,0.9999)$ 范围内，以避免后续反变换时出现数值不稳定；随后通过反双曲正切函数 $\mathrm{atanh}(\cdot)$ 将数据从 $\tanh$ 空间映射回连续空间，并结合样本对应的尺度因子恢复关键点坐标，最终计算各项指标。
+需要说明的是，由于模型输出的姿态坐标在归一化空间中表示，因此在计算上述指标之前，需要将预测结果与真实值映射回同一坐标尺度。具体而言，先对模型输出进行截断处理，将其限制在 $(-0.9999,\,0.9999)$ 范围内，以避免后续反变换时出现数值不稳定；随后通过反双曲正切函数 $\mathrm{atanh}(\cdot)$ 将数据从 $\tanh$ 空间映射回连续空间，并结合样本对应的尺度因子恢复关键点坐标，最终计算 MPJPE、PCK 与 Per-joint MPJPE。
 
-在具体实验中，分别对当前姿态重构结果与未来姿态预测结果计算上述指标，以从整体误差、关键点命中率以及关节级误差分布三个角度评估模型性能。
+在具体实验中，可分别对当前姿态重构结果与未来姿态预测结果计算上述指标，以从整体误差、关键点命中率以及关节级误差分布三个角度评估模型性能。
 
 \xsubsection{方法对比实验}{Method Comparison Experiments}
 
@@ -293,25 +293,24 @@ PCK用于衡量预测关键点是否落入给定容忍阈值内。设阈值为 $
 
 需要说明的是，所选基线大多原本面向三维人体姿态估计或不同设备配置下的稀疏 IMU 建模任务，且未针对未来姿态预测进行专门设计。为在统一实验设置下进行比较，本文将“当前姿态重构”作为所有方法共享的对比任务，保留各基线核心时序建模模块，仅将输出层替换为与本文一致的二维关键点回归头，并统一采用相同的数据划分、训练轮数、优化器和评价指标进行重新训练。因此，本节比较的重点并非复现原论文在其原始任务上的最优结果，而是考察不同时序建模策略在当前 XRFV2 二维关键点建模任务中的相对表现。
 
-从表~\ref{tab:method_compare}可以看出，AIPose在当前姿态重构任务上取得了最低的MPJPE，重构误差为47.8203，明显优于所有对比方法。对比方法中，表现最好的PIP重构MPJPE为67.6973，AIPose较其进一步降低了19.8770。与ASIP、TIP和DynaIP相比，AIPose的误差分别降低了23.1295、25.3064和27.6074；相较于IMUPoser和MobilePoser，优势更加明显。说明在本文任务设置下，AIPose能够更有效地利用IMU时序信息完成人体姿态重构。除当前姿态重构外，表~\ref{tab:method_compare}也给出了AIPose的未来姿态预测MPJPE，为54.1138。该结果表明，AIPose不仅能够较准确地重构当前人体姿态，还能够基于历史IMU观测，在统一框架下实现当前姿态重构与未来姿态预测。
+从表~\ref{tab:method_compare_current}可以看出，AIPose在当前姿态重构任务上取得了最低的MPJPE，重构误差为47.8203，明显优于所有对比方法。对比方法中，表现最好的PIP重构MPJPE为67.6973，AIPose较其进一步降低了19.8770。与ASIP、TIP和DynaIP相比，AIPose的误差分别降低了23.1295、25.3064和27.6074；相较于IMUPoser和MobilePoser，优势更加明显。说明在本文任务设置下，AIPose能够更有效地利用IMU时序信息完成人体姿态重构。除当前姿态重构外，表~\ref{tab:method_compare}也给出了AIPose的未来姿态预测MPJPE，为54.1138。该结果表明，AIPose不仅能够较准确地重构当前人体姿态，还能够基于历史IMU观测，在统一框架下实现当前姿态重构与未来姿态预测。
 
 \begin{table}[h]
   \centering
-  \caption{方法对比实验结果}
-  \label{tab:method_compare}
+  \caption{不同方法在当前姿态重构任务中的对比结果}
+  \label{tab:method_compare_current}
   \begin{tblr}{
-    colspec={X[c] X[c] X[c]},
+    colspec={X[c] X[c] X[c] X[c] X[c]},
   }
   \toprule
-  方法 & 重构MPJPE & 预测MPJPE \\
+  Method & MPJPE (px) & PCK@5px (\%) & PCK@10px (\%) & PCK@20px (\%) \\
   \midrule
-  PIP~\cite{yi2022physical}            & 67.6973          & - \\
-  TIP~\cite{jiang2022transformer}      & 73.1267          & - \\
-  IMUPoser~\cite{mollyn2023imuposer}   & 91.5129          & - \\
-  DynaIP~\cite{zhang2024dynamic}       & 75.4277          & - \\
-  ASIP~\cite{wu2024accurate}           & 70.9498          & - \\
-  MobilePoser~\cite{xu2024mobileposer} & 114.1620         & - \\
-  AIPose (Ours)                        & \textbf{47.8203} & \textbf{54.1138} \\
+  PIP~\cite{yi2022physical}            & 66.9574          & 14.41          & 23.11          & 38.13          \\
+  TIP~\cite{jiang2022transformer}      & 72.0478          & 13.63          & 21.66          & 35.91          \\
+  IMUPoser~\cite{mollyn2023imuposer}   & 92.7077          & 9.27           & 14.62          & 24.92          \\
+  DynaIP~\cite{zhang2024dynamic}       & 76.1834          & 13.02          & 20.25          & 33.07          \\
+  MobilePoser~\cite{xu2024mobileposer} & 96.5019          & 9.01           & 14.01          & 23.64          \\
+  AIPose (Ours)                        & \textbf{52.2019} & \textbf{16.13} & \textbf{26.86} & \textbf{44.55} \\
   \bottomrule
   \end{tblr}
 \end{table}
