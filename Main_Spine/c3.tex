@@ -14,59 +14,59 @@
 
 针对上述问题，本文提出一种基于多模态对齐与融合的人体活动识别方法 WIHAR。该方法利用 IMU 与 WiFi CSI 在感知机理上的互补性，首先通过双分支时序编码器分别提取两种模态的时序特征，再通过双向跨模态对比学习在 IMU 到 WiFi CSI 与 WiFi CSI 到 IMU 两个方向上约束特征对齐，然后通过交叉注意力实现模态间信息交互，最终完成人体活动识别。
 
-\xsection{数据集构建}{Dataset Construction}
+% \xsection{数据集构建}{Dataset Construction}
 
-\xsubsection{XRFV2数据集}{XRFV2 Dataset}
+% \xsubsection{XRFV2数据集}{XRFV2 Dataset}
 
-本文实验基于多模态感知数据集XRFV2开展。该数据集通过同步采集WiFi CSI与IMU数据，记录人体在真实室内环境中的日常活动，为多模态人体活动识别研究提供了数据基础。数据采集在三个典型室内生活场景中进行，包括餐厅、书房以及卧室。不同场景具有不同的空间布局与环境结构，用于模拟日常生活中的多种活动环境。实验场景以及WiFi传感器部署方式如图~\ref{fig:dataset_scene}所示。
+% 本文实验基于多模态感知数据集XRFV2开展。该数据集通过同步采集WiFi CSI与IMU数据，记录人体在真实室内环境中的日常活动，为多模态人体活动识别研究提供了数据基础。数据采集在三个典型室内生活场景中进行，包括餐厅、书房以及卧室。不同场景具有不同的空间布局与环境结构，用于模拟日常生活中的多种活动环境。实验场景以及WiFi传感器部署方式如图~\ref{fig:dataset_scene}所示。
 
-在每个场景中均部署一套WiFi感知系统，包括一台发射器（Tx）和三台接收器（Rx），用于采集CSI。发射器采用单天线，在128信道（5.64\,GHz）以约200\,packets/s的速率持续发送数据包；每个接收器配备三根天线，用于接收无线信号。在数据采集过程中，采用WiFi CSI Tool从30个OFDM子载波中提取WiFi CSI数据。对于每个时间步，原始CSI数据由发射天线与接收端之间的多输入多输出（Multiple Input Multiple Output, MIMO）信道测量构成，可表示为四维张量，其维度为 $1 \times 3 \times 3 \times 30$。四个维度分别对应发射天线数量、接收传感器数量、每个接收传感器的天线数量以及OFDM子载波数量。在本文的模型输入中，联合使用CSI幅度与相位信息，因此每个时间步对应的WiFi CSI特征维度为 $3 \times 3 \times 30 \times 2 = 540$。随着时间序列不断累积，最终形成随时间变化的WiFi CSI序列，用于刻画人体运动对无线传播环境造成的动态扰动。
+% 在每个场景中均部署一套WiFi感知系统，包括一台发射器（Tx）和三台接收器（Rx），用于采集CSI。发射器采用单天线，在128信道（5.64\,GHz）以约200\,packets/s的速率持续发送数据包；每个接收器配备三根天线，用于接收无线信号。在数据采集过程中，采用WiFi CSI Tool从30个OFDM子载波中提取WiFi CSI数据。对于每个时间步，原始CSI数据由发射天线与接收端之间的多输入多输出（Multiple Input Multiple Output, MIMO）信道测量构成，可表示为四维张量，其维度为 $1 \times 3 \times 3 \times 30$。四个维度分别对应发射天线数量、接收传感器数量、每个接收传感器的天线数量以及OFDM子载波数量。在本文的模型输入中，联合使用CSI幅度与相位信息，因此每个时间步对应的WiFi CSI特征维度为 $3 \times 3 \times 30 \times 2 = 540$。随着时间序列不断累积，最终形成随时间变化的WiFi CSI序列，用于刻画人体运动对无线传播环境造成的动态扰动。
 
-\begin{figure}[h]
-  \centering
-  \includegraphics[width=\textwidth]{数据集采集场景.png}
-  \caption{数据集采集场景}
-  \label{fig:dataset_scene}
-\end{figure}
+% \begin{figure}[h]
+%   \centering
+%   \includegraphics[width=\textwidth]{数据集采集场景.png}
+%   \caption{数据集采集场景}
+%   \label{fig:dataset_scene}
+% \end{figure}
 
-除了WiFi CSI外，数据集还同步采集人体惯性传感器数据。参与实验的志愿者佩戴多个IMU传感器，包括放置于左右口袋中的两部智能手机、佩戴于左右手腕的两只智能手表以及一副智能眼镜，共形成5个IMU节点。IMU佩戴位置示意如图~\ref{fig:imu_position}所示。对于每个IMU节点，传感器在每个时间步均输出三轴加速度和三轴角速度数据，因此每个节点对应6维惯性测量信号。当五个IMU传感器同时工作时，可以获得一个随时间变化的多节点惯性数据序列，其整体结构可表示为 $T \times 5 \times 6$，其中，$T$表示时间序列长度，5表示IMU传感器数量，6表示每个IMU节点的通道维度（3轴加速度与3轴角速度）。
+% 除了WiFi CSI外，数据集还同步采集人体惯性传感器数据。参与实验的志愿者佩戴多个IMU传感器，包括放置于左右口袋中的两部智能手机、佩戴于左右手腕的两只智能手表以及一副智能眼镜，共形成5个IMU节点。IMU佩戴位置示意如图~\ref{fig:imu_position}所示。对于每个IMU节点，传感器在每个时间步均输出三轴加速度和三轴角速度数据，因此每个节点对应6维惯性测量信号。当五个IMU传感器同时工作时，可以获得一个随时间变化的多节点惯性数据序列，其整体结构可表示为 $T \times 5 \times 6$，其中，$T$表示时间序列长度，5表示IMU传感器数量，6表示每个IMU节点的通道维度（3轴加速度与3轴角速度）。
 
-\begin{figure}[h]
-  \centering
-  \includegraphics[width=\textwidth]{IMU佩戴位置示意图.png}
-  \caption{IMU佩戴位置示意图}
-  \label{fig:imu_position}
-\end{figure}
+% \begin{figure}[h]
+%   \centering
+%   \includegraphics[width=\textwidth]{IMU佩戴位置示意图.png}
+%   \caption{IMU佩戴位置示意图}
+%   \label{fig:imu_position}
+% \end{figure}
 
-数据集共包含16名志愿者在三种场景下完成的30类日常活动，总时长约16.26小时。不同场景中包含的具体活动类别如表~\ref{tab:action_category}所示，不同活动的时长分布如图~\ref{fig:action_duration}所示。
+% 数据集共包含16名志愿者在三种场景下完成的30类日常活动，总时长约16.26小时。不同场景中包含的具体活动类别如表~\ref{tab:action_category}所示，不同活动的时长分布如图~\ref{fig:action_duration}所示。
 
-\begin{table}[h]
-  \centering
-  \caption{场景动作类别}
-  \begin{tblr}{
-    colspec={X[1,c] X[7,c]},
-  }
-  \toprule
-  场景 & 活动 \\
-  \midrule
-  卧室 & 走路、起床、坐下、躺下、站起来、读书、倒水、喝水、吃药、站立时伸展、使用手机、开关窗户、开关窗帘、给植物浇水、静止站立、静止躺着 \\
-  书房 & 走路、坐下、站起来、倒水、喝水、吃药、开关台灯、操作鼠标、写字、操作键盘、读书、打开信封、接电话、站立时伸展、板书 \\
-  餐厅 & 走路、坐下、站起来、倒水、喝水、吃药、切水果、吃水果、拿水果、捡东西、洗手、扔垃圾、擦桌子、站立时伸展 \\
-  \bottomrule
-  \end{tblr}
-  \label{tab:action_category}
-\end{table}
+% \begin{table}[h]
+%   \centering
+%   \caption{场景动作类别}
+%   \begin{tblr}{
+%     colspec={X[1,c] X[7,c]},
+%   }
+%   \toprule
+%   场景 & 活动 \\
+%   \midrule
+%   卧室 & 走路、起床、坐下、躺下、站起来、读书、倒水、喝水、吃药、站立时伸展、使用手机、开关窗户、开关窗帘、给植物浇水、静止站立、静止躺着 \\
+%   书房 & 走路、坐下、站起来、倒水、喝水、吃药、开关台灯、操作鼠标、写字、操作键盘、读书、打开信封、接电话、站立时伸展、板书 \\
+%   餐厅 & 走路、坐下、站起来、倒水、喝水、吃药、切水果、吃水果、拿水果、捡东西、洗手、扔垃圾、擦桌子、站立时伸展 \\
+%   \bottomrule
+%   \end{tblr}
+%   \label{tab:action_category}
+% \end{table}
 
-\begin{figure}[h]
-  \centering
-  \includegraphics[width=0.9\textwidth]{class_distribution.png}
-  \caption{活动时长分布}
-  \label{fig:action_duration}
-\end{figure}
+% \begin{figure}[h]
+%   \centering
+%   \includegraphics[width=0.9\textwidth]{class_distribution.png}
+%   \caption{活动时长分布}
+%   \label{fig:action_duration}
+% \end{figure}
 
-\xsubsection{数据处理与样本构建}{Data Processing and Sample Construction}
+% \xsubsection{数据处理与样本构建}{Data Processing and Sample Construction}
 
-为了将连续采集的多模态传感器数据转换为适用于模型训练的输入样本，本文对原始时间序列进行了预处理与样本划分。具体而言，针对连续时间序列，本文采用滑动窗口方法构建固定长度的时序样本，在原始序列上设置长度为 $T_w$（单位为秒）的时间窗口，并按照预设步长（单位为秒）沿时间轴滑动，每个窗口对应一个独立样本。对于每个时间窗口，其对应的 IMU 与 WiFi CSI 片段在时间维度上严格同步，从而形成一一对应的多模态输入样本。若某个窗口覆盖多个活动片段，则采用基于持续时间占比的标签分配策略，即将窗口内占比最大的活动类别作为该样本标签，以降低活动切换边界处的标注噪声。
+% 为了将连续采集的多模态传感器数据转换为适用于模型训练的输入样本，本文对原始时间序列进行了预处理与样本划分。具体而言，针对连续时间序列，本文采用滑动窗口方法构建固定长度的时序样本，在原始序列上设置长度为 $T_w$（单位为秒）的时间窗口，并按照预设步长（单位为秒）沿时间轴滑动，每个窗口对应一个独立样本。对于每个时间窗口，其对应的 IMU 与 WiFi CSI 片段在时间维度上严格同步，从而形成一一对应的多模态输入样本。若某个窗口覆盖多个活动片段，则采用基于持续时间占比的标签分配策略，即将窗口内占比最大的活动类别作为该样本标签，以降低活动切换边界处的标注噪声。
 
 \xsection{方法描述}{Method Description}
 
@@ -339,9 +339,24 @@ M^{(\%)}_{ij}=100\times \tilde{M}_{ij}.
 
 其中，$M^{(\%)}_{ij}$ 表示以百分数形式展示的混淆矩阵元素。在可视化标注时，本文将其以整数形式显示，以提高结果呈现的直观性。需要说明的是，该处理仅改变数值的显示形式，不影响混淆矩阵本身所反映的类别预测分布关系。通过结合准确率、宏平均指标、逐类别 F1 值以及混淆矩阵，可以更加全面地评估模型在整体性能、类别均衡性和细粒度类别区分能力上的表现。
 
-\xsubsection{数据集划分策略}{Dataset Splitting Strategy}
+\xsubsection{数据集与划分策略}{Dataset and Splitting Strategy}
 
-为系统评估所提出方法在不同应用条件下的性能与泛化能力，本文构建了三种数据集划分策略，分别对应同分布条件、跨受试者条件以及跨场景条件。
+\subsubsection{数据集}{}
+
+本文实验采用 XRFV2 数据集。该数据集面向室内连续人体活动理解任务，包含 WiFi CSI 数据与 IMU 数据，能够较好地反映真实生活环境中的日常活动过程。该数据集采集于餐厅、书房和卧室 3 个典型室内场景。每个场景均部署 1 个发射器和 3 个接收器组成的 WiFi 系统，以约 200 packets/s 的速率采集 CSI 数据，并采用 WiFi CSI Tool 从 30 个 OFDM 子载波中提取幅度与相位信息，单个时间步的 CSI 特征维度为 540。与此同时，志愿者均佩戴 5 个 IMU 设备，包括双手表、双手机和一副智能眼镜。每个设备均记录三轴加速度与三轴角速度数据，因此 IMU 数据可表示为 \(T \times 5 \times 6\) 的时序形式。该数据集共包含 16 名志愿者、30 类日常活动，总时长约 16 小时。
+
+在此基础上，本文进一步对 XRFV2 数据集的活动类别分布进行了统计分析。如图~\ref{fig:action_duration} 所示，各活动类别在总时长和样本数量上存在一定差异：部分高频活动占比较高，而部分活动样本相对较少，呈现出较为明显的长尾分布特征。该分布特性容易导致模型在训练过程中偏向高频类别，从而削弱对低频类别的识别能力，并影响模型的泛化性能。因此，在基于该数据集开展实验时，需要采取相应措施以缓解类别不平衡问题带来的影响。
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.9\textwidth]{class_distribution.png}
+  \caption{活动时长分布}
+  \label{fig:action_duration}
+\end{figure}
+
+\subsubsection{划分策略}{}
+
+为系统评估所提出方法在不同应用条件下的性能与泛化能力，本文采用了三种数据集划分策略，分别对应同分布条件、跨受试者条件以及跨场景条件。
 
 在同分布条件下，采用标准随机划分方式，将完整数据集按照 80\% 与 20\% 的比例划分为训练集与测试集。具体划分方式如图 \ref{fig:dataset_common} 所示，各类活动数据在训练集与测试集中均有分布，且训练与测试样本来源于相同的受试者与采集场景，仅在样本层面进行随机划分。因此，训练集与测试集在统计分布上保持一致，该实验条件主要用于评估模型在理想情况下的性能表现，可视为方法性能的上限参考。
 
@@ -381,29 +396,34 @@ M^{(\%)}_{ij}=100\times \tilde{M}_{ij}.
   \caption{方法对比实验结果}
   \label{tab:baseline_compare_ch3}
   \begin{tblr}{
-    colspec={X[c] X[c]},
+    colspec={X[c] X[c] X[c] X[c] X[c]},
   }
   \toprule
-  方法 & 活动识别准确率 \\
+  方法 & 准确率 & 宏平均F1 & 宏平均精确率 & 宏平均召回率 \\
   \midrule
-  Attend and Discriminate\cite{abedin2021attend} & 91.72\% \\
-  TinyHAR\cite{zhou2022tinyhar} & 89.71\% \\
-  HARMamba\cite{li2024harmamba} & 92.10\% \\
-  WIHAR (Ours) & \textbf{96.06\%} \\
+  AAD\cite{abedin2021attend} & 91.11 & 90.96 & 90.64 & 91.53 \\
+  TinyHAR\cite{zhou2022tinyhar} & 87.70 & 87.48 & 87.51 & 88.18 \\
+  HARMamba\cite{li2024harmamba} & 90.82 & 90.40 & 91.19 & 89.84 \\
+  PatchHAR & 91.36 & 91.33 & 91.20 & 91.58 \\
+  PatchTST & 90.26 & 90.21 & 90.27 & 90.33 \\
+  LightHART & 90.01 & 89.58 & 89.74 & 89.57 \\
+  ModernTCN & 89.14 & 88.69 & 89.06 & 88.80 \\
+  DecomposeWHAR & 91.66 & 90.95 & 91.22 & 90.81 \\
+  WIHAR (Ours) & \textbf{95.81} & \textbf{95.29} & \textbf{95.48} & \textbf{95.13} \\
   \bottomrule
   \end{tblr}
 \end{table}
 
-为了进一步观察训练过程中的动态表现，图~\ref{fig:baseline_compare_ch3}给出了各方法在测试集上的准确率随训练轮数的变化曲线。可以看到，WIHAR在训练前期便迅速提升到较高水平，并在后续阶段保持更平稳的收敛趋势；相比之下，其余基线虽然也能逐步收敛，但收敛速度更慢、波动更明显。这说明WIHAR不仅最终精度更高，训练过程也更稳定。对于需要多次重训练或后续迁移适配的模型而言，这种稳定性同样具有实际价值。
+为了进一步观察训练过程中的动态表现，图~\ref{fig:wihar_baselines_train}给出了各方法在测试集上的准确率随训练轮数的变化曲线。可以看到，WIHAR在训练前期便迅速提升到较高水平，并在后续阶段保持更平稳的收敛趋势；相比之下，其余基线虽然也能逐步收敛，但收敛速度更慢、波动更明显。这说明WIHAR不仅最终精度更高，训练过程也更稳定。对于需要多次重训练或后续迁移适配的模型而言，这种稳定性同样具有实际价值。
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=0.9\textwidth]{Baseline Activity Recognition Accuracy Comparison.png}
+  \includegraphics[width=0.9\textwidth]{wihar_baselines_train.png}
   \caption{各方法活动识别准确率随训练轮数变化曲线}
-  \label{fig:baseline_compare_ch3}
+  \label{fig:wihar_baselines_train}
 \end{figure}
 
-图~\ref{fig:confusion_matrix}进一步给出了WIHAR在测试集上的归一化混淆矩阵。整体上，对角线区域占优，说明模型已经能够较好地区分大多数动作类别；少量误判主要集中在动作模式相近的类别之间，这与真实场景中相似动作本身存在较大重叠有关。结合表~\ref{tab:baseline_compare_ch3}和图~\ref{fig:baseline_compare_ch3}可以认为，WIHAR的优势并不只体现在单一总体指标上，而是在整体精度、训练稳定性和细粒度类别区分能力上都表现更好。
+图~\ref{fig:confusion_matrix}进一步给出了WIHAR在测试集上的归一化混淆矩阵。整体上，对角线区域占优，说明模型已经能够较好地区分大多数动作类别；少量误判主要集中在动作模式相近的类别之间，这与真实场景中相似动作本身存在较大重叠有关。结合表~\ref{tab:baseline_compare_ch3}和图~\ref{fig:wihar_baselines_train}可以认为，WIHAR的优势并不只体现在单一总体指标上，而是在整体精度、训练稳定性和细粒度类别区分能力上都表现更好。
 
 \begin{figure}[h]
   \centering
