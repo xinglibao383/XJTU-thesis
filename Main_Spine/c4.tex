@@ -339,36 +339,34 @@ XRFV2 在采集 IMU 数据的同时，使用 Azure Kinect 对受试者的动作�
 
 \xsubsection{骨干网络选择实验}{Backbone Network Comparison Experiments}
 
-为分析不同时序建模结构对模型性能的影响，本文对IMU时序预测模块中的骨干网络进行对比实验。
+为分析不同时序建模结构对模型性能的影响，本文对 IMU 时序预测模块中的骨干网络进行对比实验。在实验中，固定 IMU 时序特征提取模块为 ResNet 结构，并分别采用 Transformer、LSTM、GRU 以及 Mamba 作为 IMU 时序预测模块的骨干网络，其余训练参数保持一致。在相同训练设置下，分别评估不同结构在当前姿态重构与未来姿态预测任务中的性能表现。
 
-在实验中，固定IMU时序特征提取模块为ResNet结构，并分别采用Transformer、LSTM、GRU以及Mamba作为IMU时序预测模块的骨干网络，其余训练参数保持一致。分别计算不同结构下的姿态重构误差与姿态预测误差。
+实验结果如表~\ref{fig:imu_generator} 所示。总体来看，不同时序建模结构对模型性能具有显著影响。其中，Transformer 在整体性能上表现最优，在未来姿态预测任务中取得最低 MPJPE（57.36），同时在 PCK@5、PCK@10 及 PCK@20 指标上均达到最佳水平（分别为 16.48、26.65 和 43.51），表明其在关键点定位精度与预测稳定性方面具有明显优势。相比之下，GRU 在当前姿态重构 MPJPE 上取得最低值（51.55），略优于 Transformer（52.20），但其在 PCK 指标及未来姿态预测性能上均略逊于 Transformer，说明其在误差最小化方面具有一定优势，但整体建模能力稍弱。LSTM 的整体表现介于 GRU 与 Mamba 之间，在所有指标上均未取得最优结果，但性能相对稳定。相比之下，Mamba 结构在各项指标上均明显落后，例如其当前姿态重构 MPJPE 达到 66.90，未来姿态预测 MPJPE 达到 74.05，且对应 PCK 指标也显著低于其他方法，说明其在当前任务设置下难以有效建模 IMU 时序信息。
 
-实验结果如图~\ref{fig:imu_generator}所示，从图中可以看出，不同时序建模结构对模型性能具有明显影响。其中，采用Transformer结构时，模型在姿态重构与姿态预测任务上均取得最优结果；GRU与LSTM次之，而Mamba结构的性能明显低于其他方法。该结果表明，在当前任务设置下，Transformer更适合用于未来IMU序列建模。
-
-\begin{figure}[h]
+\begin{table}[h]
   \centering
-  \includegraphics[width=0.9\textwidth]{imu_generator.png}
-  \caption{骨干网络选择实验结果}
+  \caption{不同骨干网络的模型性能比较}
   \label{fig:imu_generator}
-\end{figure}
+  \begin{tblr}{
+      colspec={*{9}{X[c]}},
+      cell{1}{1}={r=2}{c,m},
+      cell{1}{2}={c=4}{c,m},
+      cell{1}{6}={c=4}{c,m},
+      hline{2}={1pt},
+      hline{1,3,Z}={1.5pt},
+  }
+    Backbone & 当前姿态重构 & & & & 未来姿态预测 & & & \\
+    & MPJPE & PCK@5 & PCK@10 & PCK@20 & MPJPE & PCK@5 & PCK@10 & PCK@20 \\
 
-% \begin{table}[h]
-%   \centering
-%   \caption{骨干网络选择实验结果}
-%   \label{tab:backbone}
-%   \begin{tblr}{
-%     colspec={X[c] X[c] X[c] X[c]},
-%   }
-%   \toprule
-%   主干网络1 & 主干网络2 & 姿态重构MPJPE & 姿态预测MPJPE \\
-%   \midrule
-%   ResNet & Transformer & 47.8203 & 54.1138 \\
-%   ResNet & LSTM        & 49.4344 & 55.9392 \\
-%   ResNet & GRU         & 48.9044 & 54.9700 \\
-%   ResNet & Mamba       & 76.8240 & 81.0473 \\
-%   \bottomrule
-%   \end{tblr}
-% \end{table}
+    GRU         & \textbf{51.55} & 15.94 & 26.79 & \textbf{44.69} & 57.53 & 16.18 & 26.26 & 43.06 \\
+    LSTM        & 53.38 & 15.29 & 25.62 & 42.95 & 59.31 & 15.69 & 25.43 & 41.76 \\
+    Mamba       & 66.90 & 13.18 & 21.38 & 35.88 & 74.05 & 13.00 & 20.77 & 34.58 \\
+    Transformer & 52.20 & \textbf{16.13} & \textbf{26.86} & 44.55 & \textbf{57.36} & \textbf{16.48} & \textbf{26.65} & \textbf{43.51} \\
+
+  \end{tblr}
+\end{table}
+
+综合各项指标可以看出，Transformer 在姿态预测精度与稳定性方面具有最优的综合表现，而 GRU 在当前重构误差上具有一定优势。整体而言，Transformer 在本任务中的表现更加均衡且稳定，因此本文最终选用 Transformer 作为 IMU 时序预测模块的骨干网络。
 
 \xsubsection{样本构建与数据处理实验}{Sample Construction and Data Processing Experiments}
 
@@ -425,24 +423,6 @@ XRFV2 在采集 IMU 数据的同时，使用 Azure Kinect 对受试者的动作�
   \caption{数据标准化实验结果}
   \label{fig:normalization_ablation}
 \end{figure}
-
-% \begin{table}[h]
-%   \centering
-%   \caption{数据标准化消融实验结果}
-%   \label{tab:normalization}
-%   \begin{tblr}{
-%     colspec={X[c] X[c] X[c] X[c]},
-%   }
-%   \toprule
-%   IMU标准化 & 姿态标准化 & 姿态重构MPJPE & 姿态预测MPJPE \\
-%   \midrule
-%   否 & 否 & 60.7588 & 74.1964 \\
-%   否 & 是 & 79.7920 & 86.5976 \\
-%   是 & 否 & 58.5465 & 70.5447 \\
-%   是 & 是 & 50.6833 & 56.4806 \\
-%   \bottomrule
-%   \end{tblr}
-% \end{table}
 
 \xsubsection{传感器消融实验}{Sensor Ablation Experiments}
 
