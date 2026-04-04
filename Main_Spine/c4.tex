@@ -298,7 +298,7 @@ XRFV2 在采集 IMU 数据的同时，使用 Azure Kinect 对受试者的动作�
 
 需要说明的是，所选基线大多原本面向三维人体姿态估计或不同设备配置下的稀疏 IMU 建模任务，且未针对未来姿态预测进行专门设计。为在统一实验设置下进行比较，本文将“当前姿态重构”作为所有方法共享的对比任务，保留各基线的核心时序建模模块，仅将输出层替换为与本文一致的二维关键点回归头，并统一采用相同的数据划分、训练轮数、优化器和评价指标进行重新训练。因此，本节比较的重点并非复现原论文在其原始任务上的最优结果，而是考察不同时序建模策略在当前 XRFV2 二维关键点建模任务中的相对表现。
 
-从表~\ref{tab:method_compare_current}可以看出，AIPose在当前姿态重构任务上取得了最低的MPJPE，重构误差为47.8203，明显优于所有对比方法。对比方法中，表现最好的PIP重构MPJPE为67.6973，AIPose较其进一步降低了19.8770。与ASIP、TIP和DynaIP相比，AIPose的误差分别降低了23.1295、25.3064和27.6074；相较于IMUPoser和MobilePoser，优势更加明显。说明在本文任务设置下，AIPose能够更有效地利用IMU时序信息完成人体姿态重构。除当前姿态重构外，AIPose的未来姿态预测 MPJPE 为54.1138。该结果表明，AIPose 不仅能够较准确地重构当前人体姿态，还能够基于历史IMU观测，在统一框架下实现当前姿态重构与未来姿态预测。
+表~\ref{tab:method_compare_current} 给出了不同方法在当前姿态重构任务中的整体性能比较结果。可以看出，AIPose 在各项评价指标上均取得了最优结果。其中，AIPose 的 MPJPE 为 52.2019，低于所有对比方法；同时，其在 PCK@5px、PCK@10px 和 PCK@20px 上分别达到 16.13\%、26.86\% 和 44.55\%，同样优于其余基线方法。对比方法中，表现相对较好的 PIP 的 MPJPE 为 66.9574，AIPose 较其降低了 14.7555；与 ASIP、TIP 和 DynaIP 相比，AIPose 的 MPJPE 分别降低了 18.7231、19.8459 和 23.9815。相较于 IMUPoser 和 MobilePoser，AIPose 的优势更加明显。上述结果表明，在本文任务设置下，AIPose 能够更有效地利用 IMU 时序信息进行人体姿态建模，从而提升当前姿态重构的整体精度。
 
 \begin{table}[h]
   \centering
@@ -308,7 +308,7 @@ XRFV2 在采集 IMU 数据的同时，使用 Azure Kinect 对受试者的动作�
     colspec={X[c] X[c] X[c] X[c] X[c]},
   }
   \toprule
-  Method & MPJPE (px) & PCK@5px (\%) & PCK@10px (\%) & PCK@20px (\%) \\
+  方法 & MPJPE (px) & PCK@5px & PCK@10px & PCK@20px \\
   \midrule
   PIP~\cite{yi2022physical}            & 66.9574          & 14.41          & 23.11          & 38.13          \\
   TIP~\cite{jiang2022transformer}      & 72.0478          & 13.63          & 21.66          & 35.91          \\
@@ -316,10 +316,12 @@ XRFV2 在采集 IMU 数据的同时，使用 Azure Kinect 对受试者的动作�
   DynaIP~\cite{zhang2024dynamic}       & 76.1834          & 13.02          & 20.25          & 33.07          \\
   ASIP~\cite{wu2024accurate}           & 70.9250          & 14.14          & 22.13          & 35.83          \\
   MobilePoser~\cite{xu2024mobileposer} & 96.5019          & 9.01           & 14.01          & 23.64          \\
-  AIPose (Ours)                        & \textbf{52.2019} & \textbf{16.13} & \textbf{26.86} & \textbf{44.55} \\
+  AIPose（Ours）                   & \textbf{52.2019} & \textbf{16.13} & \textbf{26.86} & \textbf{44.55} \\
   \bottomrule
   \end{tblr}
 \end{table}
+
+为了进一步分析不同方法在各身体部位上的误差分布，图~\ref{fig:aipose_mpjpe_perjoint} 展示了各方法在当前姿态重构任务中的逐关节 MPJPE 结果。可以看出，不同方法在各关键点上的误差分布趋势总体一致：躯干中心及近端关节的误差相对较低，而腕部、踝部、足部以及眼耳等远端或局部细粒度关键点的误差明显较高。例如，Neck、MidHip、RHip 和 LHip 等关键点的 MPJPE 普遍较小，而 RWrist、LWrist、RAnkle、LEye、RBigToe、RSmallToe 等关键点的误差则显著增大。这表明在当前任务中，不同关节的重构难度存在明显差异。造成上述现象的一个重要原因在于，本文仅使用了 5 个 IMU 设备进行姿态建模，传感器观测信息相对稀疏。在这种设置下，模型无法直接获得所有身体部位的局部运动信息，而需要根据有限的惯性观测对完整的人体关键点进行推断。对于躯干、髋部等靠近人体主干、运动相对稳定且与多传感器信息关联更强的部位，模型更容易建立稳定的映射关系；而对于腕部、踝部、足趾等四肢末端关节，其与传感器位置通常更远，运动自由度更高，且其姿态变化往往需要通过更长的运动链条进行间接推断，因此误差更容易累积。类似地，眼部、耳部等头部局部关键点不仅空间尺度较小，而且对整体肢体惯性信息的响应不如主干关节直接，因此也表现出较高的重构误差。
 
 \begin{figure}[h]
   \centering
@@ -328,14 +330,18 @@ XRFV2 在采集 IMU 数据的同时，使用 Azure Kinect 对受试者的动作�
   \label{fig:aipose_mpjpe_perjoint}
 \end{figure}
 
-为了进一步观察不同方法在训练过程中的表现，图~\ref{fig:aipose_baselines}给出了各方法在测试集上的姿态重构MPJPE随训练轮数变化的曲线。可以看出，AIPose在训练早期即表现出较快的误差下降速度，整体收敛过程也较为平稳，进一步说明AIPose在当前姿态重构任务上具有较好的训练稳定性。
+但从不同方法之间的比较来看，AIPose 在大多数关键点上均取得了更低的误差，且这种优势不仅体现在躯干和近端关节上，在腕部、踝部、足部等高难度关键点上同样较为明显。这表明，AIPose 的性能提升并非仅来源于少数容易建模的关键点，而是在整体骨架范围内均表现出更好的误差控制能力。结合表~\ref{tab:method_compare_current} 中的整体结果可以进一步说明，AIPose 能够在稀疏 IMU 条件下更有效地利用时序信息，从而提升对复杂关节和远端关节的姿态建模精度。
+
+为了进一步观察不同方法在训练过程中的表现，图~\ref{fig:aipose_baselines} 给出了各方法在测试集上的姿态重构 MPJPE 随训练轮数变化的曲线。可以看出，AIPose 在训练早期即表现出较快的误差下降速度，并且在后续训练过程中整体收敛更为平稳。相比之下，其余方法虽然在训练过程中也能够逐步降低误差，但收敛速度和最终稳定性均略逊于 AIPose。该结果表明，AIPose 不仅在最终测试性能上具有优势，而且在训练阶段也表现出较好的优化稳定性与收敛特性。
 
 \begin{figure}[h]
   \centering
   \includegraphics[width=0.9\textwidth]{aipose_baselines.png}
-  \caption{不同方法在当前姿态重构任务中的 MPJPE}
+  \caption{不同方法在当前姿态重构任务中 MPJPE 随训练轮数的变化}
   \label{fig:aipose_baselines}
 \end{figure}
+
+综合来看，在统一的数据划分、训练设置和评价指标下，AIPose 在当前姿态重构任务中表现出最优的整体性能。无论从整体误差、关键点命中率，还是从逐关节误差分布与训练收敛过程来看，AIPose 均表现出较强的时序建模能力与较好的训练稳定性。这说明所提出方法能够更有效地利用历史 IMU 观测信息，为后续未来姿态预测任务奠定良好基础。
 
 \xsubsection{骨干网络选择实验}{Backbone Network Comparison Experiments}
 
