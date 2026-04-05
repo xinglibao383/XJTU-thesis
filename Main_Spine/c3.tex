@@ -120,45 +120,47 @@ L_{\mathrm{BCMCL}}
 
 \subsubsection{跨模态特征融合}{}
 
-完成跨模态特征对齐后，IMU 与 WiFi CSI 特征在整体语义空间中已具有较好的一致性，但两种模态仍保留了不同的信息侧重点。IMU 更擅长刻画人体局部运动的动力学变化，而 WiFi CSI 对人体运动引起的空间传播环境整体扰动更为敏感。为进一步利用两种模态的互补信息，本文采用交叉注意力机制进行跨模态特征融合。
+完成跨模态特征对齐后，IMU 与 WiFi CSI 特征在整体语义空间中已具有较好的一致性，但两种模态仍保留了不同的信息侧重点。IMU 更擅长刻画人体局部运动的动力学变化，而 WiFi CSI 对人体运动引起的空间传播环境整体扰动更为敏感。为进一步利用两种模态的互补信息，本文采用交叉注意力机制进行跨模态特征融合，其整体过程如图~\ref{fig:cross_attention} 所示。该机制以 IMU 特征为引导，从 WiFi CSI 特征中自适应选择与当前动作状态更相关的信息，并通过残差连接与归一化操作得到融合后的跨模态时序表示。
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.9\textwidth]{cross_attention.png}
+  \caption{交叉注意力机制特征融合}
+  \label{fig:cross_attention}
+\end{figure}
 
 设经过 Mamba 编码器得到的 IMU 与 WiFi CSI 时序特征分别为
 \begin{equation}
-F_I, F_W \in \mathbb{R}^{B \times T \times D},
+F_I,\,F_W \in \mathbb{R}^{B \times T \times D},
 \end{equation}
-其中，$B$ 表示批大小，$T$ 表示时间序列长度，$D$ 表示特征维度。本文以 IMU 特征作为查询输入，以 WiFi CSI 特征作为键和值输入，并分别通过线性映射得到
+其中，$B$ 表示批大小，$T$ 表示时间序列长度，$D$ 表示特征维度。本文以 IMU 特征作为查询输入，以 WiFi CSI 特征作为键和值输入，并通过线性映射得到
 \begin{equation}
-Q = F_I W_Q + b_Q, \qquad
-K = F_W W_K + b_K, \qquad
+Q = F_I W_Q + b_Q,\qquad
+K = F_W W_K + b_K,\qquad
 V = F_W W_V + b_V,
 \end{equation}
 其中，$W_Q, W_K, W_V \in \mathbb{R}^{D \times D}$ 为可学习的权重矩阵，$b_Q, b_K, b_V \in \mathbb{R}^{D}$ 为对应偏置项。
 
-在此基础上，本文采用多头交叉注意力机制对不同子空间中的跨模态相关性进行建模，其输出可表示为
+在此基础上，采用多头交叉注意力机制对不同子空间中的跨模态相关性进行建模，并对其输出施加线性映射与 Dropout 操作，即
 \begin{equation}
-Y = \mathrm{MultiHeadAttn}(Q, K, V),
-\end{equation}
-其中，$Y \in \mathbb{R}^{B \times T \times D}$ 表示交叉注意力输出特征。
-
-随后，为进一步增强特征表达能力，本文对注意力输出施加一层线性映射与 Dropout 操作，即
-\begin{equation}
+Y = \mathrm{MultiHeadAttn}(Q, K, V),\qquad
 \tilde{Y} = \mathrm{Dropout}(Y W_O + b_O),
 \end{equation}
-其中，$W_O \in \mathbb{R}^{D \times D}$ 和 $b_O \in \mathbb{R}^{D}$ 分别表示输出映射层的权重与偏置。
+其中，$Y,\tilde{Y} \in \mathbb{R}^{B \times T \times D}$，$W_O \in \mathbb{R}^{D \times D}$、$b_O \in \mathbb{R}^{D}$ 分别表示输出映射层的权重与偏置。
 
-最后，采用残差连接与层归一化得到融合后的跨模态时序特征：
+随后，采用残差连接与层归一化得到融合后的跨模态时序特征
 \begin{equation}
 Z = \mathrm{LayerNorm}(Q + \tilde{Y}),
 \end{equation}
-其中，$Z \in \mathbb{R}^{B \times T \times D}$ 表示融合后的时序特征表示。
+其中，$Z \in \mathbb{R}^{B \times T \times D}$。需要说明的是，此处残差连接作用于投影后的查询特征 $Q$，从而在保留 IMU 模态引导作用的同时，引入来自 WiFi CSI 模态的补充信息。
 
 在获得融合后的时序特征后，本文进一步对时间维度进行平均池化，以得到全局多模态表示：
 \begin{equation}
-z = \mathrm{MeanPool}_T(Z),
+z = \mathrm{MeanPool}_T(Z),\qquad z \in \mathbb{R}^{B \times D}.
 \end{equation}
-其中，$z \in \mathbb{R}^{B \times D}$ 表示最终的融合特征，并作为后续分类模块的输入。
+该特征同时融合了 IMU 与 WiFi CSI 两种模态的信息，并作为后续分类模块的输入。
 
-上述融合方式能够以 IMU 模态为引导，自适应地从 WiFi CSI 特征中选择与当前动作状态更相关的信息，从而在保持时序结构的同时，实现两种模态之间更充分的特征交互与互补融合。
+总体而言，该融合方式以 IMU 模态为查询端，以 WiFi CSI 模态为键和值端，通过多头交叉注意力实现模态间的信息交互，并在输出映射、残差连接与层归一化的共同作用下形成稳定的跨模态时序表示。相比简单拼接，该结构能够在保持时间结构信息的同时，更充分地挖掘两种模态之间的互补关系，从而提升多模态人体活动识别的特征表达能力。
 
 \subsubsection{分类模块}{}
 
@@ -437,14 +439,14 @@ M^{(\%)}_{ij}=100\times \tilde{M}_{ij}.
   \label{fig:wihar_baselines_train}
 \end{figure}
 
-图~\ref{fig:confusion_matrix} 进一步给出了 WIHAR 在测试集上的归一化混淆矩阵。整体来看，对角线区域占据明显优势，说明模型已经能够较好地区分大多数活动类别；少量误判主要集中在动作模式较为相近的类别之间，这与真实场景下相似动作在运动模式和环境扰动上的重叠具有一定关系。结合表~\ref{tab:baseline_compare_ch3} 和图~\ref{fig:wihar_baselines_train} 可以认为，WIHAR 的优势并不只体现在单一总体指标上，而是在整体精度、类别均衡性、训练稳定性和细粒度类别区分能力等方面均表现出较好的综合性能。
+% 图~\ref{fig:confusion_matrix} 进一步给出了 WIHAR 在测试集上的归一化混淆矩阵。整体来看，对角线区域占据明显优势，说明模型已经能够较好地区分大多数活动类别；少量误判主要集中在动作模式较为相近的类别之间，这与真实场景下相似动作在运动模式和环境扰动上的重叠具有一定关系。结合表~\ref{tab:baseline_compare_ch3} 和图~\ref{fig:wihar_baselines_train} 可以认为，WIHAR 的优势并不只体现在单一总体指标上，而是在整体精度、类别均衡性、训练稳定性和细粒度类别区分能力等方面均表现出较好的综合性能。
 
-\begin{figure}[h]
-  \centering
-  \includegraphics[width=\textwidth]{confusion_matrix.png}
-  \caption{人体活动识别任务的归一化混淆矩阵}
-  \label{fig:confusion_matrix}
-\end{figure}
+% \begin{figure}[h]
+%   \centering
+%   \includegraphics[width=\textwidth]{confusion_matrix.png}
+%   \caption{人体活动识别任务的归一化混淆矩阵}
+%   \label{fig:confusion_matrix}
+% \end{figure}
 
 \xsubsection{模型架构与训练策略实验}{Model Architecture and Training Strategy Experiments}
 
