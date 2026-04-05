@@ -14,18 +14,18 @@
 
 针对上述问题，本文提出一种基于多模态对齐与融合的人体活动识别方法 WIHAR。该方法利用 IMU 与 WiFi CSI 在感知机理上的互补性，首先通过双分支时序编码器分别提取两种模态的时序特征，再通过双向跨模态对比学习在 IMU 到 WiFi CSI 与 WiFi CSI 到 IMU 两个方向上约束特征对齐，然后通过交叉注意力实现模态间信息交互，最终完成人体活动识别。
 
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.8\textwidth]{wihar_apply.png}
+  \caption{WIHAR}
+  \label{fig:wihar_apply}
+  \end{figure}
+
 \xsection{方法描述}{Method Description}
 
 \xsubsection{整体方法框架}{Overall Framework}
 
-为充分利用 IMU 与 WiFi CSI 在人体活动识别中的互补信息，本文提出一种基于多模态对齐与融合的人体活动识别方法WIHAR。该方法以同步采集的 IMU 与 WiFi CSI 时序数据为输入，通过特征编码、跨模态语义对齐以及多模态特征融合，实现对人体活动的准确识别。整体框架如图~\ref{fig:wihar_framework}所示。
-
-\begin{figure}[h]
-\centering
-\includegraphics[width=\textwidth]{wihar_framework.png}
-\caption{WIHAR方法整体流程图}
-\label{fig:wihar_framework}
-\end{figure}
+为充分利用 IMU 与 WiFi CSI 在人体活动识别中的互补信息，本文提出一种基于多模态对齐与融合的人体活动识别方法WIHAR。该方法以同步采集的 IMU 与 WiFi CSI 时序数据为输入，通过特征编码、跨模态语义对齐以及多模态特征融合，实现对人体活动的准确识别。
 
 模型输入样本按照第3.2.2节所述的样本构建策略构建，其中 IMU 与 WiFi CSI 数据在时间维度上保持同步，并作为多模态输入送入特征提取网络。
 
