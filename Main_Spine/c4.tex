@@ -597,7 +597,7 @@ XRFV2 在采集 IMU 数据的同时，使用 Azure Kinect 对受试者的动作�
 
 实验结果如图~\ref{fig:max_predict_len}所示，从图中可以看出，在当前时间窗口内（即区间\([-1,0)\)），模型能够获得较低误差，说明基于IMU特征进行姿态重构具有较高精度。随着时间进入未来预测阶段（$t \geq 0$），模型误差随预测时间增加而逐步上升。在较短预测区间内，误差增长相对平缓；而在更远时间范围内，误差增长速度明显加快。这表明随着预测步长增加，误差会逐渐累积，模型对长期运动变化的刻画能力受到一定限制。
 
-\begin{figure}[H]
+\begin{figure}[h]
   \centering
   \includegraphics[width=0.9\textwidth]{max_predict_len.png}
   \caption{长时姿态预测实验结果}
