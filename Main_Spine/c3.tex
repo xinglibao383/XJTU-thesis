@@ -55,38 +55,49 @@ IMU 与 WiFi CSI 均属于典型的时间序列信号，其判别信息不仅体
   \label{fig:mamba_encoder}
 \end{figure}
 
-设 IMU 与 WiFi CSI 模态的输入序列分别为
+设 IMU 与 WiFi CSI 模态的原始输入分别表示为
 \begin{equation}
-X_I \in \mathbb{R}^{B \times T \times C_I}, \qquad
-X_W \in \mathbb{R}^{B \times T \times C_W},
+X_I \in \mathbb{R}^{B \times C_I \times T}, \qquad
+X_W \in \mathbb{R}^{B \times C_W \times T},
 \end{equation}
-其中，$B$ 表示批大小，$T$ 表示时间序列长度，$C_I$ 与 $C_W$ 分别表示 IMU 与 WiFi CSI 信号的输入特征维度。
+其中，$B$ 表示批大小，$T$ 表示时间序列长度，$C_I$ 与 $C_W$ 分别表示 IMU 与 WiFi CSI 的输入特征维度。需要说明的是，本文在实现中采用 $B \times C \times T$ 的张量组织形式；在进入线性映射层之前，先将其转置为时序建模更常用的 $B \times T \times C$ 形式。
 
-考虑到不同传感通道在量纲范围与数值尺度上存在差异，若直接将原始序列输入编码器，可能会影响模型训练的稳定性，并削弱不同通道之间特征学习的均衡性。因此，在输入 Mamba 编码器之前，本文首先对每种模态数据按通道进行 Z-score 标准化处理。对于任一输入序列 $X \in \mathbb{R}^{B \times T \times C}$，其第 $c$ 个通道在批次维与时间维上的均值和标准差分别定义为
+考虑到不同传感通道在量纲范围与数值尺度上存在差异，若直接将原始序列输入编码器，可能会影响模型训练的稳定性，并削弱不同通道之间特征学习的均衡性。因此，在输入 Mamba 编码器之前，本文首先对每种模态数据按通道进行 Z-score 标准化处理。对于任一输入序列 $X \in \mathbb{R}^{B \times C \times T}$，其第 $c$ 个通道在批次维与时间维上的均值和标准差分别定义为
 \begin{equation}
-\mu_c=\frac{1}{BT}\sum_{b=1}^{B}\sum_{t=1}^{T}X_{b,t,c},
-\end{equation}
-\begin{equation}
-\sigma_c=\sqrt{\frac{1}{BT}\sum_{b=1}^{B}\sum_{t=1}^{T}(X_{b,t,c}-\mu_c)^2},
+\mu_c=\frac{1}{BT}\sum_{b=1}^{B}\sum_{t=1}^{T}X_{b,c,t},
+\qquad
+\sigma_c=\sqrt{\frac{1}{BT}\sum_{b=1}^{B}\sum_{t=1}^{T}(X_{b,c,t}-\mu_c)^2},
 \end{equation}
 相应地，标准化后的输入表示为
 \begin{equation}
-\hat{X}_{b,t,c}=\frac{X_{b,t,c}-\mu_c}{\sigma_c},
+\hat{X}_{b,c,t}=\frac{X_{b,c,t}-\mu_c}{\sigma_c}.
 \end{equation}
-其中，$\mu_c$ 和 $\sigma_c$ 分别表示第 $c$ 个通道的均值与标准差，$\hat{X}_{b,t,c}$ 表示标准化后的数据。通过该处理，不同通道的输入分布能够被调整到相近尺度，从而减弱数值范围差异对参数优化过程的干扰，为后续时序特征提取提供更加稳定的输入基础。
 
-如图 \ref{fig:mamba_encoder} 所示，每个模态的时序编码器均由输入线性映射层和多层堆叠的 Mamba 模块组成。首先，标准化后的输入序列通过线性映射被投影到统一的隐空间，以完成特征维度对齐；随后，映射后的序列输入多层 Mamba 模块进行逐层时序建模，从而提取能够表征时序上下文关系的高层特征。对于 IMU 与 WiFi CSI 两种模态，本文分别采用独立参数的编码器进行处理，其过程可表示为
+在此基础上，每个模态的编码器均由输入线性映射层和 $L$ 层堆叠的 Mamba 模块组成。为与代码实现保持一致，设转置操作记为 $\Pi(\cdot)$，其作用是将输入从 $\mathbb{R}^{B \times C \times T}$ 变换到 $\mathbb{R}^{B \times T \times C}$。则任一模态的编码过程可统一表示为
+\begin{equation}
+\begin{aligned}
+H^{(0)} &= \Pi(\hat{X}), \\
+Z^{(0)} &= H^{(0)} W_{\mathrm{in}} + b_{\mathrm{in}}, \\
+Z^{(\ell)} &= \mathrm{Mamba}_{\ell}\!\left(Z^{(\ell-1)}\right), \qquad \ell=1,2,\dots,L, \\
+F &= \Pi^{-1}\!\left(Z^{(L)}\right),
+\end{aligned}
+\label{eq:mamba_encoder_detail}
+\end{equation}
+其中，$H^{(0)} \in \mathbb{R}^{B \times T \times C}$ 表示转置后的输入序列，$W_{\mathrm{in}} \in \mathbb{R}^{C \times D}$、$b_{\mathrm{in}} \in \mathbb{R}^{D}$ 分别表示输入线性映射层的权重与偏置，$D$ 表示隐空间特征维度，$\mathrm{Mamba}_{\ell}(\cdot)$ 表示第 $\ell$ 层 Mamba 模块，$\Pi^{-1}(\cdot)$ 表示将特征重新变换回 $\mathbb{R}^{B \times D \times T}$ 的逆转置操作。
+
+因此，对于 IMU 与 WiFi CSI 两种模态，分别有
 \begin{equation}
 F_I = E_I(\hat{X}_I), \qquad
 F_W = E_W(\hat{X}_W),
 \end{equation}
-其中，$E_I(\cdot)$ 与 $E_W(\cdot)$ 分别表示 IMU 模态编码器与 WiFi CSI 模态编码器，$\hat{X}_I$ 和 $\hat{X}_W$ 分别表示经过标准化处理后的 IMU 与 WiFi CSI 输入序列。
+其中，$E_I(\cdot)$ 与 $E_W(\cdot)$ 分别表示 IMU 模态编码器与 WiFi CSI 模态编码器。结合式 \eqref{eq:mamba_encoder_detail} 可知，二者本质上均由“输入转置—线性投影—多层 Mamba 堆叠—逆转置”构成，只是在参数上彼此独立。
 
 经过时序编码后，两种模态均被映射为统一维度的高层时序特征表示，即
 \begin{equation}
-F_I, F_W \in \mathbb{R}^{B \times T \times D},
+F_I \in \mathbb{R}^{B \times D \times T}, \qquad
+F_W \in \mathbb{R}^{B \times D \times T}.
 \end{equation}
-其中，$D$ 表示编码后的特征维度。可以看出，经过 Mamba 编码后，特征表示在保持时间维度 $T$ 不变的同时，实现了从原始观测空间到高层语义空间的映射，为后续跨模态对齐与特征融合提供了统一的表示基础。
+经过编码后，特征表示在保持时间长度 $T$ 不变的同时，实现了从原始观测空间到高层语义空间的映射，为后续跨模态对齐与特征融合提供了统一的表示基础。
 
 需要说明的是，本文在该阶段不对时间维度进行池化压缩，而是保留完整的时序特征表示。这是因为跨模态对齐与融合不仅依赖全局统计信息，还需要利用细粒度的时序对应关系。保留完整的时间结构信息有助于后续模块进一步挖掘两种模态在动态变化过程中的互补性，从而提升多模态表示学习效果。
 
