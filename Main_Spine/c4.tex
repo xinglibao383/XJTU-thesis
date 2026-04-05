@@ -74,39 +74,49 @@ AIPose主要由IMU时序特征提取模块、姿态重构模块、IMU时序预�
 \]
 为保证输出数值稳定并与第4.2.2节中的归一化空间保持一致，重构结果通过 $\tanh$ 函数约束在 $(-1,1)$ 范围内。该模块实现了从IMU特征到当前姿态序列的重构，同时为后续姿态预测提供结构先验。
 
-\subsubsection{IMU时序预测模块}{}
+\subsubsection{IMU 时序预测模块}{}
 
-在完成当前姿态重构的同时，模型进一步基于输入 IMU 特征对未来时间段的惯性序列进行预测。设 IMU 时序特征提取模块输出的特征表示为
+在完成当前姿态重构的同时，模型还需要基于当前观测对应的 IMU 时序特征，对未来时间段内的惯性序列进行预测。该模块的整体结构如图~\ref{fig:imu_generator_model} 所示。具体而言，模块首先利用 Transformer 编码器对当前输入特征进行时序建模，得到当前时序记忆特征；随后，结合目标位置编码与当前时序记忆特征的时间维平均池化结果构造查询序列表示，并再次输入共享参数的 Transformer 编码器，从而生成未来时间窗口对应的 IMU 序列预测结果。通过这种方式，模型能够在保留当前运动上下文的基础上，对未来惯性动态进行建模，为后续自回归姿态预测提供合理的输入。
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\textwidth]{imu_generator_model.png}
+  \caption{基于共享 Transformer 编码器的 IMU 时序预测模块}
+  \label{fig:imu_generator_model}
+\end{figure}
+
+设 IMU 时序特征提取模块输出的特征表示为
 \begin{equation}
 \mathbf{F} \in \mathbb{R}^{B \times T_f \times D_f},
 \end{equation}
-其中，$B$ 表示批大小，$T_f$ 表示特征序列长度，$D_f$ 表示特征维度。本文采用基于 Transformer 编码器的生成模块对未来 IMU 序列进行建模，其目标是根据当前观测对应的全局运动表征，生成未来时间窗口内的 IMU 信号。
-
-首先，将输入特征映射到 Transformer 的隐空间中，并引入可学习位置编码，得到编码器输入：
+其中，$B$ 表示批大小，$T_f$ 表示特征序列长度，$D_f$ 表示特征维度。为了便于后续 Transformer 编码器进行时序建模，首先将输入特征映射到统一的隐空间中，并加入与输入长度对应的可学习位置编码，得到初始输入表示
 \begin{equation}
 \mathbf{H}_0 = \mathbf{F}W_{\mathrm{in}} + \mathbf{E}_{\mathrm{pos}}^{(1:T_f)},
 \end{equation}
-其中，$W_{\mathrm{in}} \in \mathbb{R}^{D_f \times D_h}$ 表示输入投影矩阵，$D_h$ 表示隐藏层维度，$\mathbf{E}_{\mathrm{pos}}^{(1:T_f)} \in \mathbb{R}^{1 \times T_f \times D_h}$ 表示与输入长度对应的位置编码。
+其中，$W_{\mathrm{in}} \in \mathbb{R}^{D_f \times D_h}$ 表示输入投影矩阵，$D_h$ 表示隐藏层维度，$\mathbf{E}_{\mathrm{pos}}^{(1:T_f)} \in \mathbb{R}^{1 \times T_f \times D_h}$ 表示输入位置编码。
 
-随后，将 $\mathbf{H}_0$ 输入 Transformer 编码器，得到历史观测序列的上下文表示：
+随后，将 $\mathbf{H}_0$ 输入 Transformer 编码器，对当前观测序列进行时序建模，得到当前时序记忆特征
 \begin{equation}
 \mathbf{M} = \mathrm{Encoder}(\mathbf{H}_0),
 \end{equation}
-其中，$\mathbf{M} \in \mathbb{R}^{B \times T_f \times D_h}$ 表示编码后的时序记忆特征。
+其中，$\mathbf{M} \in \mathbb{R}^{B \times T_f \times D_h}$。该特征综合刻画了当前输入序列在时间维度上的动态模式，可作为未来 IMU 预测的上下文基础。
 
-为了进一步生成未来长度为 $T_{\mathrm{pred}}$ 的 IMU 序列，本文构造长度为 $T_{\mathrm{pred}}$ 的查询序列，并将其与历史特征的全局平均表示相结合：
+在预测阶段，模型进一步构造长度为 $T_{\mathrm{pred}}$ 的查询序列表示。具体而言，选取与预测长度对应的目标位置编码，并与当前时序记忆特征在时间维度上的平均池化结果相加，得到
 \begin{equation}
 \mathbf{Q} = \mathbf{E}_{\mathrm{pos}}^{(1:T_{\mathrm{pred}})} + \mathrm{MeanPool}_T(\mathbf{M}),
 \end{equation}
-其中，$\mathbf{E}_{\mathrm{pos}}^{(1:T_{\mathrm{pred}})} \in \mathbb{R}^{1 \times T_{\mathrm{pred}} \times D_h}$ 表示与预测长度对应的位置编码，$\mathrm{MeanPool}_T(\mathbf{M}) \in \mathbb{R}^{B \times 1 \times D_h}$ 表示对历史时序特征在时间维度上的平均池化结果。通过广播机制，二者相加后得到预测阶段的输入查询表示 $\mathbf{Q} \in \mathbb{R}^{B \times T_{\mathrm{pred}} \times D_h}$。
+其中，$\mathbf{E}_{\mathrm{pos}}^{(1:T_{\mathrm{pred}})} \in \mathbb{R}^{1 \times T_{\mathrm{pred}} \times D_h}$ 表示目标位置编码，$\mathrm{MeanPool}_T(\mathbf{M}) \in \mathbb{R}^{B \times 1 \times D_h}$ 表示当前时序记忆特征在时间维度上的平均池化结果。通过广播机制，二者相加后得到
+\begin{equation}
+\mathbf{Q} \in \mathbb{R}^{B \times T_{\mathrm{pred}} \times D_h}.
+\end{equation}
 
-在此基础上，将查询序列再次输入共享参数的 Transformer 编码器，得到未来时刻的隐表示：
+可以看出，查询序列表示同时包含两部分信息：其一，目标位置编码为未来预测序列提供明确的时间位置索引；其二，当前时序记忆特征的时间维平均池化结果为预测阶段引入当前运动状态的整体上下文。这样的设计使模型在生成未来 IMU 序列时，既能够区分不同预测时刻，又能够保持与当前运动模式的一致性。
+
+在此基础上，将查询序列表示输入与前述阶段共享参数的 Transformer 编码器，得到未来时刻对应的隐表示：
 \begin{equation}
 \mathbf{H}_{\mathrm{pred}} = \mathrm{Encoder}(\mathbf{Q}),
 \end{equation}
-其中，$\mathbf{H}_{\mathrm{pred}} \in \mathbb{R}^{B \times T_{\mathrm{pred}} \times D_h}$。
-
-最后，通过输出映射层将隐表示投影到 IMU 通道空间，得到未来 IMU 序列预测结果：
+其中，$\mathbf{H}_{\mathrm{pred}} \in \mathbb{R}^{B \times T_{\mathrm{pred}} \times D_h}$。最后，通过输出映射层将未来隐表示投影到 IMU 通道空间，得到未来 IMU 序列预测结果：
 \begin{equation}
 \mathbf{X}_{\mathrm{future}} = \mathbf{H}_{\mathrm{pred}} W_{\mathrm{out}} + b_{\mathrm{out}},
 \end{equation}
@@ -115,7 +125,7 @@ AIPose主要由IMU时序特征提取模块、姿态重构模块、IMU时序预�
 \mathbf{X}_{\mathrm{future}} \in \mathbb{R}^{B \times T_{\mathrm{pred}} \times C}.
 \end{equation}
 
-上述设计并非直接基于单一时刻特征进行回归，而是先通过 Transformer 编码器对历史观测进行全局时序建模，再利用可学习查询序列和全局运动表征生成未来 IMU 序列。该过程能够在保留历史运动上下文的基础上，对未来惯性动态变化进行建模，从而为后续自回归姿态预测提供更合理的输入。
+总体而言，该模块并非直接对未来 IMU 序列进行逐时刻回归，而是先利用 Transformer 编码器对当前输入特征进行时序建模，得到当前时序记忆特征，再基于目标位置编码与当前时序记忆特征的时间维平均池化结果构造查询序列表示，从而生成未来时间窗口内的 IMU 序列预测结果。该设计能够在保持当前运动连续性的同时，更有效地刻画未来惯性动态变化，为后续自回归姿态预测提供可靠的时序输入。
 
 \subsubsection{自回归姿态预测机制}{}
 
