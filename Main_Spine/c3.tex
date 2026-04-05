@@ -14,60 +14,6 @@
 
 针对上述问题，本文提出一种基于多模态对齐与融合的人体活动识别方法 WIHAR。该方法利用 IMU 与 WiFi CSI 在感知机理上的互补性，首先通过双分支时序编码器分别提取两种模态的时序特征，再通过双向跨模态对比学习在 IMU 到 WiFi CSI 与 WiFi CSI 到 IMU 两个方向上约束特征对齐，然后通过交叉注意力实现模态间信息交互，最终完成人体活动识别。
 
-% \xsection{数据集构建}{Dataset Construction}
-
-% \xsubsection{XRFV2数据集}{XRFV2 Dataset}
-
-% 本文实验基于多模态感知数据集XRFV2开展。该数据集通过同步采集WiFi CSI与IMU数据，记录人体在真实室内环境中的日常活动，为多模态人体活动识别研究提供了数据基础。数据采集在三个典型室内生活场景中进行，包括餐厅、书房以及卧室。不同场景具有不同的空间布局与环境结构，用于模拟日常生活中的多种活动环境。实验场景以及WiFi传感器部署方式如图~\ref{fig:dataset_scene}所示。
-
-% 在每个场景中均部署一套WiFi感知系统，包括一台发射器（Tx）和三台接收器（Rx），用于采集CSI。发射器采用单天线，在128信道（5.64\,GHz）以约200\,packets/s的速率持续发送数据包；每个接收器配备三根天线，用于接收无线信号。在数据采集过程中，采用WiFi CSI Tool从30个OFDM子载波中提取WiFi CSI数据。对于每个时间步，原始CSI数据由发射天线与接收端之间的多输入多输出（Multiple Input Multiple Output, MIMO）信道测量构成，可表示为四维张量，其维度为 $1 \times 3 \times 3 \times 30$。四个维度分别对应发射天线数量、接收传感器数量、每个接收传感器的天线数量以及OFDM子载波数量。在本文的模型输入中，联合使用CSI幅度与相位信息，因此每个时间步对应的WiFi CSI特征维度为 $3 \times 3 \times 30 \times 2 = 540$。随着时间序列不断累积，最终形成随时间变化的WiFi CSI序列，用于刻画人体运动对无线传播环境造成的动态扰动。
-
-% \begin{figure}[h]
-%   \centering
-%   \includegraphics[width=\textwidth]{数据集采集场景.png}
-%   \caption{数据集采集场景}
-%   \label{fig:dataset_scene}
-% \end{figure}
-
-% 除了WiFi CSI外，数据集还同步采集人体惯性传感器数据。参与实验的志愿者佩戴多个IMU传感器，包括放置于左右口袋中的两部智能手机、佩戴于左右手腕的两只智能手表以及一副智能眼镜，共形成5个IMU节点。IMU佩戴位置示意如图~\ref{fig:imu_position}所示。对于每个IMU节点，传感器在每个时间步均输出三轴加速度和三轴角速度数据，因此每个节点对应6维惯性测量信号。当五个IMU传感器同时工作时，可以获得一个随时间变化的多节点惯性数据序列，其整体结构可表示为 $T \times 5 \times 6$，其中，$T$表示时间序列长度，5表示IMU传感器数量，6表示每个IMU节点的通道维度（3轴加速度与3轴角速度）。
-
-% \begin{figure}[h]
-%   \centering
-%   \includegraphics[width=\textwidth]{IMU佩戴位置示意图.png}
-%   \caption{IMU佩戴位置示意图}
-%   \label{fig:imu_position}
-% \end{figure}
-
-% 数据集共包含16名志愿者在三种场景下完成的30类日常活动，总时长约16.26小时。不同场景中包含的具体活动类别如表~\ref{tab:action_category}所示，不同活动的时长分布如图~\ref{fig:action_duration}所示。
-
-% \begin{table}[h]
-%   \centering
-%   \caption{场景动作类别}
-%   \begin{tblr}{
-%     colspec={X[1,c] X[7,c]},
-%   }
-%   \toprule
-%   场景 & 活动 \\
-%   \midrule
-%   卧室 & 走路、起床、坐下、躺下、站起来、读书、倒水、喝水、吃药、站立时伸展、使用手机、开关窗户、开关窗帘、给植物浇水、静止站立、静止躺着 \\
-%   书房 & 走路、坐下、站起来、倒水、喝水、吃药、开关台灯、操作鼠标、写字、操作键盘、读书、打开信封、接电话、站立时伸展、板书 \\
-%   餐厅 & 走路、坐下、站起来、倒水、喝水、吃药、切水果、吃水果、拿水果、捡东西、洗手、扔垃圾、擦桌子、站立时伸展 \\
-%   \bottomrule
-%   \end{tblr}
-%   \label{tab:action_category}
-% \end{table}
-
-% \begin{figure}[h]
-%   \centering
-%   \includegraphics[width=0.9\textwidth]{class_distribution.png}
-%   \caption{活动时长分布}
-%   \label{fig:action_duration}
-% \end{figure}
-
-% \xsubsection{数据处理与样本构建}{Data Processing and Sample Construction}
-
-% 为了将连续采集的多模态传感器数据转换为适用于模型训练的输入样本，本文对原始时间序列进行了预处理与样本划分。具体而言，针对连续时间序列，本文采用滑动窗口方法构建固定长度的时序样本，在原始序列上设置长度为 $T_w$（单位为秒）的时间窗口，并按照预设步长（单位为秒）沿时间轴滑动，每个窗口对应一个独立样本。对于每个时间窗口，其对应的 IMU 与 WiFi CSI 片段在时间维度上严格同步，从而形成一一对应的多模态输入样本。若某个窗口覆盖多个活动片段，则采用基于持续时间占比的标签分配策略，即将窗口内占比最大的活动类别作为该样本标签，以降低活动切换边界处的标注噪声。
-
 \xsection{方法描述}{Method Description}
 
 \xsubsection{整体方法框架}{Overall Framework}
@@ -100,27 +46,36 @@
 
 \subsubsection{Mamba时序特征提取}{}
 
-IMU 与 WiFi CSI 均属于时序信号，因此需要通过时序建模方法提取其中的时序特征。本文采用Mamba序列模型作为时序特征提取器，对两种模态的输入序列分别进行编码。
+IMU 与 WiFi CSI 均属于典型的时间序列信号，其判别信息不仅体现在单个时刻的瞬时观测上，还体现在随时间演化形成的动态模式中。因此，在模态特征提取阶段，本文引入 Mamba 序列模型对两种模态的输入序列分别进行时序编码，以增强模型对局部动态变化与长期时序依赖的建模能力。对应的编码器结构如图 \ref{fig:mamba_encoder} 所示。
 
-设IMU和WiFi CSI模态的输入序列分别为
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.7\textwidth]{mamba_encoder.png}
+  \caption{Mamba 特征编码器}
+  \label{fig:mamba_encoder}
+\end{figure}
+
+设 IMU 与 WiFi CSI 模态的输入序列分别为
 \begin{equation}
 X_I \in \mathbb{R}^{B \times T \times C_I}, \qquad
 X_W \in \mathbb{R}^{B \times T \times C_W},
 \end{equation}
-其中，$B$表示批大小，$T$表示时间序列长度，$C_I$与$C_W$分别表示 IMU 与 WiFi CSI 信号的特征维度。
+其中，$B$ 表示批大小，$T$ 表示时间序列长度，$C_I$ 与 $C_W$ 分别表示 IMU 与 WiFi CSI 信号的输入特征维度。
 
-在模型中，两种模态分别通过独立的Mamba编码器进行时序特征提取：
+如图 \ref{fig:mamba_encoder} 所示，每个模态的时序编码器均由输入线性映射层和多层堆叠的 Mamba 模块组成。首先，原始输入序列通过线性映射被投影到统一的隐空间，以完成特征维度对齐；随后，映射后的序列输入多层 Mamba 模块进行逐层时序建模，从而提取能够表征时序上下文关系的高层特征。对于 IMU 与 WiFi CSI 两种模态，本文分别采用独立参数的编码器进行处理，其过程可表示为
 \begin{equation}
 F_I = E_I(X_I), \qquad
 F_W = E_W(X_W),
 \end{equation}
-其中，$E_I(\cdot)$与$E_W(\cdot)$表示对应模态的Mamba编码器。经过编码后，可获得两种模态的高层时序特征表示：
+其中，$E_I(\cdot)$ 与 $E_W(\cdot)$ 分别表示 IMU 模态编码器与 WiFi CSI 模态编码器。
+
+经过时序编码后，两种模态均被映射为统一维度的高层时序特征表示，即
 \begin{equation}
 F_I, F_W \in \mathbb{R}^{B \times T \times D},
 \end{equation}
-其中，$D$表示特征维度。
+其中，$D$ 表示编码后的特征维度。可以看出，经过 Mamba 编码后，特征表示在保持时间维度 $T$ 不变的同时，实现了从原始观测空间到高层语义空间的映射，为后续跨模态对齐与特征融合提供了统一的表示基础。
 
-在实现过程中，Mamba编码器由输入线性映射层与多层Mamba序列建模模块构成。输入序列首先通过线性映射投影至统一的特征空间，然后通过多层Mamba结构对时间序列进行动态建模，从而获得包含长期时序依赖信息的特征表示。为了保留完整的时间结构信息，本文在该阶段不对时序特征进行时间池化，而是保留完整的时间维度特征表示，供后续跨模态对齐与融合模块使用。
+需要说明的是，本文在该阶段不对时间维度进行池化压缩，而是保留完整的时序特征表示。这是因为跨模态对齐与融合不仅依赖全局统计信息，还需要利用细粒度的时序对应关系。保留完整的时间结构信息有助于后续模块进一步挖掘两种模态在动态变化过程中的互补性，从而提升多模态表示学习效果。
 
 \subsubsection{跨模态特征对齐}{}
 
@@ -165,50 +120,72 @@ L_{\mathrm{BCMCL}}
 
 \subsubsection{跨模态特征融合}{}
 
-完成跨模态特征对齐后， IMU 与 WiFi CSI 特征在整体语义空间中已具有较好的一致性，但二者仍保留了不同的信息侧重点。IMU更擅长刻画人体局部运动的动力学变化，而WiFi CSI对人体运动引起的空间传播环境整体扰动更为敏感。为进一步利用两种模态的互补信息，本文采用交叉注意力机制进行跨模态特征融合。
+完成跨模态特征对齐后，IMU 与 WiFi CSI 特征在整体语义空间中已具有较好的一致性，但两种模态仍保留了不同的信息侧重点。IMU 更擅长刻画人体局部运动的动力学变化，而 WiFi CSI 对人体运动引起的空间传播环境整体扰动更为敏感。为进一步利用两种模态的互补信息，本文采用交叉注意力机制进行跨模态特征融合。
 
-设经过Mamba编码器得到的 IMU 与 WiFi CSI 时序特征分别为
+设经过 Mamba 编码器得到的 IMU 与 WiFi CSI 时序特征分别为
 \begin{equation}
 F_I, F_W \in \mathbb{R}^{B \times T \times D},
 \end{equation}
-其中，$B$表示批大小，$T$表示时间序列长度，$D$表示特征维度。本文以IMU特征作为查询（Query），以WiFi CSI特征作为键（Key）和值（Value），构造跨模态注意力：
+其中，$B$ 表示批大小，$T$ 表示时间序列长度，$D$ 表示特征维度。本文以 IMU 特征作为查询输入，以 WiFi CSI 特征作为键和值输入，并分别通过线性映射得到
 \begin{equation}
-Q = F_I W_Q, \qquad
-K = F_W W_K, \qquad
-V = F_W W_V,
+Q = F_I W_Q + b_Q, \qquad
+K = F_W W_K + b_K, \qquad
+V = F_W W_V + b_V,
 \end{equation}
-其中，$W_Q \in \mathbb{R}^{D \times d_k}$、$W_K \in \mathbb{R}^{D \times d_k}$、$W_V \in \mathbb{R}^{D \times D}$为可学习的线性映射矩阵。
+其中，$W_Q, W_K, W_V \in \mathbb{R}^{D \times D}$ 为可学习的权重矩阵，$b_Q, b_K, b_V \in \mathbb{R}^{D}$ 为对应偏置项。
 
-随后通过缩放点积注意力计算跨模态特征交互：
+在此基础上，本文采用多头交叉注意力机制对不同子空间中的跨模态相关性进行建模，其输出可表示为
 \begin{equation}
-A = \mathrm{Softmax}\left(\frac{QK^{\top}}{\sqrt{d_k}}\right)V.
+Y = \mathrm{MultiHeadAttn}(Q, K, V),
 \end{equation}
+其中，$Y \in \mathbb{R}^{B \times T \times D}$ 表示交叉注意力输出特征。
 
-该过程能够根据IMU特征在不同时间步上的状态，自适应地从WiFi CSI特征中选择更相关的信息，从而增强融合表示。为提高训练稳定性并保留原始特征，本文进一步引入残差连接与层归一化：
+随后，为进一步增强特征表达能力，本文对注意力输出施加一层线性映射与 Dropout 操作，即
 \begin{equation}
-Z = \mathrm{LayerNorm}(F_I + A),
+\tilde{Y} = \mathrm{Dropout}(Y W_O + b_O),
 \end{equation}
-其中 $Z \in \mathbb{R}^{B \times T \times D}$ 表示融合后的跨模态时序特征。
+其中，$W_O \in \mathbb{R}^{D \times D}$ 和 $b_O \in \mathbb{R}^{D}$ 分别表示输出映射层的权重与偏置。
 
-最后，通过对时间维度进行平均池化获得融合后的全局特征表示：
+最后，采用残差连接与层归一化得到融合后的跨模态时序特征：
+\begin{equation}
+Z = \mathrm{LayerNorm}(Q + \tilde{Y}),
+\end{equation}
+其中，$Z \in \mathbb{R}^{B \times T \times D}$ 表示融合后的时序特征表示。
+
+在获得融合后的时序特征后，本文进一步对时间维度进行平均池化，以得到全局多模态表示：
 \begin{equation}
 z = \mathrm{MeanPool}_T(Z),
 \end{equation}
-其中 $z \in \mathbb{R}^{B \times D}$ 表示最终的多模态融合特征。该特征同时融合了 IMU 与 WiFi CSI 两种模态的信息，并作为后续活动识别分类模块的输入。
+其中，$z \in \mathbb{R}^{B \times D}$ 表示最终的融合特征，并作为后续分类模块的输入。
+
+上述融合方式能够以 IMU 模态为引导，自适应地从 WiFi CSI 特征中选择与当前动作状态更相关的信息，从而在保持时序结构的同时，实现两种模态之间更充分的特征交互与互补融合。
 
 \subsubsection{分类模块}{}
 
-设融合后的多模态特征表示为
+设经过跨模态特征融合后得到的全局表示为
 \begin{equation}
 z \in \mathbb{R}^{B \times D},
 \end{equation}
-其中 $B$ 表示批大小，$D$ 表示特征维度。
+其中，$B$ 表示批大小，$D$ 表示融合特征维度。
 
-在此基础上，本文为人体活动识别任务构建分类器。该分类器由两层全连接网络构成，并结合非线性激活函数与Dropout层进行特征变换。人体活动识别任务经Softmax归一化后的预测概率分布可表示为
+在此基础上，本文构建一个由两层全连接层组成的分类模块，用于将融合特征映射到活动类别空间。首先，通过第一层线性变换将输入特征投影到隐藏空间，并结合 ReLU 激活函数与 Dropout 操作完成非线性特征变换，即
 \begin{equation}
-\hat{y}_a = \mathrm{Softmax}(f_a(z)).
+h = \mathrm{Dropout}\!\left(\mathrm{ReLU}(zW_1+b_1)\right),
 \end{equation}
-其中，$f_a(\cdot)$表示人体活动分类器，$\hat{y}_a$表示预测类别的概率分布。
+其中，$W_1 \in \mathbb{R}^{D \times H}$、$b_1 \in \mathbb{R}^{H}$ 分别表示第一层全连接层的权重与偏置，$H$ 表示隐藏层维度。
+
+随后，经过第二层线性映射得到活动类别对应的预测 logits：
+\begin{equation}
+o = hW_2+b_2,
+\end{equation}
+其中，$W_2 \in \mathbb{R}^{H \times C_a}$、$b_2 \in \mathbb{R}^{C_a}$ 分别表示第二层全连接层的权重与偏置，$C_a$ 表示活动类别总数。
+
+最后，对 logits 进行 Softmax 归一化，得到人体活动识别任务的预测概率分布：
+\begin{equation}
+\hat{y}_a^{(c)}=\frac{\exp(o^{(c)})}{\sum_{k=1}^{C_a}\exp(o^{(k)})}, \qquad c=1,2,\dots,C_a.
+\end{equation}
+
+该分类模块在保持结构简洁的同时，能够通过隐藏层的非线性变换进一步增强融合特征的类别判别能力，从而为人体活动识别任务提供最终预测结果。
 
 \subsubsection{损失函数}{}
 
@@ -534,41 +511,6 @@ M^{(\%)}_{ij}=100\times \tilde{M}_{ij}.
   \caption{样本构建实验结果}
   \label{fig:har_sample_construction}
 \end{figure}
-
-% \begin{table}[h]
-%   \centering
-%   \caption{数据分割策略实验结果}
-%   \label{tab:window_stride}
-%   \begin{tblr}{
-%     colspec={X[c] X[c] X[c] X[c] X[c]},
-%   }
-%   \toprule
-%   窗口长度 & 滑动步长 & 活动准确率 & 身份准确率 & 场景准确率 \\
-%   \midrule
-%   0.5  & 0.5  & 88.83\% & 99.73\% & 99.95\% \\
-%   1.0  & 0.5  & 96.06\% & 99.93\% & 99.99\% \\
-%   1.5  & 0.5  & 98.50\% & 99.96\% & 99.99\% \\
-%   2.0  & 0.5  & 99.27\% & 99.96\% & 99.99\% \\
-%   2.5  & 0.5  & 99.62\% & 99.99\% & 99.99\% \\
-%   3.0  & 0.5  & 99.79\% & 99.98\% & 99.96\% \\
-%   1.0  & 1.0  & 88.71\% & 99.52\% & 99.90\% \\
-%   1.5  & 1.0  & 94.47\% & 99.85\% & 99.94\% \\
-%   2.0  & 1.0  & 96.95\% & 99.94\% & 99.93\% \\
-%   2.5  & 1.0  & 97.50\% & 99.68\% & 99.73\% \\
-%   3.0  & 1.0  & 98.77\% & 99.93\% & 99.90\% \\
-%   1.5  & 1.5  & 89.85\% & 99.54\% & 99.71\% \\
-%   2.0  & 1.5  & 91.82\% & 99.21\% & 99.85\% \\
-%   2.5  & 1.5  & 92.73\% & 98.38\% & 99.44\% \\
-%   3.0  & 1.5  & 96.33\% & 99.39\% & 99.72\% \\
-%   2.0  & 2.0  & 91.31\% & 99.12\% & 99.71\% \\
-%   2.5  & 2.0  & 92.34\% & 98.48\% & 99.30\% \\
-%   3.0  & 2.0  & 93.69\% & 98.40\% & 99.27\% \\
-%   2.5  & 2.5  & 90.87\% & 96.81\% & 99.00\% \\
-%   3.0  & 2.5  & 94.91\% & 99.28\% & 99.70\% \\
-%   3.0  & 3.0  & 93.21\% & 98.52\% & 99.30\% \\
-%   \bottomrule
-%   \end{tblr}
-% \end{table}
 
 从图~\ref{fig:har_sample_construction}可以看出，窗口长度和滑动步长对性能的影响都很明显，但二者作用方式不同。首先，在步长固定为0.5\,s时，随着窗口长度从1.0\,s增加到3.0\,s，活动识别准确率由96.06\%逐步提升至99.79\%。这说明更长的时间窗口能够覆盖更完整的动作过程，从而为模型提供更充分的时序上下文。其次，在窗口长度固定为3.0\,s时，随着步长从0.5\,s增大到3.0\,s，准确率整体由99.79\%下降到93.21\%。这表明较小步长带来的高重叠采样有助于提升样本密度，使模型更容易学习到稳定的动作边界和判别模式。
 
