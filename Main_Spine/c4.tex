@@ -50,9 +50,9 @@ AIPose主要由IMU时序特征提取模块、姿态重构模块、IMU时序预�
 
 下面将对各个组成模块的具体结构与实现方式进行说明。
 
-\subsubsection{IMU时序特征提取模块}{}
+\subsubsection{IMU 时序特征提取模块}{}
 
-根据第4.2.2节构建的输入样本，设输入IMU序列为
+根据第4.2.2节构建的输入样本，设输入 IMU 序列为
 \[
 \mathbf{X}_{\mathrm{input}} \in \mathbb{R}^{B \times T \times C},
 \]
@@ -76,15 +76,46 @@ AIPose主要由IMU时序特征提取模块、姿态重构模块、IMU时序预�
 
 \subsubsection{IMU时序预测模块}{}
 
-在完成当前姿态重构的同时，模型进一步基于特征表示 $\mathbf{F}$ 对未来时间段的IMU序列进行建模，其映射关系为
-\[
-\mathbf{X}_{\mathrm{future}} = G(\mathbf{F}),
-\]
-其中 $G(\cdot)$ 表示预测映射函数。本文采用Transformer对特征进行时序建模，以学习IMU信号在时间维度上的动态演化规律，从而实现对未来IMU序列的预测。设未来时间窗口长度与姿态预测窗口对应，则预测结果为
-\[
-\mathbf{X}_{\mathrm{future}} \in \mathbb{R}^{B \times T_{\mathrm{future}} \times C}.
-\]
-预测得到的未来IMU序列将与当前IMU序列的尾部观测共同作为后续自回归姿态预测的输入，用于实现从当前观测到未来姿态的连续建模。
+在完成当前姿态重构的同时，模型进一步基于输入 IMU 特征对未来时间段的惯性序列进行预测。设 IMU 时序特征提取模块输出的特征表示为
+\begin{equation}
+\mathbf{F} \in \mathbb{R}^{B \times T_f \times D_f},
+\end{equation}
+其中，$B$ 表示批大小，$T_f$ 表示特征序列长度，$D_f$ 表示特征维度。本文采用基于 Transformer 编码器的生成模块对未来 IMU 序列进行建模，其目标是根据当前观测对应的全局运动表征，生成未来时间窗口内的 IMU 信号。
+
+首先，将输入特征映射到 Transformer 的隐空间中，并引入可学习位置编码，得到编码器输入：
+\begin{equation}
+\mathbf{H}_0 = \mathbf{F}W_{\mathrm{in}} + \mathbf{E}_{\mathrm{pos}}^{(1:T_f)},
+\end{equation}
+其中，$W_{\mathrm{in}} \in \mathbb{R}^{D_f \times D_h}$ 表示输入投影矩阵，$D_h$ 表示隐藏层维度，$\mathbf{E}_{\mathrm{pos}}^{(1:T_f)} \in \mathbb{R}^{1 \times T_f \times D_h}$ 表示与输入长度对应的位置编码。
+
+随后，将 $\mathbf{H}_0$ 输入 Transformer 编码器，得到历史观测序列的上下文表示：
+\begin{equation}
+\mathbf{M} = \mathrm{Encoder}(\mathbf{H}_0),
+\end{equation}
+其中，$\mathbf{M} \in \mathbb{R}^{B \times T_f \times D_h}$ 表示编码后的时序记忆特征。
+
+为了进一步生成未来长度为 $T_{\mathrm{pred}}$ 的 IMU 序列，本文构造长度为 $T_{\mathrm{pred}}$ 的查询序列，并将其与历史特征的全局平均表示相结合：
+\begin{equation}
+\mathbf{Q} = \mathbf{E}_{\mathrm{pos}}^{(1:T_{\mathrm{pred}})} + \mathrm{MeanPool}_T(\mathbf{M}),
+\end{equation}
+其中，$\mathbf{E}_{\mathrm{pos}}^{(1:T_{\mathrm{pred}})} \in \mathbb{R}^{1 \times T_{\mathrm{pred}} \times D_h}$ 表示与预测长度对应的位置编码，$\mathrm{MeanPool}_T(\mathbf{M}) \in \mathbb{R}^{B \times 1 \times D_h}$ 表示对历史时序特征在时间维度上的平均池化结果。通过广播机制，二者相加后得到预测阶段的输入查询表示 $\mathbf{Q} \in \mathbb{R}^{B \times T_{\mathrm{pred}} \times D_h}$。
+
+在此基础上，将查询序列再次输入共享参数的 Transformer 编码器，得到未来时刻的隐表示：
+\begin{equation}
+\mathbf{H}_{\mathrm{pred}} = \mathrm{Encoder}(\mathbf{Q}),
+\end{equation}
+其中，$\mathbf{H}_{\mathrm{pred}} \in \mathbb{R}^{B \times T_{\mathrm{pred}} \times D_h}$。
+
+最后，通过输出映射层将隐表示投影到 IMU 通道空间，得到未来 IMU 序列预测结果：
+\begin{equation}
+\mathbf{X}_{\mathrm{future}} = \mathbf{H}_{\mathrm{pred}} W_{\mathrm{out}} + b_{\mathrm{out}},
+\end{equation}
+其中，$W_{\mathrm{out}} \in \mathbb{R}^{D_h \times C}$、$b_{\mathrm{out}} \in \mathbb{R}^{C}$ 分别表示输出层权重与偏置，$C$ 表示 IMU 通道数，因此有
+\begin{equation}
+\mathbf{X}_{\mathrm{future}} \in \mathbb{R}^{B \times T_{\mathrm{pred}} \times C}.
+\end{equation}
+
+上述设计并非直接基于单一时刻特征进行回归，而是先通过 Transformer 编码器对历史观测进行全局时序建模，再利用可学习查询序列和全局运动表征生成未来 IMU 序列。该过程能够在保留历史运动上下文的基础上，对未来惯性动态变化进行建模，从而为后续自回归姿态预测提供更合理的输入。
 
 \subsubsection{自回归姿态预测机制}{}
 
