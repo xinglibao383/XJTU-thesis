@@ -16,17 +16,24 @@
 
 针对上述问题，本文提出一种基于自回归建模机制的人体姿态重构与预测方法 AIPose。该方法以当前 IMU 序列作为输入，首先重构对应时间段内的人体二维关键点姿态序列；同时，通过 IMU 预测模块预测未来时间段的 IMU 序列，并将其与当前 IMU 序列在时间维度上拼接和处理，构造用于预测未来姿态的输入。通过这一机制，模型不仅能够完成当前时间段的人体姿态重构，还能够进一步预测未来时间段的人体姿态，在统一框架下实现“当前姿态重构 + 未来姿态预测”的联合建模。
 
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.95\textwidth]{aipose_apply.png}
+  \caption{AIPose}
+  \label{fig:aipose_apply}
+\end{figure}
+
 \xsection{方法描述}{Method Description}
 
 \xsubsection{整体方法框架}{Overall Framework}
 
-为实现基于IMU的人体姿态重构与短时预测，本文提出一种基于自回归建模机制的人体姿态重构与预测方法AIPose。该方法以历史IMU时序信号为输入，在统一框架下同时完成当前姿态重构与未来姿态预测。整体方法流程如图~\ref{fig:aipose_framework}所示。
+为实现基于IMU的人体姿态重构与短时预测，本文提出一种基于自回归建模机制的人体姿态重构与预测方法AIPose。该方法以历史IMU时序信号为输入，在统一框架下同时完成当前姿态重构与未来姿态预测。AIPose 模型架构如图~\ref{fig:aipose_arch}所示。
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=\textwidth]{aipose_framework.png}
-  \caption{人体姿态重构与预测方法整体流程}
-  \label{fig:aipose_framework}
+  \includegraphics[width=\textwidth]{aipose_model.png}
+  \caption{AIPose模型架构图}
+  \label{fig:aipose_arch}
 \end{figure}
 
 AIPose 的输入为一段连续的IMU观测序列。首先，模型利用时序特征提取模块对输入信号进行编码，得到能够表征人体运动状态的高层时序特征。在此基础上，模型分为两个相互关联的分支：一条分支用于恢复当前时间窗口内的人体姿态，另一条分支用于预测未来时间段的IMU变化。对于当前姿态重构分支，模型直接根据历史IMU观测提取到的时序特征，输出当前时间范围内的人体二维关键点序列。该分支的作用是根据已有观测恢复人体当前的运动状态，为后续预测提供姿态层面的结构约束。对于未来预测分支，模型并不直接从当前特征中生成未来姿态，而是先预测未来一段时间内的IMU序列，再将预测得到的未来IMU与当前观测序列尾部进行拼接，构成扩展的时序输入。随后，模型基于这一扩展输入进一步预测未来姿态。这样的设计使未来姿态预测仍然建立在IMU动态演化过程之上，从而保持了“先建模运动，再预测姿态”的思路。换言之，AIPose将未来姿态预测分解为“未来IMU预测”和“基于扩展IMU的姿态预测”两个步骤，并通过自回归建模机制将两者连接起来。
@@ -37,18 +44,7 @@ AIPose 的输入为一段连续的IMU观测序列。首先，模型利用时序�
 
 \xsubsection{AIPose模型}{AIPose Model}
 
-在上述整体方法框架的基础上，本文构建了AIPose模型，用于实现基于自回归建模机制的人体姿态重构与预测。该模型以IMU时序数据为输入，通过共享的时序特征表示同时支持当前姿态重构与未来姿态预测两个任务。模型的整体结构如图~\ref{fig:aipose_arch}所示。
-
-\begin{figure}[h]
-  \centering
-  \includegraphics[width=\textwidth]{aipose_model.png}
-  \caption{AIPose模型架构图}
-  \label{fig:aipose_arch}
-\end{figure}
-
-AIPose主要由IMU时序特征提取模块、姿态重构模块、IMU时序预测模块以及自回归姿态预测机制组成，并通过联合损失函数进行优化。各模块在同一建模框架下协同工作，使模型能够从当前观测序列出发，实现对未来姿态的连续建模。
-
-下面将对各个组成模块的具体结构与实现方式进行说明。
+在上述整体方法框架的基础上，本文构建了AIPose模型，用于实现基于自回归建模机制的人体姿态重构与预测。该模型以IMU时序数据为输入，通过共享的时序特征表示同时支持当前姿态重构与未来姿态预测两个任务。AIPose主要由IMU时序特征提取模块、姿态重构模块、IMU时序预测模块以及自回归姿态预测机制组成，并通过联合损失函数进行优化。各模块在同一建模框架下协同工作，使模型能够从当前观测序列出发，实现对未来姿态的连续建模。下面将对各个组成模块的具体结构与实现方式进行说明。
 
 \subsubsection{IMU 时序特征提取模块}{}
 
