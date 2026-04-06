@@ -12,14 +12,14 @@
 
 相比视觉方法，基于 IMU 的感知方案不依赖光照条件，对遮挡不敏感，且设备部署较为灵活，因此在可穿戴人体感知系统中受到广泛关注。IMU 能够高频采集人体局部运动的加速度与角速度信息，并以时序信号形式反映人体运动的动态变化。近年来，多项工作已尝试利用 IMU 重构人体姿态，这些研究推动了基于 IMU 的人体姿态重构发展，也说明仅依赖少量可穿戴传感器进行姿态建模具有可行性。进一步地，基于惯性传感器的人体运动建模研究近年来在远程运动监测、行为约束下的运动学估计以及松散与稀疏惯性运动捕捉等方向持续取得进展\cite{add_remoteMonitoringCommEng2024,add_behavioralConstraintsNatComm2025,add_garmentAwareDiffusionIJCAI2025,add_UltraInertialPoser2024}，这表明基于 IMU 的人体运动感知正在从静态重构逐步走向更强调约束建模、真实部署与复杂条件适应的研究阶段。不过，现有多数方法主要关注根据一段 IMU 观测序列重构对应时间范围内的人体姿态，即学习 IMU 信号与当前姿态之间的映射关系，而对未来姿态预测通常缺少显式建模。事实上，人体运动具有明显的时间连续性和动态演化特征，当前姿态不仅反映人体的即时状态，也蕴含着未来运动变化的重要线索。如果仅关注当前姿态重构，而忽略人体运动在时间维度上的发展趋势，则难以完整刻画人体运动过程，也会限制系统在预测与交互场景中的应用能力。与此同时，未来运动预测研究本身也在快速发展，相关方法已经从传统的确定性回归扩展到扰动鲁棒预测、多模态感知预测、在线元适配、长时行为预测以及延迟感知或扩散式预测等范式\cite{add_motionPerturbationCVPR2024,add_multimodalSenseForecastCVPR2024,add_MoML2024,add_FutureHuman3D2024,add_LAL2025,add_nonisotropicDiffusion2025}。然而，这些工作大多面向视觉输入、通用人体运动序列或更复杂的场景先验建模，直接面向 IMU 输入、并在统一框架下同时实现当前姿态重构与未来姿态预测的方法仍相对不足。
 
-针对上述问题，本文提出一种基于自回归建模机制的人体姿态重构与预测方法 AIPose。该方法以当前 IMU 序列为输入，在统一框架下同时完成当前姿态重构与未来姿态预测。具体而言，模型首先根据当前 IMU 序列恢复对应时间窗口内的人体二维关键点姿态序列；与此同时，模型进一步预测未来时间段内的 IMU 序列，并将预测得到的未来 IMU 序列与当前 IMU 序列尾部进行拼接，构造扩展 IMU 序列，再基于该扩展 IMU 序列预测未来姿态。通过这种“先预测未来 IMU 序列，再预测未来姿态”的方式，AIPose 将未来姿态预测建立在人体运动动态演化过程之上，从而在同一框架下实现“当前姿态重构 + 未来姿态预测”的联合建模。方法的整体思路如图~\ref{fig:aipose_apply} 所示。
-
 \begin{figure}[!htbp]
   \centering
   \includegraphics[width=0.95\textwidth]{aipose_apply.png}
   \caption{AIPose 方法整体思路示意图}
   \label{fig:aipose_apply}
 \end{figure}
+
+针对上述问题，本文提出一种基于自回归建模机制的人体姿态重构与预测方法 AIPose。该方法以当前 IMU 序列为输入，在统一框架下同时完成当前姿态重构与未来姿态预测。具体而言，模型首先根据当前 IMU 序列恢复对应时间窗口内的人体二维关键点姿态序列；与此同时，模型进一步预测未来时间段内的 IMU 序列，并将预测得到的未来 IMU 序列与当前 IMU 序列尾部进行拼接，构造扩展 IMU 序列，再基于该扩展 IMU 序列预测未来姿态。通过这种“先预测未来 IMU 序列，再预测未来姿态”的方式，AIPose 将未来姿态预测建立在人体运动动态演化过程之上，从而在同一框架下实现“当前姿态重构 + 未来姿态预测”的联合建模。方法的整体思路如图~\ref{fig:aipose_apply} 所示。
 
 \xsection{方法描述}{Method Description}
 
@@ -42,7 +42,7 @@ AIPose 以当前 IMU 序列为输入，通过时序特征提取、当前姿态�
   \label{fig:aipose_arch}
 \end{figure}
 
-\subsubsection{IMU 时序特征提取模块}{IMU Temporal Feature Extraction Module}
+\subsubsection{IMU 时序特征提取模块}{}
 
 根据第4.2.2节构建的输入样本，设输入 IMU 序列为
 \[
@@ -68,7 +68,7 @@ AIPose 以当前 IMU 序列为输入，通过时序特征提取、当前姿态�
 
 \subsubsection{IMU 时序预测模块}{}
 
-在完成当前姿态重构的同时，模型还需要基于当前观测对应的 IMU 时序特征，对未来时间段内的惯性序列进行预测。该模块的整体结构如图~\ref{fig:imu_generator_model} 所示。具体而言，模块首先利用 Transformer 编码器对当前输入特征进行时序建模，得到当前时序记忆特征；随后，结合目标位置编码与当前时序记忆特征的时间维平均池化结果构造查询序列表示，并再次输入共享参数的 Transformer 编码器，从而生成未来时间窗口对应的 IMU 序列预测结果。通过这种方式，模型能够在保留当前运动上下文的基础上，对未来惯性动态进行建模，为后续自回归姿态预测提供合理的输入。
+在完成当前姿态重构的同时，模型还需要基于当前 IMU 序列对应的时序特征，对未来时间段内的 IMU 序列进行预测。该模块整体结构如图~\ref{fig:imu_generator_model} 所示。具体而言，模块首先利用 Transformer 编码器对当前输入特征进行时序建模，得到表征当前运动状态的时序记忆特征；随后，结合目标位置编码与当前时序记忆特征的时间维平均池化结果构造预测查询序列，并再次输入共享参数的 Transformer 编码器，从而生成未来时间窗口对应的 IMU 序列预测结果。该设计使模型能够在保留当前运动上下文的基础上，对未来惯性动态进行建模，为后续自回归姿态预测提供合理输入。
 
 \begin{figure}[h]
   \centering
@@ -81,66 +81,79 @@ AIPose 以当前 IMU 序列为输入，通过时序特征提取、当前姿态�
 \begin{equation}
 \mathbf{F} \in \mathbb{R}^{B \times T_f \times D_f},
 \end{equation}
-其中，$B$ 表示批大小，$T_f$ 表示特征序列长度，$D_f$ 表示特征维度。为了便于后续 Transformer 编码器进行时序建模，首先将输入特征映射到统一的隐空间中，并加入与输入长度对应的可学习位置编码，得到初始输入表示
+其中，$B$ 表示批大小，$T_f$ 表示特征序列长度，$D_f$ 表示特征维度。首先，将输入特征映射到隐藏空间并加入对应的位置编码，得到当前序列的时序记忆特征：
 \begin{equation}
-\mathbf{H}_0 = \mathbf{F}W_{\mathrm{in}} + \mathbf{E}_{\mathrm{pos}}^{(1:T_f)},
+\mathbf{M}
+=
+\mathrm{Encoder}\!\left(
+\mathbf{F}W_{\mathrm{in}} + \mathbf{E}_{\mathrm{pos}}^{(1:T_f)}
+\right),
+\label{eq:imu_memory_feature}
 \end{equation}
-其中，$W_{\mathrm{in}} \in \mathbb{R}^{D_f \times D_h}$ 表示输入投影矩阵，$D_h$ 表示隐藏层维度，$\mathbf{E}_{\mathrm{pos}}^{(1:T_f)} \in \mathbb{R}^{1 \times T_f \times D_h}$ 表示输入位置编码。
-
-随后，将 $\mathbf{H}_0$ 输入 Transformer 编码器，对当前观测序列进行时序建模，得到当前时序记忆特征
+其中，$W_{\mathrm{in}} \in \mathbb{R}^{D_f \times D_h}$ 表示输入投影矩阵，$\mathbf{E}_{\mathrm{pos}}^{(1:T_f)} \in \mathbb{R}^{1 \times T_f \times D_h}$ 表示与输入序列对应的可学习位置编码，$D_h$ 表示隐藏层维度。由此有
 \begin{equation}
-\mathbf{M} = \mathrm{Encoder}(\mathbf{H}_0),
-\end{equation}
-其中，$\mathbf{M} \in \mathbb{R}^{B \times T_f \times D_h}$。该特征综合刻画了当前输入序列在时间维度上的动态模式，可作为未来 IMU 预测的上下文基础。
-
-在预测阶段，模型进一步构造长度为 $T_{\mathrm{pred}}$ 的查询序列表示。具体而言，选取与预测长度对应的目标位置编码，并与当前时序记忆特征在时间维度上的平均池化结果相加，得到
-\begin{equation}
-\mathbf{Q} = \mathbf{E}_{\mathrm{pos}}^{(1:T_{\mathrm{pred}})} + \mathrm{MeanPool}_T(\mathbf{M}),
-\end{equation}
-其中，$\mathbf{E}_{\mathrm{pos}}^{(1:T_{\mathrm{pred}})} \in \mathbb{R}^{1 \times T_{\mathrm{pred}} \times D_h}$ 表示目标位置编码，$\mathrm{MeanPool}_T(\mathbf{M}) \in \mathbb{R}^{B \times 1 \times D_h}$ 表示当前时序记忆特征在时间维度上的平均池化结果。通过广播机制，二者相加后得到
-\begin{equation}
-\mathbf{Q} \in \mathbb{R}^{B \times T_{\mathrm{pred}} \times D_h}.
+\mathbf{M} \in \mathbb{R}^{B \times T_f \times D_h}.
 \end{equation}
 
-可以看出，查询序列表示同时包含两部分信息：其一，目标位置编码为未来预测序列提供明确的时间位置索引；其二，当前时序记忆特征的时间维平均池化结果为预测阶段引入当前运动状态的整体上下文。这样的设计使模型在生成未来 IMU 序列时，既能够区分不同预测时刻，又能够保持与当前运动模式的一致性。
-
-在此基础上，将查询序列表示输入与前述阶段共享参数的 Transformer 编码器，得到未来时刻对应的隐表示：
+在预测阶段，模型将未来时间位置编码与当前时序记忆特征的全局上下文相结合，并通过共享参数的 Transformer 编码器和输出映射层直接得到未来 IMU 序列预测结果，即
 \begin{equation}
-\mathbf{H}_{\mathrm{pred}} = \mathrm{Encoder}(\mathbf{Q}),
+\mathbf{X}_{\mathrm{future}}
+=
+\mathrm{Encoder}\!\left(
+\mathbf{E}_{\mathrm{pos}}^{(1:T_{\mathrm{pred}})} + \mathrm{MeanPool}_T(\mathbf{M})
+\right) W_{\mathrm{out}} + b_{\mathrm{out}},
+\label{eq:imu_future_prediction}
 \end{equation}
-其中，$\mathbf{H}_{\mathrm{pred}} \in \mathbb{R}^{B \times T_{\mathrm{pred}} \times D_h}$。最后，通过输出映射层将未来隐表示投影到 IMU 通道空间，得到未来 IMU 序列预测结果：
-\begin{equation}
-\mathbf{X}_{\mathrm{future}} = \mathbf{H}_{\mathrm{pred}} W_{\mathrm{out}} + b_{\mathrm{out}},
-\end{equation}
-其中，$W_{\mathrm{out}} \in \mathbb{R}^{D_h \times C}$、$b_{\mathrm{out}} \in \mathbb{R}^{C}$ 分别表示输出层权重与偏置，$C$ 表示 IMU 通道数，因此有
+其中，$\mathbf{E}_{\mathrm{pos}}^{(1:T_{\mathrm{pred}})} \in \mathbb{R}^{1 \times T_{\mathrm{pred}} \times D_h}$ 表示与预测序列对应的可学习位置编码，$W_{\mathrm{out}} \in \mathbb{R}^{D_h \times C}$、$b_{\mathrm{out}} \in \mathbb{R}^{C}$ 分别表示输出映射层的权重与偏置，$C$ 表示 IMU 通道数。因此有
 \begin{equation}
 \mathbf{X}_{\mathrm{future}} \in \mathbb{R}^{B \times T_{\mathrm{pred}} \times C}.
 \end{equation}
 
-总体而言，该模块并非直接对未来 IMU 序列进行逐时刻回归，而是先利用 Transformer 编码器对当前输入特征进行时序建模，得到当前时序记忆特征，再基于目标位置编码与当前时序记忆特征的时间维平均池化结果构造查询序列表示，从而生成未来时间窗口内的 IMU 序列预测结果。该设计能够在保持当前运动连续性的同时，更有效地刻画未来惯性动态变化，为后续自回归姿态预测提供可靠的时序输入。
+式~\eqref{eq:imu_future_prediction} 表明，未来 IMU 序列的生成并不是对各时刻进行独立回归，而是以未来时间位置编码作为时序索引，并引入 $\mathrm{MeanPool}_T(\mathbf{M})$ 所提供的当前运动状态全局上下文，在共享参数的 Transformer 编码器中完成未来动态建模。这样既能够区分不同预测时刻，又能够保持与当前运动模式的一致性，从而更有效地刻画未来时间窗口内的惯性变化过程。
 
 \subsubsection{自回归姿态预测机制}{}
 
-在获得未来IMU序列 $\mathbf{X}_{\mathrm{future}}$ 后，为实现未来姿态建模，本文引入自回归姿态预测机制。该机制通过将当前观测信息与预测得到的未来IMU序列进行组合，构建扩展时序输入，从而完成对未来姿态的预测。
+在获得未来 IMU 序列预测结果 $\mathbf{X}_{\mathrm{future}}$ 后，本文进一步引入自回归姿态预测机制，以实现未来时间窗口内的人体姿态预测。该机制的核心思想是：未来姿态并不直接由当前时序特征一次性回归得到，而是先构造与未来时间段对应的扩展 IMU 序列，再基于该扩展 IMU 序列进行姿态建模。这样可以使未来姿态预测仍建立在 IMU 时序动态演化过程之上，从而保持“先预测运动，再预测姿态”的建模思路。
 
-具体而言，从输入IMU序列 $\mathbf{X}_{\mathrm{input}}$ 中截取与预测窗口相邻的尾部序列，并与预测得到的未来IMU序列进行拼接，得到扩展序列
-\[
-\mathbf{X}_{\mathrm{extended}} = \mathrm{Concat}(\mathbf{X}_{\mathrm{tail}}, \mathbf{X}_{\mathrm{future}}),
-\]
-其中 $\mathbf{X}_{\mathrm{tail}}$ 表示当前观测序列中与预测阶段相邻的时间片段。通过该方式，将真实观测信息与模型预测信息统一到同一时间序列中。
+根据第4.2.2节中的样本构建方式，设当前 IMU 输入序列为
+\begin{equation}
+\mathbf{X}_{\mathrm{input}} \in \mathbb{R}^{B \times T_{\mathrm{input}} \times C},
+\end{equation}
+其中，$B$ 表示批大小，$C$ 表示 IMU 通道数，$T_{\mathrm{input}} = L_{\mathrm{input}} f_{\mathrm{imu}}$ 表示当前 IMU 输入窗口对应的时间步数。设 IMU 时序预测模块输出的未来 IMU 序列预测结果为
+\begin{equation}
+\mathbf{X}_{\mathrm{future}} \in \mathbb{R}^{B \times T_{\mathrm{pred}} \times C},
+\end{equation}
+其中，$T_{\mathrm{pred}} = L_{\mathrm{pred}} f_{\mathrm{imu}}$ 表示未来预测窗口对应的时间步数。
 
-在此基础上，将扩展后的IMU序列再次输入ResNet进行特征提取，得到对应的未来时序特征表示
-\[
-\mathbf{F}_{\mathrm{future}} = E(\mathbf{X}_{\mathrm{extended}}).
-\]
+为了使未来姿态预测阶段的输入仍保持连续的时间结构，本文首先从当前 IMU 输入序列中截取与未来预测阶段相邻的尾部片段：
+\begin{equation}
+\mathbf{X}_{\mathrm{tail}}
+=
+\mathbf{X}_{\mathrm{input}}[:,\,T_{\mathrm{input}}-T_{\mathrm{pred}}:T_{\mathrm{input}},\,:],
+\qquad
+\mathbf{X}_{\mathrm{tail}} \in \mathbb{R}^{B \times T_{\mathrm{pred}} \times C}.
+\label{eq:x_tail}
+\end{equation}
 
-随后，通过姿态预测映射函数对未来姿态进行建模，其过程可表示为
-\[
-\mathbf{P}_{\mathrm{pred}} = f_{\mathrm{pred}}(\mathbf{F}_{\mathrm{future}}),
-\]
-其中 $\mathbf{P}_{\mathrm{pred}}$ 表示未来时间窗口内的人体姿态序列。
+在此基础上，自回归姿态预测过程可统一表示为
+\begin{equation}
+\mathbf{P}_{\mathrm{pred}}
+=
+f_{\mathrm{pred}}
+\!\left(
+E\!\left(
+\mathrm{Concat}\!\left(
+\mathbf{X}_{\mathrm{tail}},\,\mathbf{X}_{\mathrm{future}}
+\right)
+\right)
+\right),
+\qquad
+\mathbf{P}_{\mathrm{pred}} \in \mathbb{R}^{B \times L_{\mathrm{pred}} \times K \times 2},
+\label{eq:autoregressive_pose_prediction}
+\end{equation}
+其中，$\mathrm{Concat}(\cdot,\cdot)$ 表示沿时间维度进行拼接操作，$E(\cdot)$ 表示 IMU 时序特征提取模块，$f_{\mathrm{pred}}(\cdot)$ 表示未来姿态预测映射函数，$K$ 表示关键点数量。由式~\eqref{eq:autoregressive_pose_prediction} 可知，模型首先将当前时刻附近的真实 IMU 观测 $\mathbf{X}_{\mathrm{tail}}$ 与预测得到的未来 IMU 序列 $\mathbf{X}_{\mathrm{future}}$ 拼接为扩展 IMU 序列，再基于该扩展输入完成未来姿态预测。
 
-通过上述过程，模型能够在当前观测基础上，结合预测得到的IMU动态信息，对未来姿态进行建模，实现从当前状态到未来状态的连续预测。
+可以看出，该机制并非直接由当前 IMU 时序特征一次性生成未来姿态，而是先利用当前 IMU 输入预测未来 IMU 序列，再将当前时刻附近的真实观测与预测得到的未来 IMU 动态组合为扩展 IMU 序列，最后基于该扩展输入完成未来姿态预测。因此，未来姿态建模过程始终依赖于 IMU 序列在时间维度上的连续演化关系，体现了自回归建模“由当前状态递推未来状态”的基本思想。通过这种方式，模型能够在当前观测基础上，结合预测得到的未来 IMU 动态信息，对未来姿态进行连续建模。
 
 \subsubsection{损失函数}{}
 
