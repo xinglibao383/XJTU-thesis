@@ -8,7 +8,14 @@
 
 \xsubsection{惯性测量单元}{Inertial Measurement Unit}
 
-IMU 是人体运动感知中最常用的可穿戴传感器之一，通常由三轴加速度计和三轴陀螺仪构成，用于测量载体在三维空间中的线性加速度与角速度信息。相较于视觉传感器，IMU 主要刻画人体局部运动状态，对遮挡及环境光照变化具有较强的鲁棒性。然而，其感知能力受限于传感器的佩戴位置，同时在跨受试者泛化、佩戴偏差以及长期积分漂移等方面仍面临一定挑战。目前，IMU 已广泛应用于人体活动识别、步态分析、远程运动监测、跌倒风险评估以及人体姿态重构等任务中\cite{add_remoteMonitoringCommEng2024,add_nearFallIMUCluster2024,add_behavioralConstraintsNatComm2025}。
+IMU 是人体运动感知中最常用的可穿戴传感器之一，通常由三轴加速度计和三轴陀螺仪构成，用于测量载体在三维空间中的线性加速度与角速度信息，其基本结构如图~\ref{fig:imu} 所示。相较于视觉传感器，IMU 主要刻画人体局部运动状态，对遮挡及环境光照变化具有较强的鲁棒性。然而，其感知能力受限于传感器的佩戴位置，同时在跨受试者泛化、佩戴偏差以及长期积分漂移等方面仍面临一定挑战。目前，IMU 已广泛应用于人体活动识别、步态分析、远程运动监测、跌倒风险评估以及人体姿态重构等任务中\cite{add_remoteMonitoringCommEng2024,add_nearFallIMUCluster2024,add_behavioralConstraintsNatComm2025}。
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.6\textwidth]{imu.png}
+    \caption{IMU 结构示意}
+    \label{fig:imu}
+\end{figure}
 
 在加速度测量方面，加速度计输出的是载体坐标系下的比力，即线性加速度与重力加速度共同作用的结果。设时刻 $t$ 的加速度计观测值为 $a_t$，其测量模型可表示为：
 \begin{equation}
