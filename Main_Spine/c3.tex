@@ -10,7 +10,7 @@
 
 \begin{figure}[!htbp]
   \centering
-  \includegraphics[width=0.8\textwidth]{wihar_apply.png}
+  \includegraphics[width=0.9\textwidth]{wihar_apply.png}
   \caption{WIHAR 方法整体思路示意图}
   \label{fig:wihar_apply}
 \end{figure}
@@ -48,7 +48,7 @@ IMU 与 WiFi CSI 均属于典型的时间序列信号，其判别信息不仅体
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=0.8\textwidth]{mamba_encoder.png}
+  \includegraphics[width=0.9\textwidth]{mamba_encoder.png}
   \caption{Mamba 特征编码器}
   \label{fig:mamba_encoder}
 \end{figure}
@@ -232,7 +232,7 @@ L_a = - \sum_{c=1}^{C_a} w_c \, y_a^{(c)} \log \hat{y}_a^{(c)},
 \end{equation}
 其中，$y_a^{(c)}$ 和 $\hat{y}_a^{(c)}$ 分别表示真实标签的独热编码和模型预测的类别概率。通过引入类别权重，样本量较少的类别将在优化过程中获得相对更大的损失贡献，从而引导模型更加关注低频类别样本，提升类别不均衡条件下的整体识别能力。
 
-在分类损失之外，本文进一步引入双向跨模态对比学习损失 $L_{\mathrm{BCMCL}}$，以约束 IMU 与 WiFi CSI 的特征对齐，具体见第3.2.2.2章节。
+在分类损失之外，本文进一步引入双向跨模态对比学习损失 $L_{\mathrm{BCMCL}}$，以约束 IMU 与 WiFi CSI 的特征对齐，具体见本节“跨模态特征对齐”部分。
 
 综上，模型的整体优化目标定义为
 \begin{equation}
@@ -354,7 +354,7 @@ F1_c = \frac{2P_cR_c}{P_c + R_c}.
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=0.45\textwidth]{标准数据集划分.png}
+  \includegraphics[width=0.5\textwidth]{标准数据集划分.png}
   \caption{标准数据集划分}
   \label{fig:dataset_common}
 \end{figure}
@@ -363,7 +363,7 @@ F1_c = \frac{2P_cR_c}{P_c + R_c}.
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=0.8\textwidth]{跨受试者数据集划分.png}
+  \includegraphics[width=0.85\textwidth]{跨受试者数据集划分.png}
   \caption{跨受试者数据集划分}
   \label{fig:dataset_cross_person}
 \end{figure}
@@ -372,7 +372,7 @@ F1_c = \frac{2P_cR_c}{P_c + R_c}.
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=0.7\textwidth]{跨场景数据集划分.png}
+  \includegraphics[width=0.75\textwidth]{跨场景数据集划分.png}
   \caption{跨场景数据集划分}
   \label{fig:dataset_cross_env}
 \end{figure}
@@ -450,7 +450,7 @@ F1_c = \frac{2P_cR_c}{P_c + R_c}.
 
 为了验证 WIHAR 中关键结构设计与训练策略的合理性，本文围绕时序编码骨干网络、模态融合方式、类别权重设计以及双向跨模态对比学习四个方面开展实验分析。其中，骨干网络实验主要用于比较不同时序建模结构对人体活动识别性能的影响；其余实验则用于验证关键模块与训练策略对模型性能提升的具体贡献。
 
-首先，为评估不同时序建模结构对人体活动识别性能的影响，本文将双分支编码器中的主干网络分别替换为 ResNet18\cite{he2016deep}、LSTM\cite{hochreiter1997long}、GRU\cite{cho2014learning}、Transformer\cite{vaswani2017attention} 和 Mamba\cite{gu2023mamba}，并保持其余网络结构、训练轮数和优化参数一致。这样可以保证不同结果主要反映时序建模能力差异，而不是来自训练细节或参数设置的变化。实验结果如表~\ref{tab:backbone_compare_ch3} 所示。
+首先，为评估不同时序建模结构对人体活动识别性能的影响，本文将双分支编码器中的主干网络分别替换为 ResNet18\cite{he2016deep}、LSTM\cite{hochreiter1997long}、GRU\cite{cho2014learning}、Transformer\cite{vaswani2017attention} 和 Mamba\cite{gu2024mamba}，并保持其余网络结构、训练轮数和优化参数一致。这样可以保证不同结果主要反映时序建模能力差异，而不是来自训练细节或参数设置的变化。实验结果如表~\ref{tab:backbone_compare_ch3} 所示。
 
 \begin{table}[h]
   \centering
@@ -466,7 +466,7 @@ F1_c = \frac{2P_cR_c}{P_c + R_c}.
   LSTM\cite{hochreiter1997long} & 92.49 & 92.37 & 92.34 & 92.43 \\
   GRU\cite{cho2014learning} & 93.47 & 93.04 & 93.00 & 93.15 \\
   Transformer\cite{vaswani2017attention} & 95.25 & 94.91 & 94.63 & 95.36 \\
-  Mamba\cite{gu2023mamba} & \textbf{95.81} & \textbf{95.29} & \textbf{95.48} & \textbf{95.13} \\
+  Mamba\cite{gu2024mamba} & \textbf{95.81} & \textbf{95.29} & \textbf{95.48} & \textbf{95.13} \\
   \bottomrule
   \end{tblr}
 \end{table}
