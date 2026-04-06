@@ -199,7 +199,6 @@ MPJPE 定义为
 \hat{p}_{b,t,k} - p_{b,t,k}
 \right\|_2.
 \end{equation}
-
 其中，$\|\cdot\|_2$ 表示欧氏距离。该指标用于衡量预测关键点与真实关键点之间在图像平面中的平均欧氏距离。由于本文在反归一化后恢复到原始图像坐标系进行计算，因此 MPJPE 的单位为像素（px），数值越小表示模型预测精度越高。
 
 \subsubsection{PCK}{}
@@ -212,7 +211,6 @@ PCK 用于衡量预测关键点是否足够接近真实位置。设关键点判�
 \left|\left\{(b,t,k)\mid \left\|\hat{p}_{b,t,k}-p_{b,t,k}\right\|_2 \leq \delta_{\mathrm{PCK}} \right\}\right|
 }{BTK}.
 \end{equation}
-
 其中，$\delta_{\mathrm{PCK}}$ 为在原始图像坐标系下设定的关键点判定阈值，其单位为像素（px）。当预测关键点与真实关键点之间的欧氏距离不超过 $\delta_{\mathrm{PCK}}$ 时，认为该关键点预测正确。本文将 PCK 结果统一以百分比（\%）表示，例如 PCK@10px 表示关键点预测误差不超过 10 像素时的占比。PCK 数值越大表示模型性能越好。
 
 \subsubsection{Per-joint MPJPE}{}
@@ -321,7 +319,6 @@ XRFV2 在采集 IMU 数据的同时，使用 Azure Kinect 对受试者的动作�
 \mathbf{P}_{\mathrm{pred}}
 \right\}.
 \end{equation}
-
 其中，$\mathbf{X}_{\mathrm{input}}$ 表示当前 IMU 输入序列，用于提供姿态重构与预测的先验信息；$\mathbf{X}_{\mathrm{future}}$ 表示与未来姿态预测阶段对应的 IMU 序列；$\mathbf{P}_{\mathrm{rec}}$ 表示当前人体姿态序列，用于当前姿态重构任务；$\mathbf{P}_{\mathrm{pred}}$ 表示未来人体姿态序列，用于未来姿态预测任务。由此，一个完整样本由上述四个部分共同构成。
 
 在数据集划分策略方面，本章在主体实验中采用与第三章一致的同分布划分方式，并进一步通过跨受试者与跨场景实验评估模型的泛化能力。考虑到不同场景之间在摄像机视角、人体活动区域以及姿态空间分布上存在显著差异，跨场景设置将引入更强的分布偏移，因此本文将其作为泛化实验进行单独分析，而不作为主要对比实验设置。
