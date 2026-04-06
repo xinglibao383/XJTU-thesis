@@ -50,7 +50,7 @@ IMU 与 WiFi CSI 均属于典型的时间序列信号，其判别信息不仅体
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=0.85\textwidth]{mamba_encoder.png}
+  \includegraphics[width=0.8\textwidth]{mamba_encoder.png}
   \caption{Mamba 特征编码器}
   \label{fig:mamba_encoder}
 \end{figure}
@@ -476,7 +476,7 @@ F1_c = \frac{2P_cR_c}{P_c + R_c}.
 
 为了验证 WIHAR 中关键结构设计与训练策略的合理性，本文围绕时序编码骨干网络、模态融合方式、类别权重设计以及双向跨模态对比学习四个方面开展实验分析。其中，骨干网络实验主要用于比较不同时序建模结构对人体活动识别性能的影响；其余实验则用于验证关键模块与训练策略对模型性能提升的具体贡献。
 
-首先，为评估不同时序建模结构对人体活动识别性能的影响，本文将双分支编码器中的主干网络分别替换为 ResNet18、LSTM、GRU、Transformer 和 Mamba，并保持其余网络结构、训练轮数和优化参数一致。这样可以保证不同结果主要反映时序建模能力差异，而不是来自训练细节或参数设置的变化。实验结果如表~\ref{tab:backbone_compare_ch3} 所示。
+首先，为评估不同时序建模结构对人体活动识别性能的影响，本文将双分支编码器中的主干网络分别替换为 ResNet18\cite{he2016deep}、LSTM\cite{hochreiter1997long}、GRU\cite{cho2014learning}、Transformer\cite{vaswani2017attention} 和 Mamba\cite{gu2023mamba}，并保持其余网络结构、训练轮数和优化参数一致。这样可以保证不同结果主要反映时序建模能力差异，而不是来自训练细节或参数设置的变化。实验结果如表~\ref{tab:backbone_compare_ch3} 所示。
 
 \begin{table}[h]
   \centering
@@ -488,11 +488,11 @@ F1_c = \frac{2P_cR_c}{P_c + R_c}.
   \toprule
   骨干网络 & 准确率 & 宏平均 F1 & 宏平均精确率 & 宏平均召回率 \\
   \midrule
-  ResNet & 88.29 & 87.07 & 89.25 & 85.88 \\
-  LSTM & 92.49 & 92.37 & 92.34 & 92.43 \\
-  GRU & 93.47 & 93.04 & 93.00 & 93.15 \\
-  Transformer & 95.25 & 94.91 & 94.63 & 95.36 \\
-  Mamba & \textbf{95.81} & \textbf{95.29} & \textbf{95.48} & \textbf{95.13} \\
+  ResNet\cite{he2016deep} & 88.29 & 87.07 & 89.25 & 85.88 \\
+  LSTM\cite{hochreiter1997long} & 92.49 & 92.37 & 92.34 & 92.43 \\
+  GRU\cite{cho2014learning} & 93.47 & 93.04 & 93.00 & 93.15 \\
+  Transformer\cite{vaswani2017attention} & 95.25 & 94.91 & 94.63 & 95.36 \\
+  Mamba\cite{gu2023mamba} & \textbf{95.81} & \textbf{95.29} & \textbf{95.48} & \textbf{95.13} \\
   \bottomrule
   \end{tblr}
 \end{table}
@@ -547,42 +547,40 @@ F1_c = \frac{2P_cR_c}{P_c + R_c}.
 
 \xsubsection{模态和传感器消融实验}{Modality and Sensor Ablation Experiments}
 
-为了进一步分析不同传感模态在多模态人体活动识别任务中的作用，本节从模态层面与传感器层面两个角度对模型进行分析。首先通过模态消融实验研究 IMU 与 WiFi CSI 信号在人体活动识别中的贡献，其次通过传感器消融实验分析不同传感器对模型性能的影响。
+为了分析不同模态与设备在人体活动识别任务中的作用，本节从模态组合与设备构成两个层面对模型进行消融研究。
 
 \subsubsection{模态消融实验}{}
 
-为了评估不同传感模态对识别性能的影响，本文分别使用IMU数据、WiFi CSI数据以及两者融合数据进行实验。同时，为了分析不同WiFi CSI表示方式对模型性能的影响，本文进一步比较了原始WiFi CSI、WiFi CSI幅度信息以及WiFi CSI相位信息三种表示方式。实验结果如表~\ref{tab:modality_ablation}所示。
+为评估不同模态组合对识别性能的影响，本文构建了多种输入配置，包括单模态输入（仅 IMU、仅 WiFi 及其幅度/相位表示）以及多模态融合输入。实验结果如表~\ref{tab:modality_ablation_ch3} 所示。
 
 \begin{table}[h]
   \centering
   \caption{模态消融实验结果}
-  \label{tab:modality_ablation}
+  \label{tab:modality_ablation_ch3}
   \begin{tblr}{
-    colspec={X[c] X[c] X[c]},
+    colspec={X[0.9,c] X[0.9,c] X[1.0,c] X[1.0,c] X[1.1,c] X[1.1,c]},
   }
   \toprule
-  模态1 & 模态2 & 活动识别准确率 \\
+  模态1 & 模态2 & 准确率 & 宏平均 F1 & 宏平均精确率 & 宏平均召回率 \\
   \midrule
-  IMU & - & 92.96\% \\
-  WiFi CSI & - & 87.96\% \\
-  WiFi CSI幅度 & - & 87.75\% \\
-  WiFi CSI相位 & - & 84.85\% \\
-  IMU & WiFi CSI & \textbf{96.06\%} \\
-  IMU & WiFi CSI幅度 & 95.68\% \\
-  IMU & WiFi CSI相位 & 94.65\%\\
+  IMU  & - & 37.13 & 24.00 & 40.13 & 22.89 \\
+  \midrule
+  WiFi       & - & 86.72 & 86.74 & 86.67 & 87.02 \\
+  WiFi幅度    & - & 87.01 & 87.14 & 86.54 & 88.00 \\
+  WiFi相位    & - & 84.93 & 84.88 & 85.52 & 84.57 \\
+  \midrule
+  IMU  & WiFi        & \textbf{95.81} & 95.29 & \textbf{95.48} & 95.13 \\
+  IMU  & WiFi幅度     & 95.41 & \textbf{95.49} & 95.27 & \textbf{95.77} \\
+  IMU  & WiFi相位     & 94.65 & 94.23 & 93.85 & 94.65 \\
   \bottomrule
   \end{tblr}
 \end{table}
 
-从表~\ref{tab:modality_ablation}可以看出，不同传感模态对人体活动识别性能的贡献存在明显差异。仅使用IMU数据时，人体活动识别准确率达到92.96\%，明显高于仅使用WiFi CSI数据的87.96\%。这说明IMU能够直接捕获人体运动产生的惯性变化信息，因此在活动识别任务中具有较强的判别能力。
-
-进一步比较不同WiFi CSI表示方式可以发现，直接使用原始WiFi CSI信息能够取得最佳整体性能，而仅使用幅度或相位信息时模型性能略有下降。这说明幅度与相位信息共同包含了更完整的信道特征，能够为模型提供更丰富的环境感知信息。
-
-在多模态融合情况下， IMU 与 WiFi CSI 数据结合能够显著提升识别性能。其中， IMU 与 WiFi CSI 融合后在活动识别任务上的准确率达到96.06\%，相比单独使用IMU提升约3.10个百分点。这表明 IMU 与 WiFi CSI 模态之间具有明显互补性，通过多模态融合能够获得更完整的人体活动特征表示。
+从表~\ref{tab:modality_ablation_ch3} 可以看出，多模态融合在各项指标上均优于单模态输入。其中，IMU 与 WiFi 联合输入在准确率和宏平均精确率上取得最优结果，而 IMU 与 WiFi幅度组合在宏平均 F1 和召回率上略有优势，整体性能差异较小，说明不同融合方式均能够有效提升模型表现。在单模态设置下，仅使用 WiFi 信息时模型仍能维持约 85\%–87\% 的识别性能，而仅使用 WiFi相位时性能最低，说明不同 WiFi 表示方式对识别效果存在一定影响。相比之下，WiFi幅度整体表现优于 WiFi相位。仅使用 IMU 时模型性能显著下降，准确率降至 37.13\%。这一结果表明，在当前实验设置下，单一 IMU 模态难以支撑多类别活动识别任务，而引入 WiFi 信息后模型性能显著提升。总体来看，IMU 与 WiFi 模态融合能够显著提升识别性能，说明两种模态在信息表达上具有互补性。
 
 \subsubsection{传感器消融实验}{}
 
-为了进一步分析不同设备对模型性能的影响，本文在完整系统基础上逐一移除单个 IMU 传感器或单个 WiFi 接收节点，并使用剩余设备作为输入重新训练模型进行测试，以评估各设备对活动识别任务的贡献。实验结果如表~\ref{tab:device_ablation_ch3} 所示。
+为了进一步分析不同设备对模型性能的影响，本文在完整系统基础上逐一移除单个 IMU 传感器或 WiFi 接收节点，并重新训练模型进行评估。实验结果如表~\ref{tab:device_ablation_ch3} 所示。
 
 \begin{table}[h]
   \centering
@@ -609,7 +607,7 @@ F1_c = \frac{2P_cR_c}{P_c + R_c}.
   \end{tblr}
 \end{table}
 
-从表~\ref{tab:device_ablation_ch3} 可以看出，在不移除任何设备时，模型取得最佳性能，准确率和宏平均 F1 分别达到 95.81 和 95.29。当移除任意单个设备后，各项指标均出现一定程度下降，说明不同设备均为活动识别提供了有效信息。具体来看，在 IMU 设备中，移除 IMU-2 时性能下降最为明显，准确率和宏平均 F1 分别降至 94.69 和 94.52，而移除 IMU-1 或 IMU-3 时性能下降相对较小，准确率仍保持在 95.5 左右，表明不同 IMU 设备对动作特征建模的贡献存在差异。在 WiFi 设备中，移除 WiFi-1 时性能下降最为明显，准确率和宏平均 F1 分别为 94.95 和 94.72，而移除 WiFi-0 或 WiFi-2 时对整体性能影响较小。总体来看，移除单个设备后模型性能虽有所下降，但仍能维持较高识别水平，说明各设备之间存在一定程度的信息冗余，所构建的多设备融合系统具有良好的鲁棒性；同时，完整设备配置在整体性能上仍优于任一消融设置，表明多源信息融合能够进一步提升模型的判别能力。
+从表~\ref{tab:device_ablation_ch3} 可以看出，在不移除任何设备时模型性能最佳。当移除任意单个设备后，各项指标均出现一定程度下降，说明各设备均对活动识别提供了有效信息。具体来看，在 IMU 设备中，移除 IMU-2 时性能下降最为明显，而移除 IMU-1 或 IMU-3 时性能变化较小，表明不同 IMU 设备对模型性能的影响存在差异。在 WiFi 设备中，移除 WiFi-1 时性能下降最为明显，而移除其他节点时影响相对较小。总体而言，移除单个设备后模型仍能维持较高性能，说明系统对单设备缺失具有一定鲁棒性；但完整设备配置始终取得最优结果，表明多设备融合有助于进一步提升模型性能。
 
 \xsubsection{跨受试者泛化实验}{Cross-subject Generalization Experiments}
 
