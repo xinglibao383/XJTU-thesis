@@ -83,29 +83,34 @@ F &= \Pi^{-1}\!\left(Z^{(L)}\right),
 \end{equation}
 其中，$H^{(0)} \in \mathbb{R}^{B \times T \times C}$ 表示转置后的输入序列，$W_{\mathrm{in}} \in \mathbb{R}^{C \times D}$、$b_{\mathrm{in}} \in \mathbb{R}^{D}$ 分别表示输入线性映射层的权重与偏置，$D$ 表示隐空间特征维度，$\mathrm{Mamba}_{\ell}(\cdot)$ 表示第 $\ell$ 层 Mamba 模块，$\Pi^{-1}(\cdot)$ 表示将特征重新变换回 $\mathbb{R}^{B \times D \times T}$ 的逆转置操作。
 
-因此，对于 IMU 与 WiFi CSI 两种模态，分别有
+因此，对于 IMU 与 WiFi CSI 两种模态，编码器输出可分别表示为
 \begin{equation}
-F_I = E_I(\hat{X}_I), \qquad
-F_W = E_W(\hat{X}_W),
+\bar{F}_I = E_I(\hat{X}_I), \qquad
+\bar{F}_W = E_W(\hat{X}_W),
 \end{equation}
-其中，$E_I(\cdot)$ 与 $E_W(\cdot)$ 分别表示 IMU 模态编码器与 WiFi CSI 模态编码器。结合式 \eqref{eq:mamba_encoder_detail} 可知，二者本质上均由“输入转置—线性投影—多层 Mamba 堆叠—逆转置”构成，只是在参数上彼此独立。
+其中，$\bar{F}_I,\bar{F}_W \in \mathbb{R}^{B \times D \times T}$。结合式 \eqref{eq:mamba_encoder_detail} 可知，二者本质上均由“输入转置—线性投影—多层 Mamba 堆叠—逆转置”构成，只是在参数上彼此独立。
 
-经过时序编码后，两种模态均被映射为统一维度的高层时序特征表示，即
+为了便于后续跨模态对齐与特征融合计算，本文进一步将编码器输出重新整理为时间维在前、特征维在后的形式，即
 \begin{equation}
-F_I \in \mathbb{R}^{B \times D \times T}, \qquad
-F_W \in \mathbb{R}^{B \times D \times T}.
+F_I = \Pi(\bar{F}_I), \qquad
+F_W = \Pi(\bar{F}_W),
 \end{equation}
-经过编码后，特征表示在保持时间长度 $T$ 不变的同时，实现了从原始观测空间到高层语义空间的映射，为后续跨模态对齐与特征融合提供了统一的表示基础。
+其中，
+\begin{equation}
+F_I, F_W \in \mathbb{R}^{B \times T \times D}.
+\end{equation}
+
+经过时序编码后，两种模态均被映射为统一维度的高层时序特征表示。在保持时间长度 $T$ 不变的同时，实现了从原始观测空间到高层语义空间的映射，为后续跨模态对齐与特征融合提供了统一的表示基础。
 
 需要说明的是，本文在该阶段不对时间维度进行池化压缩，而是保留完整的时序特征表示。这是因为跨模态对齐与融合不仅依赖全局统计信息，还需要利用细粒度的时序对应关系。保留完整的时间结构信息有助于后续模块进一步挖掘两种模态在动态变化过程中的互补性，从而提升多模态表示学习效果。
 
 \subsubsection{跨模态特征对齐}{}
 
-如第2.3节所述，对比学习能够在共享语义空间中实现跨模态特征对齐。基于该思想，本文在 WIHAR 模型中引入双向跨模态对比学习（Bidirectional Cross-Modal Contrastive Learning, BCMCL）约束，以减小 IMU 与 WiFi CSI 特征之间的分布偏差。与第二章对跨模态对齐原理的通用描述不同，本文在特征层进行对齐：首先利用 Mamba 编码器分别提取 IMU 与 WiFi CSI 的时序特征表示，然后在样本级别构建跨模态对比关系。设编码后的时序特征为
+如第2.3节所述，对比学习能够在共享语义空间中实现跨模态特征对齐。基于该思想，本文在 WIHAR 模型中引入双向跨模态对比学习（Bidirectional Cross-Modal Contrastive Learning, BCMCL）约束，以减小 IMU 与 WiFi CSI 特征之间的分布偏差。与第二章对跨模态对齐原理的通用描述不同，本文在特征层进行对齐。具体而言，首先利用 Mamba 编码器分别提取 IMU 与 WiFi CSI 的时序特征表示，并将其整理为
 \begin{equation}
 F_I, F_W \in \mathbb{R}^{B \times T \times D},
 \end{equation}
-其中，$B$ 表示批大小，$T$ 表示时间序列长度，$D$ 表示特征维度。为获得样本级的全局表示，本文对时间维度进行平均池化：
+其中，$B$ 表示批大小，$T$ 表示时间序列长度，$D$ 表示特征维度。。为获得样本级的全局表示，本文对时间维度进行平均池化：
 \begin{equation}
 f_I = \mathrm{MeanPool}_T(F_I), \qquad
 f_W = \mathrm{MeanPool}_T(F_W),
@@ -151,7 +156,7 @@ L_{\mathrm{BCMCL}}
   \label{fig:cross_attention}
 \end{figure}
 
-设经过 Mamba 编码器得到的 IMU 与 WiFi CSI 时序特征分别为
+设经过 Mamba 编码器提取并重排后的 IMU 与 WiFi CSI 时序特征分别为
 \begin{equation}
 F_I,\,F_W \in \mathbb{R}^{B \times T \times D},
 \end{equation}
@@ -450,7 +455,7 @@ F1_c = \frac{2P_cR_c}{P_c + R_c}.
 
 为了验证 WIHAR 中关键结构设计与训练策略的合理性，本文围绕时序编码骨干网络、模态融合方式、类别权重设计以及双向跨模态对比学习四个方面开展实验分析。其中，骨干网络实验主要用于比较不同时序建模结构对人体活动识别性能的影响；其余实验则用于验证关键模块与训练策略对模型性能提升的具体贡献。
 
-首先，为评估不同时序建模结构对人体活动识别性能的影响，本文将双分支编码器中的主干网络分别替换为 ResNet18\cite{he2016deep}、LSTM\cite{hochreiter1997long}、GRU\cite{cho2014learning}、Transformer\cite{vaswani2017attention} 和 Mamba\cite{gu2024mamba}，并保持其余网络结构、训练轮数和优化参数一致。这样可以保证不同结果主要反映时序建模能力差异，而不是来自训练细节或参数设置的变化。实验结果如表~\ref{tab:backbone_compare_ch3} 所示。
+首先，为评估不同时序建模结构对人体活动识别性能的影响，本文将双分支编码器中的主干网络分别替换为 ResNet\cite{he2016deep}、LSTM\cite{hochreiter1997long}、GRU\cite{cho2014learning}、Transformer\cite{vaswani2017attention} 和 Mamba\cite{gu2024mamba}，并保持其余网络结构、训练轮数和优化参数一致。这样可以保证不同结果主要反映时序建模能力差异，而不是来自训练细节或参数设置的变化。实验结果如表~\ref{tab:backbone_compare_ch3} 所示。
 
 \begin{table}[h]
   \centering
@@ -462,7 +467,7 @@ F1_c = \frac{2P_cR_c}{P_c + R_c}.
   \toprule
   骨干网络 & 准确率 & 宏平均 F1 & 宏平均精确率 & 宏平均召回率 \\
   \midrule
-  ResNet18\cite{he2016deep} & 88.29 & 87.07 & 89.25 & 85.88 \\
+  ResNet\cite{he2016deep} & 88.29 & 87.07 & 89.25 & 85.88 \\
   LSTM\cite{hochreiter1997long} & 92.49 & 92.37 & 92.34 & 92.43 \\
   GRU\cite{cho2014learning} & 93.47 & 93.04 & 93.00 & 93.15 \\
   Transformer\cite{vaswani2017attention} & 95.25 & 94.91 & 94.63 & 95.36 \\

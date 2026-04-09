@@ -31,7 +31,7 @@ a_t = C_n^b (a_n - g_n) + b_a + n_a
 
 \xsubsection{WiFi 信道状态信息}{WiFi Channel State Information}
 
-WiFi 感知通过分析无线信号在传播过程中受到人体运动扰动而产生的信道变化，实现对人体行为的非接触式感知，具有部署成本低、环境适应性强等优势。近年来，该方向一方面不断出现新的高质量公开数据资源与基准数据集，如 EHUNAM、面向 80 MHz Wi-Fi 信道的人体感知 CSI 数据集以及 WiMANS，多用户、复杂环境和更标准化的数据构建正在推动 WiFi 感知研究走向更系统的实验范式；另一方面，基于深度学习与注意力机制的 WiFi CSI 行为建模方法也在持续发展\cite{add_EHUNAM2025,add_CSIDataset80MHz2023,add_WiMANS2024,add_wifiSensingEAAI2024,add_WiSigPro2024}。
+WiFi 感知通过分析无线信号在传播过程中受到人体运动扰动而产生的信道变化，实现对人体行为的非接触式感知，具有部署成本低、环境适应性强等优势。近年来，该方向一方面不断出现新的高质量公开数据资源与基准数据集，如 EHUNAM、面向 80 MHz WiFi 信道的人体感知 CSI 数据集以及 WiMANS，多用户、复杂环境和更标准化的数据构建正在推动 WiFi 感知研究走向更系统的实验范式；另一方面，基于深度学习与注意力机制的 WiFi CSI 行为建模方法也在持续发展\cite{add_EHUNAM2025,add_CSIDataset80MHz2023,add_WiMANS2024,add_wifiSensingEAAI2024,add_WiSigPro2024}。
 
 现代 WiFi 系统通常采用正交频分复用（Orthogonal Frequency Division Multiplexing, OFDM）技术进行数据传输。在 OFDM 系统中，高速数据流被划分为多个子载波并行传输，从而能够有效应对复杂无线信道带来的频率选择性衰落。WiFi CSI 是物理层对无线信号在发射端与接收端之间传播特性的细粒度刻画，用于描述不同子载波上的信道频率响应。对于第 $k$ 个子载波，接收信号 $Y_k$ 与发送信号 $X_k$ 之间的关系可以表示为：
 \begin{equation}
