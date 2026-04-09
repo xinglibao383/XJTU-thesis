@@ -58,7 +58,7 @@ IMU 与 WiFi CSI 均属于典型的时间序列信号，其判别信息不仅体
 X_I \in \mathbb{R}^{B \times C_I \times T}, \qquad
 X_W \in \mathbb{R}^{B \times C_W \times T},
 \end{equation}
-其中，$B$ 表示批大小，$T$ 表示时间序列长度，$C_I$ 与 $C_W$ 分别表示 IMU 与 WiFi CSI 的输入特征维度。需要说明的是，本文在实现中采用 $B \times C \times T$ 的张量组织形式；在进入线性映射层之前，先将其转置为时序建模更常用的 $B \times T \times C$ 形式。
+其中，$B$ 表示批大小，$T$ 表示时间序列长度，$C_I$ 与 $C_W$ 分别表示 IMU 与 WiFi CSI 的输入特征维度。对于 IMU 模态，原始数据在单个时间步包含 5 个设备、每个设备 6 个通道，因此在送入模型时将设备维与通道维展平为统一的通道维表示，即 $C_I = 5 \times 6 = 30$；对于 WiFi CSI 模态，单个时间步的输入特征维度记为 $C_W$，在本数据集中对应为 540。需要说明的是，本文在实现中采用 $B \times C \times T$ 的张量组织形式；在进入线性映射层之前，先将其转置为时序建模更常用的 $B \times T \times C$ 形式。
 
 考虑到不同传感通道在量纲范围与数值尺度上存在差异，若直接将原始序列输入编码器，可能会影响模型训练的稳定性，并削弱不同通道之间特征学习的均衡性。因此，在输入 Mamba 编码器之前，本文首先对每种模态数据按通道进行 Z-score 标准化处理。对于任一输入序列 $X \in \mathbb{R}^{B \times C \times T}$，其第 $c$ 个通道在批次维与时间维上的均值和标准差分别定义为
 \begin{equation}
@@ -71,7 +71,7 @@ X_W \in \mathbb{R}^{B \times C_W \times T},
 \hat{X}_{b,c,t}=\frac{X_{b,c,t}-\mu_c}{\sigma_c}.
 \end{equation}
 
-在此基础上，每个模态的编码器均由输入线性映射层和 $L$ 层堆叠的 Mamba 模块组成。为与代码实现保持一致，设转置操作记为 $\Pi(\cdot)$，其作用是将输入从 $\mathbb{R}^{B \times C \times T}$ 变换到 $\mathbb{R}^{B \times T \times C}$。则任一模态的编码过程可统一表示为
+在此基础上，每个模态的编码器均由输入线性映射层和 $L$ 层堆叠的 Mamba 模块组成。为与代码实现保持一致，设转置操作记为 $\Pi(\cdot)$，其作用是交换张量的后两维，即将 $\mathbb{R}^{B \times a \times b}$ 变换为 $\mathbb{R}^{B \times b \times a}$。在当前输入情形下，$\Pi(\cdot)$ 将原始序列从 $\mathbb{R}^{B \times C \times T}$ 变换到 $\mathbb{R}^{B \times T \times C}$。则任一模态的编码过程可统一表示为
 \begin{equation}
 \begin{aligned}
 H^{(0)} &= \Pi(\hat{X}), \\
@@ -81,7 +81,7 @@ F &= \Pi^{-1}\!\left(Z^{(L)}\right),
 \end{aligned}
 \label{eq:mamba_encoder_detail}
 \end{equation}
-其中，$H^{(0)} \in \mathbb{R}^{B \times T \times C}$ 表示转置后的输入序列，$W_{\mathrm{in}} \in \mathbb{R}^{C \times D}$、$b_{\mathrm{in}} \in \mathbb{R}^{D}$ 分别表示输入线性映射层的权重与偏置，$D$ 表示隐空间特征维度，$\mathrm{Mamba}_{\ell}(\cdot)$ 表示第 $\ell$ 层 Mamba 模块，$\Pi^{-1}(\cdot)$ 表示将特征重新变换回 $\mathbb{R}^{B \times D \times T}$ 的逆转置操作。
+其中，$H^{(0)} \in \mathbb{R}^{B \times T \times C}$ 表示转置后的输入序列，$W_{\mathrm{in}} \in \mathbb{R}^{C \times D}$、$b_{\mathrm{in}} \in \mathbb{R}^{D}$ 分别表示输入线性映射层的权重与偏置，$D$ 表示隐空间特征维度，$\mathrm{Mamba}_{\ell}(\cdot)$ 表示第 $\ell$ 层 Mamba 模块，$\Pi^{-1}(\cdot)$ 表示对应的逆转置操作，即将特征从 $\mathbb{R}^{B \times T \times D}$ 重新变换回 $\mathbb{R}^{B \times D \times T}$。
 
 因此，对于 IMU 与 WiFi CSI 两种模态，编码器输出可分别表示为
 \begin{equation}
@@ -110,7 +110,7 @@ F_I, F_W \in \mathbb{R}^{B \times T \times D}.
 \begin{equation}
 F_I, F_W \in \mathbb{R}^{B \times T \times D},
 \end{equation}
-其中，$B$ 表示批大小，$T$ 表示时间序列长度，$D$ 表示特征维度。。为获得样本级的全局表示，本文对时间维度进行平均池化：
+其中，$B$ 表示批大小，$T$ 表示时间序列长度，$D$ 表示特征维度。为获得样本级的全局表示，本文对时间维度进行平均池化，得到
 \begin{equation}
 f_I = \mathrm{MeanPool}_T(F_I), \qquad
 f_W = \mathrm{MeanPool}_T(F_W),
