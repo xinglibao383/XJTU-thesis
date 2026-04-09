@@ -261,7 +261,7 @@ p_c = \frac{1}{N_c}\sum_{i=1}^{N_c} z_i,
 \end{equation}
 其中，$N_c$ 表示类别 $c$ 的样本数量。该原型向量刻画了源受试者数据中对应活动类别的中心语义位置，可作为后续目标受试者适配时的类别参照。
 
-在目标受试者适配阶段，首先引入类别原型约束，以减小目标受试者特征与源受试者类别原型之间的分布差异。对于目标受试者样本的融合特征表示 $z$，本文采用余弦相似度定义类别原型约束损失：
+在目标受试者适配阶段，首先引入类别原型约束，以减小目标受试者特征与源受试者类别原型之间的分布差异。对于目标受试者样本的融合特征向量 $z$，本文采用余弦相似度定义类别原型约束损失：
 \begin{equation}
 L_{proto} = 1 - \cos(z, p_c),
 \end{equation}
@@ -276,17 +276,17 @@ L_{proto} = 1 - \cos(z, p_c),
   \label{fig:adapter}
 \end{figure}
 
-具体而言，设融合后的输入特征表示为 $z \in \mathbb{R}^{d}$，其中 $d$ 表示特征维度，$r$ 表示降维系数。Adapter 模块首先对输入特征进行层归一化，然后通过下投影、非线性激活、随机失活以及上投影生成增量特征，其过程可表示为
+具体而言，设融合后的输入特征表示为 $Z \in \mathbb{R}^{B \times D}$，其中 $B$ 表示批大小，$D$ 表示特征维度，$r$ 表示降维系数。Adapter 模块首先对输入特征进行层归一化，然后通过下投影、非线性激活、随机失活以及上投影生成增量特征，其过程可表示为
 \begin{equation}
-\Delta z = W_{\mathrm{up}} \, \mathrm{Dropout}\!\left(\mathrm{ReLU}\!\left(W_{\mathrm{down}} \, \mathrm{LayerNorm}(z) + b_{\mathrm{down}}\right)\right) + b_{\mathrm{up}},
-\qquad \Delta z \in \mathbb{R}^{d},
+\Delta Z = \mathrm{Dropout}\!\left(\mathrm{ReLU}\!\left(\mathrm{LayerNorm}(Z) W_{\mathrm{down}} + b_{\mathrm{down}}\right)\right) W_{\mathrm{up}} + b_{\mathrm{up}},
+\qquad \Delta Z \in \mathbb{R}^{B \times D},
 \end{equation}
-其中，$W_{\mathrm{down}} \in \mathbb{R}^{\frac{d}{r}\times d}$ 和 $b_{\mathrm{down}} \in \mathbb{R}^{\frac{d}{r}}$ 分别表示下投影层的权重与偏置，$W_{\mathrm{up}} \in \mathbb{R}^{d\times \frac{d}{r}}$ 和 $b_{\mathrm{up}} \in \mathbb{R}^{d}$ 分别表示上投影层的权重与偏置。最终，Adapter 模块通过残差连接输出适配后的特征表示：
+其中，$W_{\mathrm{down}} \in \mathbb{R}^{D \times \frac{D}{r}}$ 和 $b_{\mathrm{down}} \in \mathbb{R}^{\frac{D}{r}}$ 分别表示下投影层的权重与偏置，$W_{\mathrm{up}} \in \mathbb{R}^{\frac{D}{r}\times D}$ 和 $b_{\mathrm{up}} \in \mathbb{R}^{D}$ 分别表示上投影层的权重与偏置。最终，Adapter 模块通过残差连接输出适配后的特征表示：
 \begin{equation}
-z' = z + \Delta z.
+Z' = Z + \Delta Z.
 \end{equation}
 
-上述结构本质上是一种带有预归一化的瓶颈残差适配模块，通过在低维子空间中学习增量表示，实现对目标受试者特征分布的高效修正。由于其仅在低维子空间内学习增量表示，因此参数量远小于直接微调整个主干网络。进一步地，本文对上投影层参数采用零初始化，即初始时刻满足 $W_{\mathrm{up}}=0,\ b_{\mathrm{up}}=0$，从而使得训练初期有 $\Delta z \approx 0,\ z' \approx z$。这意味着 Adapter 在微调开始时不会显著扰动源阶段已经学到的稳定特征表示，而是随着目标受试者数据的引入，逐步学习针对个体差异的补偿项。因此，该结构既能够保留原有主干网络的判别能力，又能够在少量样本条件下实现对目标受试者分布的快速修正。
+上述结构本质上是一种带有预归一化的瓶颈残差适配模块，通过在低维子空间中学习增量表示，实现对目标受试者特征分布的高效修正。由于其仅在低维子空间内学习增量表示，因此参数量远小于直接微调整个主干网络。进一步地，本文对上投影层参数采用零初始化，即初始时刻满足 $W_{\mathrm{up}}=0,\ b_{\mathrm{up}}=0$，从而使得训练初期有 $\Delta Z \approx 0,\ Z' \approx Z$。这意味着 Adapter 在微调开始时不会显著扰动源阶段已经学到的稳定特征表示，而是随着目标受试者数据的引入，逐步学习针对个体差异的补偿项。因此，该结构既能够保留原有主干网络的判别能力，又能够在少量样本条件下实现对目标受试者分布的快速修正。
 
 综合来看，类别原型约束和参数高效微调分别从“类别语义约束”和“个体分布适配”两个层面缓解跨受试者偏移问题。前者通过源域原型为目标受试者提供稳定的类别参照，后者通过少量参数更新实现对新受试者特征分布的快速修正。在两种机制的协同作用下，模型能够在仅使用少量目标受试者标注样本的条件下完成有效适配，从而提升多模态人体活动识别系统在跨受试者场景中的泛化性能。
 
