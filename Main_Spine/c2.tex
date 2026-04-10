@@ -86,43 +86,36 @@ Transformer 的核心计算单元为缩放点积注意力。给定输入序列�
 \mathrm{PE}(pos, 2i+1) =
 \cos\left(pos / 10000^{2i/d_{model}}\right)
 \end{equation}
-通过将位置编码与输入特征相加，模型能够感知时间顺序，从而实现对时序数据的有效建模。
+通过将位置编码与输入特征相加，模型能够感知时间顺序，从而实现对时序数据的有效建模。Transformer 模型结构如图~\ref{fig:transformer}所示。
 
-Transformer 模型结构如图~\ref{fig:transformer_mamba}（a）所示。对于人体感知任务，Transformer 能够较好地建模较长时间范围内的动作演化过程，尤其适用于需要捕获全局时间依赖关系的场景\cite{vaswani2017attention}。
-
-\begin{figure}[htbp]
-    \begin{subfigure}[b]{0.49\linewidth}
-        \centering
-        \includegraphics[width=\textwidth]{transformer.png}
-        \subcaption{Transformer}
-    \end{subfigure}
-    \begin{subfigure}[b]{0.49\linewidth}
-        \centering
-        \includegraphics[width=\textwidth]{mamba.png}
-        \subcaption{Mamba}
-    \end{subfigure}
-    \caption{Transformer 与 Mamba 时序建模结构示意图}
-    \label{fig:transformer_mamba}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.65\textwidth]{transformer.png}
+    \caption{Transformer 模型架构图}
+    \label{fig:transformer}
 \end{figure}
 
 \xsubsection{Mamba}{Mamba}
 
-尽管 Transformer 在长序列建模中表现出较强能力，但其自注意力计算复杂度通常随序列长度呈二次增长，这在处理高采样率传感器产生的长时序数据时会带来较高的计算与存储开销。为提高长序列建模效率，近年来基于状态空间模型（State Space Model, SSM）的序列建模方法受到广泛关注，其中 Mamba 是一类具有代表性的选择性状态空间结构\cite{gu2024mamba,dao2024transformers}。
+Mamba 是一种基于状态空间模型（State Space Model, SSM）的序列建模结构，能够通过递归方式对历史信息进行压缩表示，并建模序列中的时间依赖关系\cite{gu2024mamba}。对于传感器数据这类具有明显时序特征的输入，Mamba 能够在较高建模效率下提取时序特征，因此适用于长时序信号建模任务。
 
-状态空间模型通过引入隐状态描述输入序列的动态演化过程。在离散时间形式下，其基本表达形式为：
+状态空间模型通过引入隐状态描述输入序列随时间的动态演化过程。在离散时间形式下，其基本表达为
 \begin{equation}
 h_t = A h_{t-1} + B x_t
 \end{equation}
 \begin{equation}
 y_t = C h_t
 \end{equation}
-其中，$x_t$ 表示输入序列，$h_t$ 表示系统隐状态，$y_t$ 为输出序列，$A$、$B$ 和 $C$ 为模型参数矩阵。通过递归更新隐状态，状态空间模型能够在较低复杂度下建模较长范围的时间依赖。
+其中，$x_t$ 表示时刻 $t$ 的输入，$h_t$ 表示系统隐状态，$y_t$ 表示输出，$A$、$B$ 和 $C$ 为模型参数矩阵。该结构通过递归更新隐状态，对历史信息进行持续累积，从而能够刻画长范围的时间依赖。
 
-传统 SSM 通常采用固定参数进行状态更新，这会限制模型对复杂输入模式的适应能力。Mamba 通过引入选择性机制，使部分状态更新参数能够随输入动态变化，从而根据当前输入内容选择性地保留、更新或遗忘历史信息\cite{gu2024mamba}。这一设计使其在保持线性时间复杂度的同时，增强了对内容相关信息的建模能力。
+在传统状态空间模型中，状态更新过程通常依赖固定参数，因此对不同输入内容的自适应能力相对有限。Mamba 在状态空间建模中引入了选择性机制，使部分状态更新参数能够随当前输入动态变化，从而根据输入内容选择性地保留、更新或遗忘历史信息\cite{gu2024mamba}。这一设计增强了模型对关键信息的提取能力，使其在长时序建模任务中兼具效率与表达能力。Mamba 模型结构如图~\ref{fig:mamba}所示。
 
-与基于自注意力的模型相比，Mamba 在处理长序列时通常具有更高的效率，并能够在较低开销下维持较强的长依赖建模能力。进一步地，近期工作从结构状态空间对偶的角度分析了 Transformer 与 SSM 之间的联系，并提出了更高效的 Mamba-2 结构，说明该类方法在长序列建模中具有较好的发展潜力\cite{dao2024transformers}。
-
-Mamba 模型结构如图~\ref{fig:transformer_mamba}（b）所示。对于人体活动识别这类长时序传感器建模任务，Mamba 能够在兼顾建模能力与计算效率的前提下提取序列特征，因此适合作为多模态人体活动识别中的时序编码模块之一。
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.9\textwidth]{mamba.png}
+    \caption{Mamba 模型架构图}
+    \label{fig:mamba}
+\end{figure}
 
 \xsection{多模态特征对齐与融合}{Multimodal Feature Alignment and Fusion}
 
