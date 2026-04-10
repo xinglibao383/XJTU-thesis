@@ -147,7 +147,7 @@ u_i = f_{IMU}(x_i^{I}), \quad v_i = f_{WiFi}(x_i^{W})
 S_{ij} = \frac{u_i^T v_j}{\|u_i\| \, \|v_j\|}
 \end{equation}
 
-在一个包含 $N$ 个样本的训练批次中，进一步构建 IMU 特征与 WiFi CSI 特征之间的相似度矩阵 $S \in \mathbb{R}^{N \times N}$。其中，对角线元素对应语义匹配的正样本对，非对角线元素对应不匹配的负样本对。基于该相似度结构，本文采用双向跨模态对比学习（Bidirectional Cross-Modal Contrastive Learning, BCMCL）损失对模型进行优化，可同时约束两个模态方向上的对齐关系。
+在一个包含 $N$ 个样本的训练批次中，进一步构建 IMU 特征与 WiFi CSI 特征之间的相似度矩阵 $S \in \mathbb{R}^{N \times N}$。其中，对角线元素对应语义匹配的正样本对，非对角线元素对应不匹配的负样本对。基于该相似度结构，本文采用跨模态双向对比学习（Bidirectional Cross-Modal Contrastive Learning, BCMCL）损失对模型进行优化，可同时约束两个模态方向上的对齐关系。
 
 对于 IMU 到 WiFi 方向，其损失定义为：
 \begin{equation}
