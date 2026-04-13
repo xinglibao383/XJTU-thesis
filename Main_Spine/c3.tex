@@ -95,10 +95,7 @@ F &= \Pi^{-1}\!\left(Z^{(L)}\right),
 F_I = \Pi(\bar{F}_I), \qquad
 F_W = \Pi(\bar{F}_W),
 \end{equation}
-其中，$\Pi(\cdot)$ 表示交换张量后两维的转置操作，$F_I$ 和 $F_W$ 分别表示重排后的 IMU 与 WiFi CSI 时序特征表示，满足
-\begin{equation}
-F_I, F_W \in \mathbb{R}^{B \times T \times D}.
-\end{equation}
+其中，$F_I, F_W \in \mathbb{R}^{B \times T \times D}$。
 
 经过时序编码后，两种模态均被映射为统一维度的高层时序特征表示。在保持时间长度 $T$ 不变的同时，实现了从原始观测空间到高层语义空间的映射，为后续跨模态对齐与特征融合提供了统一的表示基础。
 
