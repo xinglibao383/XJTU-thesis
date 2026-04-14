@@ -60,13 +60,7 @@ X_W \in \mathbb{R}^{B \times C_W \times T},
 \end{equation}
 其中，$B$ 表示批大小，$T$ 表示时间序列长度，$C_I$ 与 $C_W$ 分别表示 IMU 与 WiFi CSI 的输入特征维度。对于 IMU 模态，原始数据在单个时间步包含 5 个设备、每个设备 6 个通道，因此在送入模型时将设备维与通道维展平为统一的通道维表示，即 $C_I = 5 \times 6 = 30$；对于 WiFi CSI 模态，单个时间步的输入特征维度记为 $C_W$，在本数据集中对应为 540。需要说明的是，本文在实现中采用 $B \times C \times T$ 的张量组织形式；在进入线性映射层之前，先将其转置为时序建模更常用的 $B \times T \times C$ 形式。
 
-考虑到不同传感通道在量纲范围与数值尺度上存在差异，若直接将原始序列输入编码器，可能会影响模型训练的稳定性，并削弱不同通道之间特征学习的均衡性。因此，在输入 Mamba 编码器之前，本文首先对每种模态数据按通道进行 Z-score 标准化处理。对于任一输入序列 $X \in \mathbb{R}^{B \times C \times T}$，其第 $c$ 个通道在批次维与时间维上的均值和标准差分别定义为
-\begin{equation}
-\mu_c=\frac{1}{BT}\sum_{b=1}^{B}\sum_{t=1}^{T}X_{b,c,t},
-\qquad
-\sigma_c=\sqrt{\frac{1}{BT}\sum_{b=1}^{B}\sum_{t=1}^{T}(X_{b,c,t}-\mu_c)^2},
-\end{equation}
-相应地，标准化后的输入表示为
+考虑到不同传感通道在量纲范围与数值尺度上存在差异，若直接将原始序列输入编码器，可能会影响模型训练的稳定性，并削弱不同通道之间特征学习的均衡性。因此，在输入 Mamba 编码器之前，本文首先对每种模态数据按通道进行 Z-score 标准化处理。对于任一输入序列 $X \in \mathbb{R}^{B \times C \times T}$，设第 $c$ 个通道在训练集上的均值和标准差分别为 $\mu_c$ 和 $\sigma_c$，则标准化后的输入表示为
 \begin{equation}
 \hat{X}_{b,c,t}=\frac{X_{b,c,t}-\mu_c}{\sigma_c}.
 \end{equation}
@@ -81,7 +75,7 @@ F &= \Pi^{-1}\!\left(Z^{(L)}\right),
 \end{aligned}
 \label{eq:mamba_encoder_detail}
 \end{equation}
-其中，$H^{(0)} \in \mathbb{R}^{B \times T \times C}$ 表示转置后的输入序列，$W_{\mathrm{in}} \in \mathbb{R}^{C \times D}$、$b_{\mathrm{in}} \in \mathbb{R}^{D}$ 分别表示输入线性映射层的权重与偏置，$D$ 表示隐空间特征维度，$\mathrm{Mamba}_{\ell}(\cdot)$ 表示第 $\ell$ 层 Mamba 模块，$\Pi^{-1}(\cdot)$ 表示对应的逆转置操作，即将特征从 $\mathbb{R}^{B \times T \times D}$ 重新变换回 $\mathbb{R}^{B \times D \times T}$。
+其中，$H^{(0)} \in \mathbb{R}^{B \times T \times C}$ 表示转置后的输入序列，$C$ 表示当前模态的输入特征维度，对于 IMU 模态有 $C=C_I$，对于 WiFi CSI 模态有 $C=C_W$。$W_{\mathrm{in}} \in \mathbb{R}^{C \times D}$、$b_{\mathrm{in}} \in \mathbb{R}^{D}$ 分别表示输入线性映射层的权重与偏置，$D$ 表示隐空间特征维度，$\mathrm{Mamba}_{\ell}(\cdot)$ 表示第 $\ell$ 层 Mamba 模块，$\Pi^{-1}(\cdot)$ 表示对应的逆转置操作。由于 $\Pi(\cdot)$ 定义为交换张量后两维的操作，因此有 $\Pi^{-1}=\Pi$，其作用是将特征从 $\mathbb{R}^{B \times T \times D}$ 重新变换回 $\mathbb{R}^{B \times D \times T}$。
 
 因此，对于 IMU 与 WiFi CSI 两种模态，编码器输出可分别表示为
 \begin{equation}
@@ -112,17 +106,19 @@ F_I, F_W \in \mathbb{R}^{B \times T \times D},
 f_I = \mathrm{MeanPool}_T(F_I), \qquad
 f_W = \mathrm{MeanPool}_T(F_W),
 \end{equation}
-其中，$f_I, f_W \in \mathbb{R}^{B \times D}$。随后对特征进行 $L_2$ 归一化：
+其中，$f_I, f_W \in \mathbb{R}^{B \times D}$。记第 $i$ 个样本的全局特征为 $f_{I,i}, f_{W,i} \in \mathbb{R}^{D}$，则对其进行逐样本 $L_2$ 归一化可得
 \begin{equation}
-\tilde{f}_I = \frac{f_I}{\|f_I\|_2}, \qquad
-\tilde{f}_W = \frac{f_W}{\|f_W\|_2}.
+\tilde{f}_{I,i} = \frac{f_{I,i}}{\|f_{I,i}\|_2}, \qquad
+\tilde{f}_{W,i} = \frac{f_{W,i}}{\|f_{W,i}\|_2},
+\qquad i=1,2,\dots,B.
 \end{equation}
 
-在此基础上，构建批内跨模态相似度矩阵：
+在此基础上，构建批内跨模态相似度矩阵，其元素定义为
 \begin{equation}
-S = \frac{\tilde{f}_I \tilde{f}_W^{T}}{\tau},
+S_{ij} = \frac{\tilde{f}_{I,i}^{\top}\tilde{f}_{W,j}}{\tau},
+\qquad i,j=1,2,\dots,B,
 \end{equation}
-其中 $S \in \mathbb{R}^{B \times B}$，$\tau$ 为温度系数。
+其中，$\tau$ 为温度系数。由此可得相似度矩阵 $S \in \mathbb{R}^{B \times B}$。
 
 进一步采用跨模态双向对比学习损失进行优化，其形式定义为：
 \begin{equation}
@@ -204,11 +200,10 @@ h = \mathrm{Dropout}\!\left(\mathrm{ReLU}(zW_1+b_1)\right),
 \begin{equation}
 o = hW_2+b_2,
 \end{equation}
-其中，$W_2 \in \mathbb{R}^{H \times C_a}$、$b_2 \in \mathbb{R}^{C_a}$ 分别表示第二层全连接层的权重与偏置，$C_a$ 表示活动类别数。
-
-最后，对 logits 进行 Softmax 归一化，得到人体活动识别任务的预测概率分布：
+其中，$o \in \mathbb{R}^{B \times C_a}$，$W_2 \in \mathbb{R}^{H \times C_a}$、$b_2 \in \mathbb{R}^{C_a}$ 分别表示第二层全连接层的权重与偏置，$C_a$ 表示活动类别数。记第 $i$ 个样本的 logits 为 $o_i \in \mathbb{R}^{C_a}$，则其在第 $c$ 类上的预测概率为
 \begin{equation}
-\hat{y}_a^{(c)}=\frac{\exp(o^{(c)})}{\sum_{k=1}^{C_a}\exp(o^{(k)})}, \qquad c=1,2,\dots,C_a.
+\hat{y}_{a,i}^{(c)}=\frac{\exp\!\left(o_i^{(c)}\right)}{\sum_{k=1}^{C_a}\exp\!\left(o_i^{(k)}\right)},
+\qquad c=1,2,\dots,C_a,\quad i=1,2,\dots,B.
 \end{equation}
 
 该分类模块在保持结构简洁的同时，能够通过隐藏层的非线性变换进一步增强融合特征的类别判别能力，从而为人体活动识别任务提供最终预测结果。
@@ -217,7 +212,7 @@ o = hW_2+b_2,
 
 为了同时优化人体活动识别任务的分类性能以及跨模态特征对齐效果，本文采用联合损失函数对模型进行训练。整体上，模型的优化目标由人体活动识别分类损失和跨模态双向对比学习损失两部分组成，其中前者用于提升活动类别判别能力，后者用于增强 IMU 与 WiFi CSI 特征表示之间的一致性。
 
-首先，在人体活动识别任务中，考虑到 XRFV2 数据集中不同活动类别的数据分布存在一定不均衡现象，若对各类别样本赋予相同的损失权重，模型在训练过程中容易受到高频类别主导，从而削弱对低频类别的识别能力。为缓解这一问题，本文在人体活动识别分支中引入基于类别规模倒数的加权交叉熵损失。设训练集中第 $c$ 类的数据时长为 $n_c$，则首先定义该类的初始权重为
+首先，在人体活动识别任务中，考虑到 XRFV2 数据集中不同活动类别的数据分布存在一定不均衡现象，若对各类别样本赋予相同的损失权重，模型在训练过程中容易受到高频类别主导，从而削弱对低频类别的识别能力。为缓解这一问题，本文在人体活动识别分支中引入基于类别规模倒数的加权交叉熵损失。设训练集中第 $c$ 类对应的样本规模为 $n_c$，则首先定义该类的初始权重为
 \begin{equation}
 w_c' = \frac{1}{n_c}.
 \end{equation}
@@ -230,9 +225,10 @@ w_c = \frac{w_c'}{\sum_{k=1}^{C_a} w_k'} \times C_a,
 
 在此基础上，人体活动识别任务的加权交叉熵损失定义为
 \begin{equation}
-L_a = - \sum_{c=1}^{C_a} w_c \, y_a^{(c)} \log \hat{y}_a^{(c)},
+L_a = - \frac{1}{B}\sum_{i=1}^{B}\sum_{c=1}^{C_a}
+w_c \, y_{a,i}^{(c)} \log \hat{y}_{a,i}^{(c)},
 \end{equation}
-其中，$y_a^{(c)}$ 和 $\hat{y}_a^{(c)}$ 分别表示真实标签的独热编码和模型预测的类别概率。通过引入类别权重，样本量较少的类别将在优化过程中获得相对更大的损失贡献，从而引导模型更加关注低频类别样本，提升类别不均衡条件下的整体识别能力。
+其中，$y_{a,i}^{(c)}$ 和 $\hat{y}_{a,i}^{(c)}$ 分别表示第 $i$ 个样本在第 $c$ 类上的真实标签独热编码和预测概率。通过引入类别权重，样本量较少的类别将在优化过程中获得相对更大的损失贡献，从而引导模型更加关注低频类别样本，提升类别不均衡条件下的整体识别能力。
 
 在分类损失之外，本文进一步引入跨模态双向对比学习损失 $L_{\mathrm{BCMCL}}$，以约束 IMU 与 WiFi CSI 的特征对齐，具体见本节“跨模态特征对齐”部分。
 
@@ -252,17 +248,18 @@ L = L_a + \alpha L_{\mathrm{BCMCL}},
 
 基于此，本文提出基于类别原型的跨受试者适配策略，通过“类别原型约束”和“参数高效微调”两个环节提升模型对目标受试者的适应能力。前者旨在从类别语义层面约束不同受试者之间的特征表示，使同类活动在共享特征空间中保持更高一致性；后者则在少量标注样本条件下，以较低的参数更新代价实现对目标受试者分布的快速适配。两者相互配合，使模型既能够保留源受试者数据中学到的稳定判别知识，又能够针对新受试者的个体特征进行适度调整。
 
-具体而言，在源阶段训练完成后，首先利用源受试者训练数据构建各活动类别的原型表示。设融合特征空间中的第 $i$ 个样本特征向量为 $z_i \in \mathbb{R}^{D}$，则类别 $c$ 的原型向量定义为该类别所有样本特征的均值：
+具体而言，在源阶段训练完成后，首先利用源受试者训练数据构建各活动类别的原型表示。设融合特征空间中的第 $i$ 个样本特征向量为 $z_i \in \mathbb{R}^{D}$，其对应类别标签为 $y_i$，则类别 $c$ 的原型向量定义为该类别所有样本特征的均值：
 \begin{equation}
-p_c = \frac{1}{N_c}\sum_{i=1}^{N_c} z_i,
+p_c = \frac{1}{N_c}\sum_{i:\,y_i=c} z_i,
 \end{equation}
-其中，$N_c$ 表示类别 $c$ 的样本数量，$p_c \in \mathbb{R}^{D}$。该原型向量刻画了源受试者数据中对应活动类别的中心语义位置，可作为后续目标受试者适配时的类别参照。
+其中，$N_c = \left|\{i \mid y_i=c\}\right|$ 表示类别 $c$ 的样本数量，$p_c \in \mathbb{R}^{D}$。该原型向量刻画了源受试者数据中对应活动类别的中心语义位置，可作为后续目标受试者适配时的类别参照。
 
-在目标受试者适配阶段，首先引入类别原型约束，以减小目标受试者特征与源受试者类别原型之间的分布差异。对于目标受试者的单个样本特征向量 $z_t \in \mathbb{R}^{D}$，本文采用余弦相似度定义类别原型约束损失：
+在目标受试者适配阶段，首先引入类别原型约束，以减小目标受试者特征与源受试者类别原型之间的分布差异。对于目标受试者适配阶段一个批次中的第 $i$ 个样本，设其特征向量为 $z_{t,i} \in \mathbb{R}^{D}$，真实类别为 $y_{t,i}$，该批次大小记为 $B_t$，则类别原型约束损失定义为
 \begin{equation}
-L_{proto} = 1 - \cos(z_t, p_c),
+L_{\mathrm{proto}} = \frac{1}{B_t}\sum_{i=1}^{B_t}\left(1-\cos\!\left(z_{t,i},\, p_{y_{t,i}}\right)\right).
 \end{equation}
-其中，$\cos(\cdot,\cdot)$ 表示余弦相似度函数，$p_c \in \mathbb{R}^{D}$ 为对应类别的源域原型。通过最小化该损失，可以促使目标受试者样本向其所属类别的原型中心靠拢，从而增强不同受试者之间同类活动特征表示的一致性，降低个体差异带来的分布偏移。
+
+通过最小化该损失，可以促使目标受试者样本向其所属类别的原型中心靠拢，从而增强不同受试者之间同类活动特征表示的一致性，降低个体差异带来的分布偏移。
 
 仅依赖类别原型约束仍不足以充分适应目标受试者的个体特征分布。考虑到目标阶段通常只能获得少量标注样本，若直接对整个网络进行微调，容易引发过拟合，并破坏模型在源阶段学到的稳定表示。为此，本文进一步引入参数高效微调策略，如图~\ref{fig:adapter}所示，在冻结主干网络参数的基础上，仅更新轻量化 Adapter 模块及分类层参数，以较小的训练代价实现对目标受试者的快速适配。
 
@@ -273,17 +270,17 @@ L_{proto} = 1 - \cos(z_t, p_c),
   \label{fig:adapter}
 \end{figure}
 
-具体而言，设融合后的输入特征表示为 $Z \in \mathbb{R}^{B \times D}$，其中 $B$ 表示批大小，$D$ 表示特征维度，$r$ 表示降维系数。Adapter 模块首先对输入特征进行层归一化，然后通过下投影、非线性激活、随机失活以及上投影生成增量特征，其过程可表示为
+具体而言，设融合并池化后得到的全局输入特征表示为 $z \in \mathbb{R}^{B \times D}$，其中 $B$ 表示批大小，$D$ 表示特征维度，$r$ 表示降维系数，且设定 $r$ 为能够整除 $D$ 的正整数。Adapter 模块首先对输入特征进行层归一化，然后通过下投影、非线性激活、随机失活以及上投影生成增量特征，其过程可表示为
 \begin{equation}
-\Delta Z = \mathrm{Dropout}\!\left(\mathrm{ReLU}\!\left(\mathrm{LayerNorm}(Z) W_{\mathrm{down}} + b_{\mathrm{down}}\right)\right) W_{\mathrm{up}} + b_{\mathrm{up}},
-\qquad \Delta Z \in \mathbb{R}^{B \times D},
+\Delta z = \mathrm{Dropout}\!\left(\mathrm{ReLU}\!\left(\mathrm{LayerNorm}(z) W_{\mathrm{down}} + b_{\mathrm{down}}\right)\right) W_{\mathrm{up}} + b_{\mathrm{up}},
+\qquad \Delta z \in \mathbb{R}^{B \times D},
 \end{equation}
 其中，$W_{\mathrm{down}} \in \mathbb{R}^{D \times \frac{D}{r}}$ 和 $b_{\mathrm{down}} \in \mathbb{R}^{\frac{D}{r}}$ 分别表示下投影层的权重与偏置，$W_{\mathrm{up}} \in \mathbb{R}^{\frac{D}{r}\times D}$ 和 $b_{\mathrm{up}} \in \mathbb{R}^{D}$ 分别表示上投影层的权重与偏置。最终，Adapter 模块通过残差连接输出适配后的特征表示：
 \begin{equation}
-Z' = Z + \Delta Z.
+z' = z + \Delta z.
 \end{equation}
 
-上述结构本质上是一种带有预归一化的瓶颈残差适配模块，通过在低维子空间中学习增量表示，实现对目标受试者特征分布的高效修正。由于其仅在低维子空间内学习增量表示，因此参数量远小于直接微调整个主干网络。进一步地，本文对上投影层参数采用零初始化，即初始时刻满足 $W_{\mathrm{up}}=0,\ b_{\mathrm{up}}=0$，从而使得训练初期有 $\Delta Z \approx 0,\ Z' \approx Z$。这意味着 Adapter 在微调开始时不会显著扰动源阶段已经学到的稳定特征表示，而是随着目标受试者数据的引入，逐步学习针对个体差异的补偿项。因此，该结构既能够保留原有主干网络的判别能力，又能够在少量样本条件下实现对目标受试者分布的快速修正。
+上述结构本质上是一种带有预归一化的瓶颈残差适配模块，通过在低维子空间中学习增量表示，实现对目标受试者特征分布的高效修正。由于其仅在低维子空间内学习增量表示，因此参数量远小于直接微调整个主干网络。进一步地，本文对上投影层参数采用零初始化，即初始时刻满足 $W_{\mathrm{up}}=0,\ b_{\mathrm{up}}=0$，从而使得训练初期有 $\Delta z \approx 0,\ z' \approx z$。这意味着 Adapter 在微调开始时不会显著扰动源阶段已经学到的稳定特征表示，而是随着目标受试者数据的引入，逐步学习针对个体差异的补偿项。因此，该结构既能够保留原有主干网络的判别能力，又能够在少量样本条件下实现对目标受试者分布的快速修正。
 
 综合来看，类别原型约束和参数高效微调分别从“类别语义约束”和“个体分布适配”两个层面缓解跨受试者偏移问题。前者通过源域原型为目标受试者提供稳定的类别参照，后者通过少量参数更新实现对新受试者特征分布的快速修正。在两种机制的协同作用下，模型能够在仅使用少量目标受试者标注样本的条件下完成有效适配，从而提升多模态人体活动识别系统在跨受试者场景中的泛化性能。
 
@@ -358,7 +355,7 @@ Z' = Z + \Delta Z.
 
 \subsubsection{宏平均指标与逐类别 F1}{}
 
-设分类任务包含 $C$ 个类别。对于第 $c$ 类，记真阳性、假阳性和假阴性样本数量分别为 $TP_c$、$FP_c$ 和 $FN_c$，则该类的精确率、召回率和 F1 值分别定义为
+设人体活动识别任务包含 $C_a$ 个类别。对于第 $c$ 类，记真阳性、假阳性和假阴性样本数量分别为 $TP_c$、$FP_c$ 和 $FN_c$，则该类的精确率、召回率和 F1 值分别定义为
 
 \begin{equation}
 P_c = \frac{TP_c}{TP_c + FP_c}, \qquad
@@ -370,13 +367,13 @@ F1_c = \frac{2P_cR_c}{P_c + R_c}.
 在此基础上，宏平均精确率、宏平均召回率与宏平均 F1 值分别定义为
 
 \begin{equation}
-\text{Macro-Precision} = \frac{1}{C}\sum_{c=1}^{C} P_c,
+\mathrm{Macro\text{-}Precision} = \frac{1}{C_a}\sum_{c=1}^{C_a} P_c,
 \qquad
-\text{Macro-Recall} = \frac{1}{C}\sum_{c=1}^{C} R_c,
+\mathrm{Macro\text{-}Recall} = \frac{1}{C_a}\sum_{c=1}^{C_a} R_c,
 \end{equation}
 
 \begin{equation}
-\text{Macro-F1} = \frac{1}{C}\sum_{c=1}^{C} F1_c.
+\mathrm{Macro\text{-}F1} = \frac{1}{C_a}\sum_{c=1}^{C_a} F1_c.
 \end{equation}
 
 与准确率相比，宏平均指标对每个类别赋予相同权重，因此能够在类别分布不均衡条件下更客观地反映模型的整体识别能力，避免高频类别对总体指标的过度主导。与此同时，由各类别 $F1_c$ 共同构成的 Per-class F1 结果可以进一步揭示模型在不同活动类别上的识别差异，便于分析哪些动作类别更易被正确识别，哪些类别仍存在较明显的区分困难。本文中宏平均精确率、宏平均召回率、宏平均 F1 值以及逐类别 F1 值也统一以百分数形式表示。
