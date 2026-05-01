@@ -474,7 +474,9 @@ MobilePoser~\cite{xu2024mobileposer}：该方法面向移动消费设备场景�
 
 需要强调的是，与这些仅针对当前姿态估计进行建模的对比方法不同，本文方法在统一框架下不仅能够完成当前姿态重构，还能够进一步实现未来姿态预测。虽然这一能力未在表~\ref{tab:method_compare_dip_amass_imuposer} 中直接体现，但补充实验结果表明，本文方法在具备未来姿态预测能力的同时，当前姿态建模性能仍保持较稳定水平。例如，在 DIP-IMU、AMASS 和 IMUPoser 数据集上，其未来姿态预测的 MJAE/PE 分别为 4.80,deg/3.79,cm、5.41,deg/7.37,cm 和 6.15,deg/6.79,cm。总体而言，未来预测误差相较当前重构虽有一定上升，但增幅仍处于相对可控范围内，说明所提出的统一建模框架在扩展到未来姿态预测任务后，仍能够维持较好的当前姿态建模能力。综合来看，三个补充数据集上的实验结果从另一个角度验证了本文方法在更一般 IMU 姿态建模任务中的适用性，也说明其在统一框架下兼顾当前姿态重构与未来姿态预测具有一定优势。
 
-\xsubsection{骨干网络选择实验}{Backbone Network Comparison Experiments}
+\xsubsection{模型架构实验}{Model Architecture Experiments}  % 为什么你的结构合理
+
+\subsubsection{骨干网络选择实验}{}
 
 为分析不同时序建模结构对模型性能的影响，本文基于 XRFV2 主实验数据集设置，对 IMU 时序预测模块中的骨干网络进行对比实验。在实验中，固定 IMU 时序特征提取模块为 ResNet 结构\cite{he2016deep}，并分别采用 Transformer\cite{vaswani2017attention}、LSTM\cite{hochreiter1997long}、GRU\cite{cho2014learning} 以及 Mamba\cite{gu2024mamba} 作为 IMU 时序预测模块的骨干网络，其余训练参数保持一致。在相同训练设置下，分别评估不同结构在当前姿态重构与未来姿态预测任务中的性能表现。
 
@@ -504,6 +506,10 @@ MobilePoser~\cite{xu2024mobileposer}：该方法面向移动消费设备场景�
 \end{table}
 
 综合各项指标可以看出，Transformer 在姿态预测精度与稳定性方面具有最优的综合表现，而 GRU 在当前重构误差上具有一定优势。整体而言，Transformer 在本任务中的表现更加均衡且稳定，因此本文最终选用 Transformer 作为 IMU 时序预测模块的骨干网络。
+
+\subsubsection{误差传播路径对比实验}{}
+
+\subsubsection{锚点消融实验}{}
 
 \xsubsection{样本构建与数据处理实验}{Sample Construction and Data Processing Experiments}
 
@@ -675,7 +681,13 @@ MobilePoser~\cite{xu2024mobileposer}：该方法面向移动消费设备场景�
   \end{tblr}
 \end{table}
 
-\xsubsection{长时姿态预测实验}{Long-term Pose Prediction Experiments}
+\xsubsection{自回归鲁棒性分析实验}{Autoregressive Robustness Analysis Experiments}  % 你的方法会不会崩
+
+在前文模型架构实验中，本文从误差传播路径与输入结构两个方面分析了自回归建模过程中误差产生与传播的机制。具体而言，通过误差传播路径对比实验表明，在姿态空间中进行递归预测更容易导致误差放大，而本文在 IMU 空间进行动态建模能够在一定程度上缓解该问题；同时，通过锚点消融实验验证了当前 IMU 观测在维持时间连续性与抑制误差传播中的重要作用。
+
+在此基础上，本节进一步从整体预测过程的角度，对模型在自回归建模条件下的稳定性进行分析。通过长时姿态预测实验与扰动鲁棒性实验，考察模型误差在时间维度上的累积行为以及在扰动条件下的响应特性，从而更全面地评估所提方法在误差传播方面的稳定性。
+
+\subsubsection{长时姿态预测实验}{}
 
 为分析模型在时间维度上的预测性能变化，本文对不同时间区间内的姿态误差进行统计，从而评估模型在当前重构与未来预测任务中的表现差异。具体而言，以当前时间点为参考，将时间轴划分为多个连续区间，并分别计算各区间内的平均 MPJPE。其中，区间 \([-1, 0)\) 表示当前时间窗口内的姿态重构结果，其余区间表示未来预测时间范围内的姿态预测结果。实验结果如图~\ref{fig:max_predict_len} 所示。从图中可以看出，在当前时间窗口内（即区间 \([-1,0)\)），模型能够获得较低误差，说明基于 IMU 特征进行姿态重构具有较高精度。随着时间进入未来预测阶段（$t \geq 0$），模型误差随预测时间增加而逐步上升。在较短预测区间内，误差增长相对平缓；而在更远时间范围内，误差增长速度明显加快。这表明随着预测步长增加，误差会逐渐累积，模型对长期运动变化的刻画能力受到一定限制。总体来看，模型在当前姿态重构任务中表现较为稳定，在短期预测范围内仍具有较好的精度，但在中长期预测中性能逐渐下降。该结果说明，所提出方法更适合短时姿态预测场景，同时也表明预测长度对模型性能具有显著影响。
 
@@ -685,6 +697,8 @@ MobilePoser~\cite{xu2024mobileposer}：该方法面向移动消费设备场景�
   \caption{长时姿态预测实验结果}
   \label{fig:max_predict_len}
 \end{figure}
+
+\subsubsection{扰动鲁棒性实验}{}
 
 \xsection{本章小结}{Summary}
 
