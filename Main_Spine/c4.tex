@@ -45,25 +45,29 @@ AIPose 以当前 IMU 序列为输入，通过时序特征提取、当前姿态�
 \subsubsection{IMU 时序特征提取模块}{}
 
 设输入 IMU 序列为
-\[
-\mathbf{X}_{\mathrm{input}} \in \mathbb{R}^{B \times T \times C},
-\]
+\begin{equation}
+\mathbf{X}_{\mathrm{input}} \in \mathbb{R}^{B \times T \times C}
+\label{eq:input_imu}
+\end{equation}
 其中 $B$ 表示批次大小，$T$ 表示时间窗口长度，$C$ 表示 IMU 通道数。在此基础上，通过 ResNet 对输入序列进行时序特征提取，得到对应的特征表示
-\[
-\mathbf{F} = E(\mathbf{X}_{\mathrm{input}}),
-\]
+\begin{equation}
+\mathbf{F} = E(\mathbf{X}_{\mathrm{input}})
+\label{eq:feature_extract}
+\end{equation}
 其中 $E(\cdot)$ 表示基于 ResNet 的映射函数。该结构利用一维卷积提取 IMU 信号中的局部动态变化，并通过残差连接增强特征表达的稳定性。得到的特征表示 $\mathbf{F}$ 作为统一的中间表示，将同时用于当前姿态重构与未来 IMU 预测。
 
 \subsubsection{姿态重构模块}{}
 
 在获得 IMU 特征表示 $\mathbf{F}$ 后，首先对当前时间窗口内的人体姿态序列进行建模，其映射关系为
-\[
-\mathbf{P}_{\mathrm{rec}} = f_{\mathrm{rec}}(\mathbf{F}).
-\]
+\begin{equation}
+\mathbf{P}_{\mathrm{rec}} = f_{\mathrm{rec}}(\mathbf{F})
+\label{eq:pose_reconstruction}
+\end{equation}
 通过全连接层将特征向量映射到姿态空间，并重构为具有时间结构的姿态序列。设姿态重构窗口长度为 $L_{\mathrm{rec}}$，关节数量为 $K$，单个关节的姿态表示维度为 $D_p$，则输出形式为
-\[
-\mathbf{P}_{\mathrm{rec}} \in \mathbb{R}^{B \times L_{\mathrm{rec}} \times K \times D_p}.
-\]
+\begin{equation}
+\mathbf{P}_{\mathrm{rec}} \in \mathbb{R}^{B \times L_{\mathrm{rec}} \times K \times D_p}
+\label{eq:pose_shape}
+\end{equation}
 其中，$D_p$ 的具体取值由姿态表示形式决定。例如，在二维关键点建模任务中，$D_p=2$；在参数化人体姿态建模任务中，$D_p$ 可对应关节旋转表示的维度。
 
 为保证输出数值稳定并与具体任务的数据预处理方式保持一致，重构结果可根据姿态表示形式采用相应的输出约束方式。该模块实现了从 IMU 特征到当前姿态序列的映射，为后续联合建模提供当前时刻的姿态估计结果。
@@ -162,11 +166,12 @@ E\!\left(
 \subsubsection{损失函数}{}
 
 为实现当前姿态重构、未来 IMU 预测以及未来姿态预测的联合优化，本文采用多任务学习策略构建整体损失函数。设当前姿态重构结果、未来 IMU 预测结果及未来姿态预测结果分别为 $\mathbf{P}_{\mathrm{rec}}$、$\mathbf{X}_{\mathrm{future}}$ 和 $\mathbf{P}_{\mathrm{pred}}$，对应的真实值分别为 $\mathbf{P}_{\mathrm{rec}}^{\ast}$、$\mathbf{X}_{\mathrm{future}}^{\ast}$ 和 $\mathbf{P}_{\mathrm{pred}}^{\ast}$，则整体损失函数定义为
-\[
+\begin{equation}
 \mathcal{L} = \alpha \left\| \mathbf{P}_{\mathrm{rec}} - \mathbf{P}_{\mathrm{rec}}^{\ast} \right\|_{1}
 + \beta \left\| \mathbf{X}_{\mathrm{future}} - \mathbf{X}_{\mathrm{future}}^{\ast} \right\|_{1}
-+ \gamma \left\| \mathbf{P}_{\mathrm{pred}} - \mathbf{P}_{\mathrm{pred}}^{\ast} \right\|_{1},
-\]
++ \gamma \left\| \mathbf{P}_{\mathrm{pred}} - \mathbf{P}_{\mathrm{pred}}^{\ast} \right\|_{1}
+\label{eq:loss}
+\end{equation}
 其中 $\alpha$、$\beta$ 和 $\gamma$ 为权重系数，用于平衡不同子任务对模型训练的影响。
 
 通过上述联合优化，模型在学习当前姿态重构的同时，能够建模 IMU 时序动态，并进一步提升未来姿态预测的准确性。
