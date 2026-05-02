@@ -471,13 +471,31 @@ MobilePoser~\cite{xu2024mobileposer}：该方法面向移动消费设备场景�
   \end{tblr}
 \end{table}
 
-整体来看，不同方法在三个补充数据集上的性能排序表现出一定一致性。ASIP 在 DIP-IMU 和 AMASS 数据集上均取得了最优的当前姿态重构结果，其中在 DIP-IMU 数据集上的 MJAE 和 PE 分别为 3.88,deg 和 3.20,cm，在 AMASS 数据集上分别为 3.09,deg 和 6.05,cm；在 IMUPoser 数据集上，ASIP 取得了最低的 MJAE，而 PIP 取得了最低的 PE。与此同时，TIP 在三个数据集上的结果也相对稳定，整体处于较优水平；相比之下，IMUPoser 和 MobilePoser 的误差普遍较大，说明在本文统一实验设置下，这类方法对当前姿态重构任务的适应性相对有限。
+整体来看，不同方法在三个补充数据集上的性能排序表现出一定一致性。ASIP 在 DIP-IMU 和 AMASS 数据集上均取得了最优的当前姿态重构结果，其中在 DIP-IMU 数据集上的 MJAE 和 PE 分别为 3.88\,deg 和 3.20\,cm，在 AMASS 数据集上分别为 3.09\,deg 和 6.05\,cm；在 IMUPoser 数据集上，ASIP 取得了最低的 MJAE，而 PIP 取得了最低的 PE。与此同时，TIP 在三个数据集上的结果也相对稳定，整体处于较优水平；相比之下，IMUPoser 和 MobilePoser 的误差普遍较大，说明在本文统一实验设置下，这类方法对当前姿态重构任务的适应性相对有限。
 
 本文方法在 DIP-IMU、AMASS 和 IMUPoser 数据集上的 MJAE 分别为 4.76\,deg、5.21\,deg 和 5.94\,deg，PE 分别为 3.71\,cm、7.04\,cm 和 6.59\,cm。尽管从当前姿态重构精度来看，本文方法在这三个补充数据集上均未取得最优结果，但整体表现出较好的稳定性。在 DIP-IMU 和 AMASS 数据集上，本文方法均优于 DynaIP、MobilePoser 和 IMUPoser；在 IMUPoser 数据集上，其 MJAE 与 PIP、TIP 和 DynaIP 相近，PE 也仅略高于 PIP。上述结果表明，本文方法虽然并非针对当前姿态重构任务进行单目标优化，但在不同数据集上的性能波动相对较小，仍具有较稳定的姿态建模能力，体现出一定的跨数据集泛化潜力。
 
-进一步对比三个数据集可以发现，AMASS 上各方法的 PE 整体高于 DIP-IMU，而 IMUPoser 上不同方法之间的 MJAE 差异相对较小。这说明在参数化人体姿态建模任务中，旋转误差与空间位置误差并不完全同步：部分方法虽然能够较好地拟合关节旋转参数，但在映射到空间关节位置后仍可能产生较明显的位置偏差。本文方法同样呈现出类似趋势，即在 AMASS 数据集上位置误差增大更为明显，而在 IMUPoser 数据集上则表现出相对均衡的误差水平。这在一定程度上反映出不同数据集在动作类型、设备配置以及空间运动复杂度等方面存在差异，从而对模型的参数化姿态建模能力提出了不同要求。
+需要再次强调的是，与这些仅针对当前姿态重构任务的对比方法不同，本文方法在统一框架下不仅能够完成当前姿态重构，还能够进一步实现未来姿态预测。如表~\ref{tab:aipose_in_supplement_datasets} 所示，在 DIP-IMU、AMASS 和 IMUPoser 数据集上，本文方法在未来姿态预测的 MJAE/PE 分别为 4.80\,deg/3.79\,cm、5.41\,deg/7.37\,cm 和 6.15\,deg/6.79\,cm。总体而言，未来预测误差相较当前重构虽有一定上升，但增幅仍处于相对可控范围内，说明所提出的统一建模框架在扩展到未来姿态预测任务后，仍能够维持较好的当前姿态建模能力。
 
-需要强调的是，与这些仅针对当前姿态估计进行建模的对比方法不同，本文方法在统一框架下不仅能够完成当前姿态重构，还能够进一步实现未来姿态预测。虽然这一能力未在表~\ref{tab:method_compare_dip_amass_imuposer} 中直接体现，但补充实验结果表明，本文方法在具备未来姿态预测能力的同时，当前姿态建模性能仍保持较稳定水平。例如，在 DIP-IMU、AMASS 和 IMUPoser 数据集上，其未来姿态预测的 MJAE/PE 分别为 4.80,deg/3.79,cm、5.41,deg/7.37,cm 和 6.15,deg/6.79,cm。总体而言，未来预测误差相较当前重构虽有一定上升，但增幅仍处于相对可控范围内，说明所提出的统一建模框架在扩展到未来姿态预测任务后，仍能够维持较好的当前姿态建模能力。综合来看，三个补充数据集上的实验结果从另一个角度验证了本文方法在更一般 IMU 姿态建模任务中的适用性，也说明其在统一框架下兼顾当前姿态重构与未来姿态预测具有一定优势。
+\begin{table}[h]
+  \centering
+  \caption{本文方法在 DIP-IMU、AMASS 和 IMUPoser 数据集上性能表现}
+  \label{tab:aipose_in_supplement_datasets}
+  \begin{tblr}{
+      colspec={X[1.3,c] *{4}{X[c]}},
+      cell{1}{1}={r=2}{c,m},
+      cell{1}{2}={c=2}{c,m},
+      cell{1}{4}={c=2}{c,m},
+      hline{2}={1pt},
+      hline{1,3,Z}={1.5pt},
+  }
+  数据集 & 当前姿态重构 & & 未来姿态预测 & \\
+  & MJAE & PE & MJAE & PE \\
+  DIP-IMU~\cite{huang2018deep}          & 4.76 & 3.71 & 4.80 & 3.79 \\
+  AMASS~\cite{mahmood2019amass}         & 5.21 & 7.04 & 5.41 & 7.37 \\
+  IMUPoser~\cite{mollyn2023imuposer}    & 5.94 & 6.59 & 6.15 & 6.79 \\
+  \end{tblr}
+\end{table}
 
 \xsubsection{模型架构实验}{Model Architecture Experiments}
 
