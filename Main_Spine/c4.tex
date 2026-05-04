@@ -507,7 +507,7 @@ MobilePoser~\cite{xu2024mobileposer} (2024)：该方法面向移动消费设备�
 
 \subsubsection{骨干网络选择实验}{}
 
-为分析不同时序建模结构对模型性能的影响，本文基于 XRFV2 主实验数据集设置，对 IMU 时序预测模块中的骨干网络进行对比实验。在实验中，固定 IMU 时序特征提取模块为 ResNet 结构\cite{he2016deep}，并分别采用 Transformer\cite{vaswani2017attention}、LSTM\cite{graves2012long}、GRU\cite{cho2014learning} 以及 Mamba\cite{gu2024mamba} 作为 IMU 时序预测模块的骨干网络，其余训练参数保持一致。
+为分析不同时序建模结构对模型性能的影响，本文基于 XRFV2 主实验数据集设置，对 IMU 时序预测模块中的骨干网络进行对比实验。在实验中，固定 IMU 时序特征提取模块为 ResNet 结构\cite{he2016deep}，并分别采用 Transformer\cite{vaswani2017attention}、LSTM\cite{hochreiter1997long}、GRU\cite{cho2014learning} 以及 Mamba\cite{gu2024mamba} 作为 IMU 时序预测模块的骨干网络，其余训练参数保持一致。
 
 实验结果如表~\ref{tab:imu_generator} 所示。总体来看，不同时序建模结构对模型性能具有显著影响。Transformer 在未来姿态预测任务中取得最低的 MPJPE，为 57.36\,px，同时在 PCK@5、PCK@10 和 PCK@20 指标上分别达到 16.48\%、26.65\% 和 43.51\%，在预测精度与稳定性方面表现最优。在当前姿态重构任务中，GRU 取得最低 MPJPE，为 51.55\,px，略优于 Transformer 的 52.20\,px，但其在各项 PCK 指标以及未来姿态预测性能上均低于 Transformer，说明其虽然在误差最小化方面具有一定优势，但整体建模能力相对有限。LSTM 的表现介于 GRU 与 Mamba 之间，在各项指标上均未达到最优，但结果较为稳定。相比之下，Mamba 在当前任务中的表现明显较差，其当前姿态重构 MPJPE 为 66.90\,px，未来姿态预测 MPJPE 为 74.05\,px，同时对应的 PCK 指标也显著低于其他方法，说明其在本实验设置下未能充分适应 IMU 时序建模任务。
 

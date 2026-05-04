@@ -780,7 +780,7 @@
   year={2016}
 }
 
-@article{graves2012long,
+@article{hochreiter1997long,
   title={Long short-term memory},
   author={Graves, Alex},
   journal={Supervised sequence labelling with recurrent neural networks},
@@ -797,7 +797,7 @@
   year={2014}
 }
 
-@article{杨红红2024基于平行多尺度时空图卷积网络的三维人体姿态估计算法,
+@article{yang2024parallel,
   title={基于平行多尺度时空图卷积网络的三维人体姿态估计算法},
   author={杨红红 and 刘泓希 and 张玉梅 and 吴晓军},
   journal={软件学报},
@@ -807,7 +807,7 @@
   year={2024}
 }
 
-@article{李登2025基于多元实体对齐的视觉,
+@article{li2025multiEntityAlignment,
   title={基于多元实体对齐的视觉-语言多模态预训练},
   author={李登 and 武阿明 and 韩亚洪},
   journal={软件学报},
@@ -817,7 +817,7 @@
   year={2025}
 }
 
-@article{杨宏宇2024基于多模态对比学习的代码表征增强预训练方法,
+@article{yang2024multimodalCode,
   title={基于多模态对比学习的代码表征增强预训练方法},
   author={杨宏宇 and 马建辉 and 侯旻 and 沈双宏 and 陈恩红},
   journal={软件学报},
@@ -827,7 +827,7 @@
   year={2024}
 }
 
-@article{尹梦冉2023面向跨模态检索的查询感知双重对比学习网络,
+@article{yin2023dualContrastive,
   title={面向跨模态检索的查询感知双重对比学习网络},
   author={尹梦冉 and 梁美玉 and 于洋 and 曹晓雯 and 杜军平 and 薛哲},
   journal={软件学报},
@@ -837,7 +837,7 @@
   year={2023}
 }
 
-@article{殷崭祚2023基于细粒度特征融合的部分多模态哈希,
+@article{yin2023fineGrainedFusion,
   title={基于细粒度特征融合的部分多模态哈希},
   author={殷崭祚 and 李博涵 and 王萌 and 黄瑞龙 and 吴文隆 and 王昊奋},
   journal={软件学报},

@@ -2307,7 +2307,7 @@
       \endverb
       \keyw{kim2025learning,references}
     \endentry
-    \entry{杨红红2024基于平行多尺度时空图卷积网络的三维人体姿态估计算法}{article}{}{}
+    \entry{yang2024parallel}{article}{}{}
       \name{author}{1}{}{%
         {{hash=c389df8b8cd3d6540f33ae843815f216}{%
            family={张明李华王强},
@@ -2361,7 +2361,7 @@
       \verb{doi}
       \verb 10.13328/j.cnki.jos.2024.6837
       \endverb
-      \keyw{杨红红2024基于平行多尺度时空图卷积网络的三维人体姿态估计算法,references}
+      \keyw{yang2024parallel,references}
     \endentry
     \entry{mollyn2023imuposer}{inproceedings}{}{}
       \name{author}{5}{}{%
@@ -3913,7 +3913,7 @@
       \range{pages}{1}
       \keyw{quy2025enhanced,references}
     \endentry
-    \entry{殷崭祚2023基于细粒度特征融合的部分多模态哈希}{article}{}{}
+    \entry{yin2023fineGrainedFusion}{article}{}{}
       \name{author}{1}{}{%
         {{hash=2881447b4872367928fdcfb0b077fbc9}{%
            family={黄伟周明徐亮},
@@ -3967,7 +3967,7 @@
       \verb{doi}
       \verb 10.13328/j.cnki.jos.7076
       \endverb
-      \keyw{殷崭祚2023基于细粒度特征融合的部分多模态哈希,references}
+      \keyw{yin2023fineGrainedFusion,references}
     \endentry
     \entry{choi2023multimodal}{article}{}{}
       \name{author}{3}{}{%
@@ -4035,7 +4035,7 @@
       \field{dateera}{ce}
       \keyw{choi2023multimodal,references}
     \endentry
-    \entry{李登2025基于多元实体对齐的视觉}{article}{}{}
+    \entry{li2025multiEntityAlignment}{article}{}{}
       \name{author}{1}{}{%
         {{hash=3188ccc09101bb39c0b73a1f135f83d6}{%
            family={刘浩陈静赵伟},
@@ -4089,9 +4089,9 @@
       \verb{doi}
       \verb 10.13328/j.cnki.jos.7321
       \endverb
-      \keyw{李登2025基于多元实体对齐的视觉,references}
+      \keyw{li2025multiEntityAlignment,references}
     \endentry
-    \entry{杨宏宇2024基于多模态对比学习的代码表征增强预训练方法}{article}{}{}
+    \entry{yang2024multimodalCode}{article}{}{}
       \name{author}{1}{}{%
         {{hash=8d3789427ea211e4d1486d8608c1506f}{%
            family={王磊孙明李丽},
@@ -4145,9 +4145,9 @@
       \verb{doi}
       \verb 10.13328/j.cnki.jos.7016
       \endverb
-      \keyw{杨宏宇2024基于多模态对比学习的代码表征增强预训练方法,references}
+      \keyw{yang2024multimodalCode,references}
     \endentry
-    \entry{尹梦冉2023面向跨模态检索的查询感知双重对比学习网络}{article}{}{}
+    \entry{yin2023dualContrastive}{article}{}{}
       \name{author}{1}{}{%
         {{hash=1f29c169000ebc2f2fb41534f7019e67}{%
            family={陈阳吴峰郑涛},
@@ -4201,7 +4201,7 @@
       \verb{doi}
       \verb 10.13328/j.cnki.jos.7021
       \endverb
-      \keyw{尹梦冉2023面向跨模态检索的查询感知双重对比学习网络,references}
+      \keyw{yin2023dualContrastive,references}
     \endentry
     \entry{abedin2021attend}{article}{}{}
       \name{author}{5}{}{%
@@ -4907,7 +4907,7 @@
       \field{dateera}{ce}
       \keyw{he2016deep,references}
     \endentry
-    \entry{graves2012long}{article}{}{}
+    \entry{hochreiter1997long}{article}{}{}
       \name{author}{2}{}{%
         {{hash=41b31e29fb2bdbf9f5c9c1b0d5b3e815}{%
            family={Hochreiter},
@@ -4965,7 +4965,7 @@
       \field{dateera}{ce}
       \field{pages}{1735\bibrangedash 1780}
       \range{pages}{46}
-      \keyw{graves2012long,references}
+      \keyw{hochreiter1997long,references}
     \endentry
     \entry{cho2014learning}{inproceedings}{}{}
       \name{author}{7}{}{%

@@ -478,7 +478,7 @@ DecomposeWHAR\cite{xie2025decomposing} (2025)：该方法面向多设备可穿�
 
 为了验证 WIHAR 中关键结构设计与训练策略的合理性，本文围绕时序编码骨干网络、模态融合方式、类别权重设计以及跨模态双向对比学习四个方面开展实验分析。其中，骨干网络实验主要用于比较不同时序建模结构对人体活动识别性能的影响；其余实验则用于验证关键模块与训练策略对模型性能提升的具体贡献。
 
-首先，为评估不同时序建模结构对人体活动识别性能的影响，本文将双分支编码器中的主干网络分别替换为 ResNet\cite{he2016deep}、LSTM\cite{graves2012long}、GRU\cite{cho2014learning}、Transformer\cite{vaswani2017attention} 和 Mamba\cite{gu2024mamba}，并保持其余网络结构、训练轮数和优化参数一致。这样可以保证不同结果主要反映时序建模能力差异，而不是来自训练细节或参数设置的变化。实验结果如表~\ref{tab:backbone_compare_ch3} 所示。
+首先，为评估不同时序建模结构对人体活动识别性能的影响，本文将双分支编码器中的主干网络分别替换为 ResNet\cite{he2016deep}、LSTM\cite{hochreiter1997long}、GRU\cite{cho2014learning}、Transformer\cite{vaswani2017attention} 和 Mamba\cite{gu2024mamba}，并保持其余网络结构、训练轮数和优化参数一致。这样可以保证不同结果主要反映时序建模能力差异，而不是来自训练细节或参数设置的变化。实验结果如表~\ref{tab:backbone_compare_ch3} 所示。
 
 \begin{table}[h]
   \centering
@@ -491,7 +491,7 @@ DecomposeWHAR\cite{xie2025decomposing} (2025)：该方法面向多设备可穿�
   骨干网络 & 准确率$\uparrow$ & 宏平均 F1$\uparrow$ & 宏平均精确率$\uparrow$ & 宏平均召回率$\uparrow$ \\
   \midrule
   ResNet\cite{he2016deep} & 88.29 & 87.07 & 89.25 & 85.88 \\
-  LSTM\cite{graves2012long} & 92.49 & 92.37 & 92.34 & 92.43 \\
+  LSTM\cite{hochreiter1997long} & 92.49 & 92.37 & 92.34 & 92.43 \\
   GRU\cite{cho2014learning} & 93.47 & 93.04 & 93.00 & 93.15 \\
   Transformer\cite{vaswani2017attention} & 95.25 & 94.91 & 94.63 & 95.36 \\
   Mamba\cite{gu2024mamba} & \textbf{95.81} & \textbf{95.29} & \textbf{95.48} & \textbf{95.13} \\
