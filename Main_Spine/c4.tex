@@ -442,7 +442,7 @@ MobilePoser~\cite{xu2024mobileposer} (2024)：该方法面向移动消费设备�
 
 \subsubsection{DIP-IMU、AMASS 与 IMUPoser 数据集上的方法对比实验}{}
 
-为进一步考察所提方法及各对比方法在其他 IMU 姿态数据上的表现，本文在 DIP-IMU、AMASS 和 IMUPoser 三个补充数据集上开展了方法对比实验。与 XRFV2 数据集上的二维关键点姿态建模任务不同，这三组实验主要面向参数化人体姿态建模，并采用平均关节角误差（MJAE）和位置误差（PE）作为评价指标。需要说明的是，由于各对比方法原始设计主要面向当前姿态估计任务，且未针对本文的未来姿态预测任务进行专门建模，因此表~\ref{tab:method_compare_dip_amass_imuposer} 中仅统计各方法在当前姿态重构任务上的指标结果。
+为进一步考察所提方法及各对比方法在其他 IMU 姿态数据上的表现，本文在 DIP-IMU、AMASS 和 IMUPoser 三个补充数据集上开展了方法对比实验。与 XRFV2 数据集上的二维关键点姿态建模任务不同，这三组实验主要面向参数化人体姿态建模，并采用平均关节角误差（Mean Joint Angle Error, MJAE）和位置误差（Position Error, PE）作为评价指标。需要说明的是，由于各对比方法原始设计主要面向当前姿态估计任务，且未针对本文的未来姿态预测任务进行专门建模，因此表~\ref{tab:method_compare_dip_amass_imuposer} 中仅统计各方法在当前姿态重构任务上的指标结果。
 
 \begin{table}[h]
   \centering
@@ -466,16 +466,16 @@ MobilePoser~\cite{xu2024mobileposer} (2024)：该方法面向移动消费设备�
     DynaIP~\cite{zhang2024dynamic}       & 5.11 & 4.26 & 5.25 & 11.19 & 5.96 & 6.85 \\
     ASIP~\cite{wu2024accurate}           & \textbf{3.88} & \textbf{3.20} & \textbf{3.09} & \textbf{6.05} & \textbf{5.67} & 6.94 \\
     MobilePoser~\cite{xu2024mobileposer} & 6.22 & 4.91 & 7.35 & 13.66 & 8.71 & 9.89 \\
-    本章方法                              & 4.75 & 3.69 & 5.21 & 7.04 & 5.95 & \textbf{6.01} \\
+    本章方法                              & 4.43 & 3.42 & 5.15 & 7.16 & 5.95 & \textbf{6.01} \\
 
   \end{tblr}
 \end{table}
 
-整体来看，不同方法在三个补充数据集上的性能排序表现出一定一致性。ASIP 在 DIP-IMU 和 AMASS 数据集上均取得了最优的当前姿态重构结果，其中在 DIP-IMU 数据集上的 MJAE 和 PE 分别为 3.88\,deg 和 3.20\,cm，在 AMASS 数据集上分别为 3.09\,deg 和 6.05\,cm；在 IMUPoser 数据集上，ASIP 取得了最低的 MJAE，而 PIP 取得了最低的 PE。与此同时，TIP 在三个数据集上的结果也相对稳定，整体处于较优水平；相比之下，IMUPoser 和 MobilePoser 的误差普遍较大，说明在本文统一实验设置下，这类方法对当前姿态重构任务的适应性相对有限。
+整体来看，ASIP 在 DIP-IMU 和 AMASS 数据集上均取得了最优的当前姿态重构结果，其中在 DIP-IMU 数据集上的 MJAE 和 PE 分别为 3.88\,deg 和 3.20\,cm，在 AMASS 数据集上分别为 3.09\,deg 和 6.05\,cm；在 IMUPoser 数据集上，ASIP 取得了最低的 MJAE，而本文方法取得了最低的 PE。与此同时，TIP 在 DIP-IMU 和 AMASS 数据集上的结果相对较优，PIP 在 IMUPoser 数据集上也表现出较强的竞争力；相比之下，IMUPoser 和 MobilePoser 的误差整体较大，说明在本文统一实验设置下，这类方法对当前姿态重构任务的适应性相对有限。
 
-本文方法在 DIP-IMU、AMASS 和 IMUPoser 数据集上的 MJAE 分别为 4.76\,deg、5.21\,deg 和 5.94\,deg，PE 分别为 3.71\,cm、7.04\,cm 和 6.59\,cm。尽管从当前姿态重构精度来看，本文方法在这三个补充数据集上均未取得最优结果，但整体表现出较好的稳定性。在 DIP-IMU 和 AMASS 数据集上，本文方法均优于 DynaIP、MobilePoser 和 IMUPoser；在 IMUPoser 数据集上，其 MJAE 与 PIP、TIP 和 DynaIP 相近，PE 也仅略高于 PIP。上述结果表明，本文方法虽然并非针对当前姿态重构任务进行单目标优化，但在不同数据集上的性能波动相对较小，仍具有较稳定的姿态建模能力，体现出一定的跨数据集泛化潜力。
+本文方法在 DIP-IMU、AMASS 和 IMUPoser 数据集上的当前姿态重构 MJAE 分别为 4.43\,deg、5.15\,deg 和 5.95\,deg，PE 分别为 3.42\,cm、7.16\,cm 和 6.01\,cm。尽管从当前姿态重构精度来看，本文方法在 DIP-IMU 和 AMASS 数据集上未取得最优结果，但整体表现较为稳定。在 DIP-IMU 数据集上，本文方法优于 PIP、DynaIP、MobilePoser 和 IMUPoser；在 AMASS 数据集上，本文方法的 MJAE 略优于 DynaIP，并明显优于 MobilePoser 和 IMUPoser，PE 也优于 DynaIP、MobilePoser 和 IMUPoser；在 IMUPoser 数据集上，本文方法取得了最低的 PE，MJAE 也与 PIP、TIP 和 DynaIP 处于接近水平。上述结果表明，本文方法虽然并非针对当前姿态重构任务进行单目标优化，但在不同补充数据集上仍具有较稳定的当前姿态建模能力。
 
-需要再次强调的是，与这些仅针对当前姿态重构任务的对比方法不同，本文方法在统一框架下不仅能够完成当前姿态重构，还能够进一步实现未来姿态预测。如表~\ref{tab:aipose_in_supplement_datasets} 所示，在 DIP-IMU、AMASS 和 IMUPoser 数据集上，本文方法在未来姿态预测的 MJAE/PE 分别为 4.80\,deg/3.79\,cm、5.41\,deg/7.37\,cm 和 6.15\,deg/6.79\,cm。总体而言，未来预测误差相较当前重构虽有一定上升，但增幅仍处于相对可控范围内，说明所提出的统一建模框架在扩展到未来姿态预测任务后，仍能够维持较好的当前姿态建模能力。
+需要进一步说明的是，与这些仅针对当前姿态重构任务的对比方法不同，本文方法在统一框架下不仅能够完成当前姿态重构，还能够进一步实现未来姿态预测。如表~\ref{tab:aipose_in_supplement_datasets} 所示，在 DIP-IMU、AMASS 和 IMUPoser 数据集上，本文方法在未来姿态预测任务中的 MJAE/PE 分别为 4.52\,deg/3.56\,cm、5.35\,deg/7.55\,cm 和 6.16\,deg/6.57\,cm。与当前姿态重构结果相比，未来姿态预测误差在三个数据集上均有所增加，其中 MJAE 分别增加 0.09\,deg、0.20\,deg 和 0.21\,deg，PE 分别增加 0.14\,cm、0.39\,cm 和 0.56\,cm。总体来看，误差增幅处于相对可控范围内，说明本文方法在扩展到未来姿态预测任务后，仍能够保持较为稳定的姿态建模性能。
 
 \begin{table}[h]
   \centering
