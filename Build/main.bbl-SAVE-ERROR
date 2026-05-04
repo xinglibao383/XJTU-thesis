@@ -206,7 +206,7 @@
       \range{pages}{12}
       \keyw{li2024harmamba,references}
     \endentry
-    \entry{add_harSurveyAIR2025}{article}{}{}
+    \entry{qureshi2025systematic}{article}{}{}
       \name{author}{3}{}{%
         {{hash=c7001296996ba544c8978ff5ceb89ba3}{%
            family={Alghamdi},
@@ -280,9 +280,9 @@
       \verb{doi}
       \verb 10.1007/s10462-025-11275-x
       \endverb
-      \keyw{add_harSurveyAIR2025,references}
+      \keyw{qureshi2025systematic,references}
     \endentry
-    \entry{add_wearableSurveyIMWUT2025}{article}{}{}
+    \entry{haresamudram2025past}{article}{}{}
       \name{author}{3}{}{%
         {{hash=2604b978b6b2464997367248d21e96ca}{%
            family={Bock},
@@ -356,9 +356,9 @@
       \verb{doi}
       \verb 10.1145/3729467
       \endverb
-      \keyw{add_wearableSurveyIMWUT2025,references}
+      \keyw{haresamudram2025past,references}
     \endentry
-    \entry{add_BEE2024}{article}{}{}
+    \entry{yu2024improving}{article}{}{}
       \name{author}{2}{}{%
         {{hash=7dd79125974437d123ed7d7fbfda3a15}{%
            family={Nguyen},
@@ -421,9 +421,9 @@
       \verb{doi}
       \verb 10.1109/TNSRE.2024.3378901
       \endverb
-      \keyw{add_BEE2024,references}
+      \keyw{yu2024improving,references}
     \endentry
-    \entry{add_fewShotTransferHAR2024}{article}{}{}
+    \entry{ganesha2024few}{article}{}{}
       \name{author}{3}{}{%
         {{hash=25bbf4047d900f3760c65b01ee899dba}{%
            family={Zhang},
@@ -496,9 +496,9 @@
       \verb{doi}
       \verb 10.1007/s00521-024-09645-7
       \endverb
-      \keyw{add_fewShotTransferHAR2024,references}
+      \keyw{ganesha2024few,references}
     \endentry
-    \entry{add_metaFewShotHAR2025}{article}{}{}
+    \entry{vettoruzzo2025efficient}{article}{}{}
       \name{author}{3}{}{%
         {{hash=10d3da881c6a770cf522af1c61d6685b}{%
            family={Li},
@@ -571,9 +571,9 @@
       \verb{doi}
       \verb 10.1007/s00521-025-11408-x
       \endverb
-      \keyw{add_metaFewShotHAR2025,references}
+      \keyw{vettoruzzo2025efficient,references}
     \endentry
-    \entry{add_EHUNAM2025}{article}{}{}
+    \entry{de2025ehunam}{article}{}{}
       \name{author}{2}{}{%
         {{hash=c02fd980be33649093d553412484a396}{%
            family={Garcia},
@@ -637,9 +637,9 @@
       \verb{doi}
       \verb 10.1038/s41597-025-06238-4
       \endverb
-      \keyw{add_EHUNAM2025,references}
+      \keyw{de2025ehunam,references}
     \endentry
-    \entry{add_CSIDataset80MHz2023}{article}{}{}
+    \entry{meneghello2023csi}{article}{}{}
       \name{author}{2}{}{%
         {{hash=ce790c88c30f7480696ecd1135980aa5}{%
            family={Varga},
@@ -703,9 +703,9 @@
       \verb{doi}
       \verb 10.1109/MCOM.005.2200720
       \endverb
-      \keyw{add_CSIDataset80MHz2023,references}
+      \keyw{meneghello2023csi,references}
     \endentry
-    \entry{add_wifiSensingEAAI2024}{article}{}{}
+    \entry{sruthi2024wi}{article}{}{}
       \name{author}{2}{}{%
         {{hash=377471aa8018a313d9fb665be8f32048}{%
            family={Pham},
@@ -768,9 +768,9 @@
       \verb{doi}
       \verb 10.1016/j.engappai.2024.107768
       \endverb
-      \keyw{add_wifiSensingEAAI2024,references}
+      \keyw{sruthi2024wi,references}
     \endentry
-    \entry{add_WiSigPro2024}{article}{}{}
+    \entry{hussain2024wisigpro}{article}{}{}
       \name{author}{2}{}{%
         {{hash=dbe83fd8da75338203d4e8dd0e20be17}{%
            family={Li},
@@ -834,9 +834,9 @@
       \verb{doi}
       \verb 10.1016/j.eswa.2024.121890
       \endverb
-      \keyw{add_WiSigPro2024,references}
+      \keyw{hussain2024wisigpro,references}
     \endentry
-    \entry{add_WiMANS2024}{inproceedings}{}{}
+    \entry{huang2024wimans}{inproceedings}{}{}
       \name{author}{2}{}{%
         {{hash=ae021641a8f85fd2607152ab99ed115b}{%
            family={Zhang},
@@ -899,9 +899,9 @@
       \verb{doi}
       \verb 10.1007/978-3-031-73465-8_58
       \endverb
-      \keyw{add_WiMANS2024,references}
+      \keyw{huang2024wimans,references}
     \endentry
-    \entry{add_timeMattersCSI2025}{article}{}{}
+    \entry{brunello2025time}{article}{}{}
       \name{author}{2}{}{%
         {{hash=3e024aa650b5b184ff99194f3de9ae9b}{%
            family={Kiss},
@@ -964,7 +964,7 @@
       \verb{doi}
       \verb 10.1016/j.iot.2025.100987
       \endverb
-      \keyw{add_timeMattersCSI2025,references}
+      \keyw{brunello2025time,references}
     \endentry
     \entry{gao2023mmtsa}{article}{}{}
       \name{author}{7}{}{%
@@ -1079,7 +1079,7 @@
       \range{pages}{26}
       \keyw{gao2023mmtsa,references}
     \endentry
-    \entry{add_wearableDataFusionNPJ2023}{article}{}{}
+    \entry{celik2023bringing}{article}{}{}
       \name{author}{2}{}{%
         {{hash=224832f34479b7ca1b0fc530be33a14b}{%
            family={Pratama},
@@ -1143,9 +1143,9 @@
       \verb{doi}
       \verb 10.1038/s41746-023-00897-6
       \endverb
-      \keyw{add_wearableDataFusionNPJ2023,references}
+      \keyw{celik2023bringing,references}
     \endentry
-    \entry{add_lifelogFusionInfoFusion2024}{article}{}{}
+    \entry{oh2024multi}{article}{}{}
       \name{author}{2}{}{%
         {{hash=35dc3f6af5f050688c0a18383d7804a1}{%
            family={Chen},
@@ -1209,9 +1209,9 @@
       \verb{doi}
       \verb 10.1016/j.inffus.2024.102345
       \endverb
-      \keyw{add_lifelogFusionInfoFusion2024,references}
+      \keyw{oh2024multi,references}
     \endentry
-    \entry{add_encodingActivitiesESA2025}{article}{}{}
+    \entry{khan2025encoding}{article}{}{}
       \name{author}{2}{}{%
         {{hash=33104fd0f457a2964af323817a9d2016}{%
            family={Liu},
@@ -1275,9 +1275,9 @@
       \verb{doi}
       \verb 10.1016/j.eswa.2024.123891
       \endverb
-      \keyw{add_encodingActivitiesESA2025,references}
+      \keyw{khan2025encoding,references}
     \endentry
-    \entry{add_HyperHAR2024}{article}{}{}
+    \entry{ahmad2024hyperhar}{article}{}{}
       \name{author}{2}{}{%
         {{hash=eebf4fb222abfe808a19fa689bdab8cb}{%
            family={Ahmad},
@@ -1341,7 +1341,7 @@
       \verb{doi}
       \verb 10.1145/3632228
       \endverb
-      \keyw{add_HyperHAR2024,references}
+      \keyw{ahmad2024hyperhar,references}
     \endentry
     \entry{hong2024crosshar}{article}{}{}
       \name{author}{8}{}{%
@@ -1683,7 +1683,7 @@
       \range{pages}{26}
       \keyw{zhu2025master,references}
     \endentry
-    \entry{add_multiSourceTransferHAR2024}{article}{}{}
+    \entry{jia2024holistic}{article}{}{}
       \name{author}{2}{}{%
         {{hash=141a1e7404c5b53546fb09821c56717a}{%
            family={Wang},
@@ -1746,9 +1746,9 @@
       \verb{doi}
       \verb 10.1007/s40747-023-01218-w
       \endverb
-      \keyw{add_multiSourceTransferHAR2024,references}
+      \keyw{jia2024holistic,references}
     \endentry
-    \entry{add_IMUZero2025}{article}{}{}
+    \entry{su2025imuzero}{article}{}{}
       \name{author}{3}{}{%
         {{hash=1abb5f3548083ceac326efaefd34ef2c}{%
            family={Yan},
@@ -1823,9 +1823,9 @@
       \verb{doi}
       \verb 10.1145/3770669
       \endverb
-      \keyw{add_IMUZero2025,references}
+      \keyw{su2025imuzero,references}
     \endentry
-    \entry{add_MobHAR2025}{article}{}{}
+    \entry{xue2025mobhar}{article}{}{}
       \name{author}{3}{}{%
         {{hash=f6c667850f49033e3ebc9e9c8dca130d}{%
            family={Dai},
@@ -1900,9 +1900,9 @@
       \verb{doi}
       \verb 10.1145/3770670
       \endverb
-      \keyw{add_MobHAR2025,references}
+      \keyw{xue2025mobhar,references}
     \endentry
-    \entry{add_LLMGuidedHAR2025}{article}{}{}
+    \entry{yan2025large}{article}{}{}
       \name{author}{2}{}{%
         {{hash=59609ac026709f4884de40a336b9e150}{%
            family={Yan},
@@ -1967,7 +1967,7 @@
       \verb{doi}
       \verb 10.1145/3770671
       \endverb
-      \keyw{add_LLMGuidedHAR2025,references}
+      \keyw{yan2025large,references}
     \endentry
     \entry{yi2022physical}{inproceedings}{}{}
       \name{author}{7}{}{%
@@ -2175,7 +2175,7 @@
       \range{pages}{9}
       \keyw{jiang2022transformer,references}
     \endentry
-    \entry{add_remoteMonitoringCommEng2024}{article}{}{}
+    \entry{giessler2024wearable}{article}{}{}
       \name{author}{2}{}{%
         {{hash=165a5da0696c74de50a07a9ec22071a4}{%
            family={Brown},
@@ -2239,9 +2239,9 @@
       \verb{doi}
       \verb 10.1038/s44172-024-00168-6
       \endverb
-      \keyw{add_remoteMonitoringCommEng2024,references}
+      \keyw{giessler2024wearable,references}
     \endentry
-    \entry{add_behavioralConstraintsNatComm2025}{article}{}{}
+    \entry{kim2025learning}{article}{}{}
       \name{author}{2}{}{%
         {{hash=7472c6726e54107295772f491de8b2d3}{%
            family={Kim},
@@ -2305,9 +2305,9 @@
       \verb{doi}
       \verb 10.1038/s41467-025-58624-6
       \endverb
-      \keyw{add_behavioralConstraintsNatComm2025,references}
+      \keyw{kim2025learning,references}
     \endentry
-    \entry{add_JOS_humanScene3DPose2024}{article}{}{}
+    \entry{杨红红2024基于平行多尺度时空图卷积网络的三维人体姿态估计算法}{article}{}{}
       \name{author}{1}{}{%
         {{hash=c389df8b8cd3d6540f33ae843815f216}{%
            family={张明李华王强},
@@ -2361,7 +2361,7 @@
       \verb{doi}
       \verb 10.13328/j.cnki.jos.2024.6837
       \endverb
-      \keyw{add_JOS_humanScene3DPose2024,references}
+      \keyw{杨红红2024基于平行多尺度时空图卷积网络的三维人体姿态估计算法,references}
     \endentry
     \entry{mollyn2023imuposer}{inproceedings}{}{}
       \name{author}{5}{}{%
@@ -2529,7 +2529,7 @@
       \range{pages}{11}
       \keyw{xu2024mobileposer,references}
     \endentry
-    \entry{add_garmentAwareDiffusionIJCAI2025}{inproceedings}{}{}
+    \entry{ilic2025human}{inproceedings}{}{}
       \name{author}{2}{}{%
         {{hash=f61674ca7aa6c5bff98d28304c5905d8}{%
            family={Park},
@@ -2591,9 +2591,9 @@
       \verb{doi}
       \verb 10.24963/ijcai.2025.135
       \endverb
-      \keyw{add_garmentAwareDiffusionIJCAI2025,references}
+      \keyw{ilic2025human,references}
     \endentry
-    \entry{add_UltraInertialPoser2024}{article}{}{}
+    \entry{armani2024ultra}{article}{}{}
       \name{author}{2}{}{%
         {{hash=0a675a6c603e77f00abfdab161e4bec4}{%
            family={Habermann},
@@ -2657,7 +2657,7 @@
       \verb{doi}
       \verb 10.1145/3658152
       \endverb
-      \keyw{add_UltraInertialPoser2024,references}
+      \keyw{armani2024ultra,references}
     \endentry
     \entry{zhang2024dynamic}{inproceedings}{}{}
       \name{author}{6}{}{%
@@ -3034,7 +3034,7 @@
       \range{pages}{12}
       \keyw{chen2023humanmac,references}
     \endentry
-    \entry{add_motionPerturbationCVPR2024}{inproceedings}{}{}
+    \entry{yue2024human}{inproceedings}{}{}
       \name{author}{2}{}{%
         {{hash=e34b8f9224cf2d8d930b1543bf103703}{%
            family={Yue},
@@ -3096,9 +3096,9 @@
       \verb{doi}
       \verb 10.1109/CVPR52729.2024.00690
       \endverb
-      \keyw{add_motionPerturbationCVPR2024,references}
+      \keyw{yue2024human,references}
     \endentry
-    \entry{add_multimodalSenseForecastCVPR2024}{inproceedings}{}{}
+    \entry{lou2024multimodal}{inproceedings}{}{}
       \name{author}{2}{}{%
         {{hash=7277157dab29054735c84464b35a540f}{%
            family={Lou},
@@ -3160,9 +3160,9 @@
       \verb{doi}
       \verb 10.1109/CVPR52729.2024.00581
       \endverb
-      \keyw{add_multimodalSenseForecastCVPR2024,references}
+      \keyw{lou2024multimodal,references}
     \endentry
-    \entry{add_MoML2024}{inproceedings}{}{}
+    \entry{sun2024moml}{inproceedings}{}{}
       \name{author}{2}{}{%
         {{hash=a4f1db50ce07b8d5024ad00d3a26c9a5}{%
            family={Sun},
@@ -3224,9 +3224,9 @@
       \verb{doi}
       \verb 10.1109/CVPR52729.2024.00790
       \endverb
-      \keyw{add_MoML2024,references}
+      \keyw{sun2024moml,references}
     \endentry
-    \entry{add_wholeBodyObjectForecast2024}{inproceedings}{}{}
+    \entry{yan2024forecasting}{inproceedings}{}{}
       \name{author}{2}{}{%
         {{hash=956119b15d023d777effbc000caf5300}{%
            family={Yan},
@@ -3289,9 +3289,9 @@
       \verb{doi}
       \verb 10.1109/CVPR52729.2024.00469
       \endverb
-      \keyw{add_wholeBodyObjectForecast2024,references}
+      \keyw{yan2024forecasting,references}
     \endentry
-    \entry{add_FutureHuman3D2024}{inproceedings}{}{}
+    \entry{diller2024futurehuman3d}{inproceedings}{}{}
       \name{author}{2}{}{%
         {{hash=510e4bdd54fc8a81de20d61d0a3ae5c3}{%
            family={Schwarz},
@@ -3353,9 +3353,9 @@
       \verb{doi}
       \verb 10.1109/CVPR52729.2024.00350
       \endverb
-      \keyw{add_FutureHuman3D2024,references}
+      \keyw{diller2024futurehuman3d,references}
     \endentry
-    \entry{add_LAL2025}{inproceedings}{}{}
+    \entry{sun2025lal}{inproceedings}{}{}
       \name{author}{2}{}{%
         {{hash=60239264692b316068a484d7fd45baeb}{%
            family={Zhao},
@@ -3417,9 +3417,9 @@
       \verb{doi}
       \verb 10.1109/CVPR52730.2025.01200
       \endverb
-      \keyw{add_LAL2025,references}
+      \keyw{sun2025lal,references}
     \endentry
-    \entry{add_nonisotropicDiffusion2025}{inproceedings}{}{}
+    \entry{curreli2025nonisotropic}{inproceedings}{}{}
       \name{author}{2}{}{%
         {{hash=2c112d9d43345185672db278b5111bc4}{%
            family={Liu},
@@ -3482,9 +3482,9 @@
       \verb{doi}
       \verb 10.1109/CVPR52730.2025.02250
       \endverb
-      \keyw{add_nonisotropicDiffusion2025,references}
+      \keyw{curreli2025nonisotropic,references}
     \endentry
-    \entry{add_visionGuidedAction2025}{inproceedings}{}{}
+    \entry{yu2025vision}{inproceedings}{}{}
       \name{author}{2}{}{%
         {{hash=6ade6b4972bf4967d1d436a3086c47e1}{%
            family={Yu},
@@ -3546,7 +3546,7 @@
       \verb{doi}
       \verb 10.1109/CVPR52730.2025.03250
       \endverb
-      \keyw{add_visionGuidedAction2025,references}
+      \keyw{yu2025vision,references}
     \endentry
     \entry{vaswani2017attention}{article}{}{}
       \name{author}{8}{}{%
@@ -3721,7 +3721,7 @@
       \field{dateera}{ce}
       \keyw{gu2024mamba,references}
     \endentry
-    \entry{add_nearFallIMUCluster2024}{article}{}{}
+    \entry{giessler2024framework}{article}{}{}
       \name{author}{2}{}{%
         {{hash=bb1de5ab5e98033aa6286a621825b9a6}{%
            family={Wilson},
@@ -3785,7 +3785,7 @@
       \verb{doi}
       \verb 10.1038/s44172-024-00325-x
       \endverb
-      \keyw{add_nearFallIMUCluster2024,references}
+      \keyw{giessler2024framework,references}
     \endentry
     \entry{varga2024mitigating}{article}{}{}
       \name{author}{1}{}{%
@@ -3913,7 +3913,7 @@
       \range{pages}{1}
       \keyw{quy2025enhanced,references}
     \endentry
-    \entry{add_JOS_fineGrainedFusion2024}{article}{}{}
+    \entry{殷崭祚2023基于细粒度特征融合的部分多模态哈希}{article}{}{}
       \name{author}{1}{}{%
         {{hash=2881447b4872367928fdcfb0b077fbc9}{%
            family={黄伟周明徐亮},
@@ -3967,7 +3967,7 @@
       \verb{doi}
       \verb 10.13328/j.cnki.jos.7076
       \endverb
-      \keyw{add_JOS_fineGrainedFusion2024,references}
+      \keyw{殷崭祚2023基于细粒度特征融合的部分多模态哈希,references}
     \endentry
     \entry{choi2023multimodal}{article}{}{}
       \name{author}{3}{}{%
@@ -4035,7 +4035,7 @@
       \field{dateera}{ce}
       \keyw{choi2023multimodal,references}
     \endentry
-    \entry{add_JOS_multiEntityAlignment2025}{article}{}{}
+    \entry{李登2025基于多元实体对齐的视觉}{article}{}{}
       \name{author}{1}{}{%
         {{hash=3188ccc09101bb39c0b73a1f135f83d6}{%
            family={刘浩陈静赵伟},
@@ -4089,9 +4089,9 @@
       \verb{doi}
       \verb 10.13328/j.cnki.jos.7321
       \endverb
-      \keyw{add_JOS_multiEntityAlignment2025,references}
+      \keyw{李登2025基于多元实体对齐的视觉,references}
     \endentry
-    \entry{add_JOS_multimodalContrastivePretrain2024}{article}{}{}
+    \entry{杨宏宇2024基于多模态对比学习的代码表征增强预训练方法}{article}{}{}
       \name{author}{1}{}{%
         {{hash=8d3789427ea211e4d1486d8608c1506f}{%
            family={王磊孙明李丽},
@@ -4145,9 +4145,9 @@
       \verb{doi}
       \verb 10.13328/j.cnki.jos.7016
       \endverb
-      \keyw{add_JOS_multimodalContrastivePretrain2024,references}
+      \keyw{杨宏宇2024基于多模态对比学习的代码表征增强预训练方法,references}
     \endentry
-    \entry{add_JOS_dualContrastiveRetrieval2024}{article}{}{}
+    \entry{尹梦冉2023面向跨模态检索的查询感知双重对比学习网络}{article}{}{}
       \name{author}{1}{}{%
         {{hash=1f29c169000ebc2f2fb41534f7019e67}{%
            family={陈阳吴峰郑涛},
@@ -4201,7 +4201,7 @@
       \verb{doi}
       \verb 10.13328/j.cnki.jos.7021
       \endverb
-      \keyw{add_JOS_dualContrastiveRetrieval2024,references}
+      \keyw{尹梦冉2023面向跨模态检索的查询感知双重对比学习网络,references}
     \endentry
     \entry{abedin2021attend}{article}{}{}
       \name{author}{5}{}{%
@@ -4907,7 +4907,7 @@
       \field{dateera}{ce}
       \keyw{he2016deep,references}
     \endentry
-    \entry{hochreiter1997long}{article}{}{}
+    \entry{graves2012long}{article}{}{}
       \name{author}{2}{}{%
         {{hash=41b31e29fb2bdbf9f5c9c1b0d5b3e815}{%
            family={Hochreiter},
@@ -4965,7 +4965,7 @@
       \field{dateera}{ce}
       \field{pages}{1735\bibrangedash 1780}
       \range{pages}{46}
-      \keyw{hochreiter1997long,references}
+      \keyw{graves2012long,references}
     \endentry
     \entry{cho2014learning}{inproceedings}{}{}
       \name{author}{7}{}{%
