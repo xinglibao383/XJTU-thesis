@@ -23,6 +23,72 @@
 
 \xsection{方法描述}{Method Description}
 
+\xsubsection{任务定义与样本构建}{Task Definition and Sample Construction}
+
+为了构建适用于人体姿态重构与预测任务的训练样本，本文以 XRFV2 数据集为例，从连续采集的 IMU 序列与姿态序列中提取时间对齐的片段。由于 IMU 与姿态数据的采样频率不同，因此在样本构建时，首先基于统一时间轴建立二者之间的对应关系，再按照固定时间窗口从连续序列中截取样本。设 IMU 时间序列如式~\eqref{eq:imu_sequence_definition} 所示：
+\begin{equation}
+\mathbf{X}=\{x_1,x_2,\ldots,x_T\}, \qquad x_t\in\mathbb{R}^{C},
+\label{eq:imu_sequence_definition}
+\end{equation}
+其中，$C$ 表示 IMU 通道数。本文使用 5 个 IMU 设备，每个设备包含三轴加速度与三轴角速度，共 6 个通道，因此 $C=30$。设人体姿态序列如式~\eqref{eq:pose_sequence_definition} 所示：
+\begin{equation}
+\mathbf{P}=\{p_1,p_2,\ldots,p_N\}, \qquad p_i\in\mathbb{R}^{K\times 2},
+\label{eq:pose_sequence_definition}
+\end{equation}
+其中，$K=25$ 表示人体关键点数量。
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.65\textwidth]{aipose_sample_construct.jpg}
+  \caption{样本构建过程时间结构示意图}
+  \label{fig:aipose_sample_construct}
+\end{figure}
+
+图~\ref{fig:aipose_sample_construct} 给出了样本构建过程的时间结构示意图。对于任一样本，其参考时刻 $t$ 表示该样本时间窗口的结束时刻。以该时刻为参照，本文从式~\eqref{eq:imu_sequence_definition} 和式~\eqref{eq:pose_sequence_definition} 所示的连续序列中分别截取当前 IMU 输入序列、未来 IMU 监督序列、当前姿态监督序列以及未来姿态监督序列，从而构建用于姿态重构与预测的监督样本。
+
+设 IMU 采样频率为 $f_{\mathrm{imu}}$，姿态数据帧率为 $f_{\mathrm{pose}}$，当前 IMU 输入窗口长度为 $L_{\mathrm{input}}$，当前姿态重构窗口长度为 $L_{\mathrm{rec}}$，以及未来姿态预测窗口长度 $L_{\mathrm{pred}}$，三个窗口长度均以秒为单位。在此基础上，样本中各部分定义如下：
+
+\begin{equation}
+\mathbf{X}_{\mathrm{input}}
+=
+\mathbf{X}\!\left[(t-(L_{\mathrm{input}}+L_{\mathrm{pred}}))f_{\mathrm{imu}}:\,(t-L_{\mathrm{pred}})f_{\mathrm{imu}}\right],
+\label{eq:sample_x_input}
+\end{equation}
+
+\begin{equation}
+\mathbf{X}_{\mathrm{future}}
+=
+\mathbf{X}\!\left[(t-L_{\mathrm{pred}})f_{\mathrm{imu}}:\,t f_{\mathrm{imu}}\right],
+\label{eq:sample_x_future}
+\end{equation}
+
+\begin{equation}
+\mathbf{P}_{\mathrm{rec}}
+=
+\mathbf{P}\!\left[(t-(L_{\mathrm{rec}}+L_{\mathrm{pred}}))f_{\mathrm{pose}}:\,(t-L_{\mathrm{pred}})f_{\mathrm{pose}}\right],
+\label{eq:sample_p_rec}
+\end{equation}
+
+\begin{equation}
+\mathbf{P}_{\mathrm{pred}}
+=
+\mathbf{P}\!\left[(t-L_{\mathrm{pred}})f_{\mathrm{pose}}:\,t f_{\mathrm{pose}}\right],
+\label{eq:sample_p_pred}
+\end{equation}
+
+\begin{equation}
+\mathcal{S}
+=
+\left\{
+\mathbf{X}_{\mathrm{input}},
+\mathbf{X}_{\mathrm{future}},
+\mathbf{P}_{\mathrm{rec}},
+\mathbf{P}_{\mathrm{pred}}
+\right\}.
+\label{eq:sample_set}
+\end{equation}
+其中，式~\eqref{eq:sample_x_input} 中的 $\mathbf{X}_{\mathrm{input}}$ 表示当前 IMU 输入序列，用于提供姿态重构与预测的先验信息；式~\eqref{eq:sample_x_future} 中的 $\mathbf{X}_{\mathrm{future}}$ 表示与未来姿态预测阶段对应的 IMU 序列；式~\eqref{eq:sample_p_rec} 中的 $\mathbf{P}_{\mathrm{rec}}$ 表示当前人体姿态序列，用于当前姿态重构任务；式~\eqref{eq:sample_p_pred} 中的 $\mathbf{P}_{\mathrm{pred}}$ 表示未来人体姿态序列，用于未来姿态预测任务。由此，一个完整样本由式~\eqref{eq:sample_set} 中的四个部分共同构成。
+
 \xsubsection{整体方法框架}{Overall Framework}
 
 AIPose 以当前 IMU 序列为输入，通过时序特征提取、当前姿态重构、未来 IMU 序列预测以及未来姿态预测四个阶段实现人体姿态重构与预测，整体流程如图~\ref{fig:aipose_apply} 所示，整体架构如图~\ref{fig:aipose_arch} 所示。
@@ -191,7 +257,7 @@ E\!\left(
 
 在模型结构设置中，IMU 时序特征提取模块采用 ResNet 结构，IMU 时序预测模块采用 Transformer 结构，其隐藏层维度为 128，层数为 2，注意力头数为 4，Dropout 率为 0.1。模型输出形式根据具体任务进行相应调整：在二维人体姿态建模任务中，单个关节的姿态表示维度取 $D_p=2$，输出二维关键点坐标序列；在参数化人体姿态建模任务中，$D_p$ 对应关节旋转表示的维度，输出参数化姿态序列。
 
-\xsubsection{数据集与样本构建}{Dataset and Sample Construction}
+\xsubsection{数据集与姿态监督构建}{Datasets and Pose Ground Truth Construction}
 
 \subsubsection{数据集}{}
 
@@ -225,6 +291,10 @@ IMUPoser 是一个面向消费级可穿戴设备场景的人体姿态数据集�
   \end{tblr}
 \end{table}
 
+在数据划分方面，本章主体实验采用与第三章一致的标准随机划分方式，并在泛化实验中进一步采用跨受试者与跨场景划分方式，以分别评估模型在同分布条件、受试者分布偏移和场景分布偏移条件下的性能。
+
+\subsubsection{姿态监督构建}{}
+
 对于 XRFV2 数据集，本文在已有 IMU 数据基础上，进一步利用同步采集的视频构建人体二维姿态序列作为监督信号。具体而言，本文采用 OpenPose 算法\cite{cao2019openpose}对视频逐帧提取人体关键点位置，并基于 Body25 模型获得 25 个二维关键点。然而，直接由 OpenPose 提取的二维关键点序列仍存在一定噪声。受遮挡、视角变化及图像质量波动等因素影响，部分关键点在个别帧中可能无法被稳定检测；同时，不同受试者在身高、体型以及与摄像机相对位置上的差异，也会导致姿态关键点在图像坐标系中的位置与尺度存在明显变化。为此，本文对原始姿态序列进行了进一步处理：对于置信度为零的关键点，采用时间上相邻的最近有效关键点进行填补，以保证姿态序列在时间维度上的连续性；同时，为减弱个体差异及拍摄尺度差异的影响，对关键点坐标进行中心化与标准化处理，即以躯干中心关键点 MidHip 作为参考点进行平移，并以左右肩关键点之间的欧氏距离作为尺度因子进行标准化，具体形式如式~\eqref{eq:pose_normalization} 所示：
 \begin{equation}
 \hat{p}_{i,k}=\tanh\left(\frac{p_{i,k}-p_{i,c}}{\|p_{i,l}-p_{i,r}\|_2}\right),
@@ -238,74 +308,6 @@ IMUPoser 是一个面向消费级可穿戴设备场景的人体姿态数据集�
   \caption{姿态中心化与标准化处理示意图}
   \label{fig:pose_normalization}
 \end{figure}
-
-\subsubsection{样本构建}{}
-
-为了构建适用于人体姿态重构与预测任务的训练样本，本文以 XRFV2 数据集为例，从连续采集的 IMU 序列与姿态序列中提取时间对齐的片段。由于 IMU 与姿态数据的采样频率不同，因此在样本构建时，首先基于统一时间轴建立二者之间的对应关系，再按照固定时间窗口从连续序列中截取样本。设 IMU 时间序列如式~\eqref{eq:imu_sequence_definition} 所示：
-\begin{equation}
-\mathbf{X}=\{x_1,x_2,\ldots,x_T\}, \qquad x_t\in\mathbb{R}^{C},
-\label{eq:imu_sequence_definition}
-\end{equation}
-其中，$C$ 表示 IMU 通道数。本文使用 5 个 IMU 设备，每个设备包含三轴加速度与三轴角速度，共 6 个通道，因此 $C=30$。设人体姿态序列如式~\eqref{eq:pose_sequence_definition} 所示：
-\begin{equation}
-\mathbf{P}=\{p_1,p_2,\ldots,p_N\}, \qquad p_i\in\mathbb{R}^{K\times 2},
-\label{eq:pose_sequence_definition}
-\end{equation}
-其中，$K=25$ 表示人体关键点数量。
-
-\begin{figure}[h]
-  \centering
-  \includegraphics[width=0.65\textwidth]{aipose_sample_construct.jpg}
-  \caption{样本构建过程时间结构示意图}
-  \label{fig:aipose_sample_construct}
-\end{figure}
-
-图~\ref{fig:aipose_sample_construct} 给出了样本构建过程的时间结构示意图。对于任一样本，其参考时刻 $t$ 表示该样本时间窗口的结束时刻。以该时刻为参照，本文从式~\eqref{eq:imu_sequence_definition} 和式~\eqref{eq:pose_sequence_definition} 所示的连续序列中分别截取当前 IMU 输入序列、未来 IMU 监督序列、当前姿态监督序列以及未来姿态监督序列，从而构建用于姿态重构与预测的监督样本。
-
-设 IMU 采样频率为 $f_{\mathrm{imu}}$，姿态数据帧率为 $f_{\mathrm{pose}}$，当前 IMU 输入窗口长度为 $L_{\mathrm{input}}$，当前姿态重构窗口长度为 $L_{\mathrm{rec}}$，以及未来姿态预测窗口长度 $L_{\mathrm{pred}}$，三个窗口长度均以秒为单位。在此基础上，样本中各部分定义如下：
-
-\begin{equation}
-\mathbf{X}_{\mathrm{input}}
-=
-\mathbf{X}\!\left[(t-(L_{\mathrm{input}}+L_{\mathrm{pred}}))f_{\mathrm{imu}}:\,(t-L_{\mathrm{pred}})f_{\mathrm{imu}}\right],
-\label{eq:sample_x_input}
-\end{equation}
-
-\begin{equation}
-\mathbf{X}_{\mathrm{future}}
-=
-\mathbf{X}\!\left[(t-L_{\mathrm{pred}})f_{\mathrm{imu}}:\,t f_{\mathrm{imu}}\right],
-\label{eq:sample_x_future}
-\end{equation}
-
-\begin{equation}
-\mathbf{P}_{\mathrm{rec}}
-=
-\mathbf{P}\!\left[(t-(L_{\mathrm{rec}}+L_{\mathrm{pred}}))f_{\mathrm{pose}}:\,(t-L_{\mathrm{pred}})f_{\mathrm{pose}}\right],
-\label{eq:sample_p_rec}
-\end{equation}
-
-\begin{equation}
-\mathbf{P}_{\mathrm{pred}}
-=
-\mathbf{P}\!\left[(t-L_{\mathrm{pred}})f_{\mathrm{pose}}:\,t f_{\mathrm{pose}}\right],
-\label{eq:sample_p_pred}
-\end{equation}
-
-\begin{equation}
-\mathcal{S}
-=
-\left\{
-\mathbf{X}_{\mathrm{input}},
-\mathbf{X}_{\mathrm{future}},
-\mathbf{P}_{\mathrm{rec}},
-\mathbf{P}_{\mathrm{pred}}
-\right\}.
-\label{eq:sample_set}
-\end{equation}
-其中，式~\eqref{eq:sample_x_input} 中的 $\mathbf{X}_{\mathrm{input}}$ 表示当前 IMU 输入序列，用于提供姿态重构与预测的先验信息；式~\eqref{eq:sample_x_future} 中的 $\mathbf{X}_{\mathrm{future}}$ 表示与未来姿态预测阶段对应的 IMU 序列；式~\eqref{eq:sample_p_rec} 中的 $\mathbf{P}_{\mathrm{rec}}$ 表示当前人体姿态序列，用于当前姿态重构任务；式~\eqref{eq:sample_p_pred} 中的 $\mathbf{P}_{\mathrm{pred}}$ 表示未来人体姿态序列，用于未来姿态预测任务。由此，一个完整样本由式~\eqref{eq:sample_set} 中的四个部分共同构成。
-
-在数据划分方面，本章主体实验采用与第三章一致的标准随机划分方式，并在泛化实验中进一步采用跨受试者与跨场景划分方式，以分别评估模型在同分布条件、受试者分布偏移和场景分布偏移条件下的性能。
 
 \xsubsection{评价指标}{Evaluation Metrics}
 
