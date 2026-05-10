@@ -44,33 +44,33 @@ AIPose 以当前 IMU 序列为输入，通过时序特征提取、当前姿态�
 
 \subsubsection{IMU 时序特征提取模块}{}
 
-设输入 IMU 序列为
+设输入 IMU 序列如式~\eqref{eq:input_imu} 所示：
 \begin{equation}
 \mathbf{X}_{\mathrm{input}} \in \mathbb{R}^{B \times T \times C}
 \label{eq:input_imu}
 \end{equation}
-其中 $B$ 表示批次大小，$T$ 表示时间窗口长度，$C$ 表示 IMU 通道数。在此基础上，通过 ResNet 对输入序列进行时序特征提取，得到对应的特征表示
+其中 $B$ 表示批次大小，$T$ 表示时间窗口长度，$C$ 表示 IMU 通道数。在此基础上，通过 ResNet 对式~\eqref{eq:input_imu} 中的输入序列进行时序特征提取，得到式~\eqref{eq:feature_extract} 所示的特征表示：
 \begin{equation}
 \mathbf{F} = E(\mathbf{X}_{\mathrm{input}})
 \label{eq:feature_extract}
 \end{equation}
-其中 $E(\cdot)$ 表示基于 ResNet 的映射函数。该结构利用一维卷积提取 IMU 信号中的局部动态变化，并通过残差连接增强特征表达的稳定性。得到的特征表示 $\mathbf{F}$ 作为统一的中间表示，将同时用于当前姿态重构与未来 IMU 预测。
+其中 $E(\cdot)$ 表示基于 ResNet 的映射函数。该结构利用一维卷积提取 IMU 信号中的局部动态变化，并通过残差连接增强特征表达的稳定性。式~\eqref{eq:feature_extract} 得到的特征表示 $\mathbf{F}$ 作为统一的中间表示，将同时用于当前姿态重构与未来 IMU 预测。
 
 \subsubsection{姿态重构模块}{}
 
-在获得 IMU 特征表示 $\mathbf{F}$ 后，首先对当前时间窗口内的人体姿态序列进行建模，其映射关系为
+在获得 IMU 特征表示 $\mathbf{F}$ 后，首先对当前时间窗口内的人体姿态序列进行建模，其映射关系如式~\eqref{eq:pose_reconstruction} 所示：
 \begin{equation}
 \mathbf{P}_{\mathrm{rec}} = f_{\mathrm{rec}}(\mathbf{F})
 \label{eq:pose_reconstruction}
 \end{equation}
-通过全连接层将特征向量映射到姿态空间，并重构为具有时间结构的姿态序列。设姿态重构窗口长度为 $L_{\mathrm{rec}}$，关节数量为 $K$，单个关节的姿态表示维度为 $D_p$，输出形式为
+通过全连接层将特征向量映射到姿态空间，并重构为具有时间结构的姿态序列。设姿态重构窗口长度为 $L_{\mathrm{rec}}$，关节数量为 $K$，单个关节的姿态表示维度为 $D_p$，输出形式如式~\eqref{eq:pose_shape} 所示：
 \begin{equation}
 \mathbf{P}_{\mathrm{rec}} \in \mathbb{R}^{B \times L_{\mathrm{rec}} \times K \times D_p}
 \label{eq:pose_shape}
 \end{equation}
 其中，$D_p$ 的具体取值由姿态表示形式决定。例如，在二维关键点建模任务中，$D_p=2$；在参数化人体姿态建模任务中，$D_p$ 可对应关节旋转表示的维度。
 
-该模块实现了从 IMU 时序特征到当前姿态序列的映射，其输出作为当前姿态重构任务的预测结果。
+式~\eqref{eq:pose_reconstruction} 实现了从 IMU 时序特征到当前姿态序列的映射，其输出形式由式~\eqref{eq:pose_shape} 给出，并作为当前姿态重构任务的预测结果。
 
 \subsubsection{IMU 时序预测模块}{}
 
@@ -85,11 +85,12 @@ AIPose 以当前 IMU 序列为输入，通过时序特征提取、当前姿态�
 
 具体而言，模块首先利用 Transformer 编码器对当前输入特征进行时序建模，得到表征当前运动状态的时序记忆特征；随后，结合目标位置编码与当前时序记忆特征的时间维平均池化结果构造预测查询序列，并再次输入共享参数的 Transformer 编码器，从而生成未来时间窗口对应的 IMU 序列预测结果。该设计使模型能够在保留当前运动上下文的基础上，对未来惯性动态进行建模，为后续自回归姿态预测提供合理输入。
 
-设 IMU 时序特征提取模块输出的特征表示为
+设 IMU 时序特征提取模块输出的特征表示如式~\eqref{eq:imu_predictor_input_feature} 所示：
 \begin{equation}
 \mathbf{F} \in \mathbb{R}^{B \times T_f \times D_f},
+\label{eq:imu_predictor_input_feature}
 \end{equation}
-其中，$B$ 表示批大小，$T_f$ 表示特征序列长度，$D_f$ 表示特征维度。首先，将输入特征映射到隐藏空间并加入对应的位置编码，得到当前序列的时序记忆特征：
+其中，$B$ 表示批大小，$T_f$ 表示特征序列长度，$D_f$ 表示特征维度。首先，将输入特征映射到隐藏空间并加入对应的位置编码，得到当前序列的时序记忆特征，如式~\eqref{eq:imu_memory_feature} 所示：
 \begin{equation}
 \mathbf{M}
 =
@@ -98,12 +99,13 @@ AIPose 以当前 IMU 序列为输入，通过时序特征提取、当前姿态�
 \right),
 \label{eq:imu_memory_feature}
 \end{equation}
-其中，$W_{\mathrm{in}} \in \mathbb{R}^{D_f \times D_h}$ 表示输入投影矩阵，$\mathbf{E}_{\mathrm{pos}}^{(1:T_f)} \in \mathbb{R}^{1 \times T_f \times D_h}$ 表示与输入序列对应的可学习位置编码，$D_h$ 表示隐藏层维度。由此有
+其中，$W_{\mathrm{in}} \in \mathbb{R}^{D_f \times D_h}$ 表示输入投影矩阵，$\mathbf{E}_{\mathrm{pos}}^{(1:T_f)} \in \mathbb{R}^{1 \times T_f \times D_h}$ 表示与输入序列对应的可学习位置编码，$D_h$ 表示隐藏层维度。由此有式~\eqref{eq:imu_memory_shape}：
 \begin{equation}
 \mathbf{M} \in \mathbb{R}^{B \times T_f \times D_h}.
+\label{eq:imu_memory_shape}
 \end{equation}
 
-在预测阶段，模型将未来时间位置编码与当前时序记忆特征的全局上下文相结合，并通过共享参数的 Transformer 编码器和输出映射层直接得到未来 IMU 序列预测结果，即
+在预测阶段，模型将未来时间位置编码与当前时序记忆特征的全局上下文相结合，并通过共享参数的 Transformer 编码器和输出映射层直接得到未来 IMU 序列预测结果，即式~\eqref{eq:imu_future_prediction}：
 \begin{equation}
 \mathbf{X}_{\mathrm{future}}
 =
@@ -112,9 +114,10 @@ AIPose 以当前 IMU 序列为输入，通过时序特征提取、当前姿态�
 \right) W_{\mathrm{out}} + b_{\mathrm{out}},
 \label{eq:imu_future_prediction}
 \end{equation}
-其中，$\mathbf{E}_{\mathrm{pos}}^{(1:T_{\mathrm{pred}})} \in \mathbb{R}^{1 \times T_{\mathrm{pred}} \times D_h}$ 表示与预测序列对应的可学习位置编码，$W_{\mathrm{out}} \in \mathbb{R}^{D_h \times C}$、$b_{\mathrm{out}} \in \mathbb{R}^{C}$ 分别表示输出映射层的权重与偏置，$C$ 表示 IMU 通道数。因此有
+其中，$\mathbf{E}_{\mathrm{pos}}^{(1:T_{\mathrm{pred}})} \in \mathbb{R}^{1 \times T_{\mathrm{pred}} \times D_h}$ 表示与预测序列对应的可学习位置编码，$W_{\mathrm{out}} \in \mathbb{R}^{D_h \times C}$、$b_{\mathrm{out}} \in \mathbb{R}^{C}$ 分别表示输出映射层的权重与偏置，$C$ 表示 IMU 通道数。因此有式~\eqref{eq:imu_future_shape}：
 \begin{equation}
 \mathbf{X}_{\mathrm{future}} \in \mathbb{R}^{B \times T_{\mathrm{pred}} \times C}.
+\label{eq:imu_future_shape}
 \end{equation}
 
 式~\eqref{eq:imu_future_prediction} 表明，未来 IMU 序列的生成并不是对各时刻进行独立回归，而是以未来时间位置编码作为时序索引，并引入 $\mathrm{MeanPool}_T(\mathbf{M})$ 所提供的当前运动状态全局上下文，在共享参数的 Transformer 编码器中完成未来动态建模。这样既能够区分不同预测时刻，又能够保持与当前运动模式的一致性，从而更有效地刻画未来时间窗口内的惯性变化。
@@ -123,17 +126,19 @@ AIPose 以当前 IMU 序列为输入，通过时序特征提取、当前姿态�
 
 在获得未来 IMU 序列预测结果 $\mathbf{X}_{\mathrm{future}}$ 后，本文进一步引入自回归建模机制，以实现未来时间窗口内的人体姿态预测。该机制的核心思想是：未来姿态并不直接由当前时序特征一次性回归得到，而是先构造与未来时间段对应的扩展 IMU 序列，再基于该扩展 IMU 序列进行姿态建模。这样可以使未来姿态预测仍建立在 IMU 时序动态演化过程之上，从而保持“先预测运动，再预测姿态”的建模思路。
 
-设当前 IMU 输入序列为
+设当前 IMU 输入序列如式~\eqref{eq:ar_input_imu} 所示：
 \begin{equation}
 \mathbf{X}_{\mathrm{input}} \in \mathbb{R}^{B \times T_{\mathrm{input}} \times C},
+\label{eq:ar_input_imu}
 \end{equation}
-其中，$B$ 表示批大小，$C$ 表示 IMU 通道数，$T_{\mathrm{input}} = L_{\mathrm{input}} f_{\mathrm{imu}}$ 表示当前 IMU 输入窗口对应的时间步数。设 IMU 时序预测模块输出的未来 IMU 序列预测结果为
+其中，$B$ 表示批大小，$C$ 表示 IMU 通道数，$T_{\mathrm{input}} = L_{\mathrm{input}} f_{\mathrm{imu}}$ 表示当前 IMU 输入窗口对应的时间步数。设 IMU 时序预测模块输出的未来 IMU 序列预测结果如式~\eqref{eq:ar_future_imu} 所示：
 \begin{equation}
 \mathbf{X}_{\mathrm{future}} \in \mathbb{R}^{B \times T_{\mathrm{pred}} \times C},
+\label{eq:ar_future_imu}
 \end{equation}
 其中，$T_{\mathrm{pred}} = L_{\mathrm{pred}} f_{\mathrm{imu}}$ 表示未来预测窗口对应的时间步数。
 
-为了使未来姿态预测阶段的输入仍保持连续的时间结构，本文首先从当前 IMU 输入序列中截取与未来预测阶段相邻的尾部片段：
+为了使未来姿态预测阶段的输入仍保持连续的时间结构，本文首先从式~\eqref{eq:ar_input_imu} 所示的当前 IMU 输入序列中截取与未来预测阶段相邻的尾部片段：
 \begin{equation}
 \mathbf{X}_{\mathrm{tail}}
 =
@@ -143,7 +148,7 @@ AIPose 以当前 IMU 序列为输入，通过时序特征提取、当前姿态�
 \label{eq:x_tail}
 \end{equation}
 
-在此基础上，自回归姿态预测过程可统一表示为
+在此基础上，自回归姿态预测过程可统一表示为式~\eqref{eq:autoregressive_pose_prediction}：
 \begin{equation}
 \mathbf{P}_{\mathrm{pred}}
 =
@@ -165,7 +170,7 @@ E\!\left(
 
 \subsubsection{损失函数}{}
 
-为实现当前姿态重构、未来 IMU 预测以及未来姿态预测的联合优化，本文采用多任务学习策略构建整体损失函数。设当前姿态重构结果、未来 IMU 预测结果及未来姿态预测结果分别为 $\mathbf{P}_{\mathrm{rec}}$、$\mathbf{X}_{\mathrm{future}}$ 和 $\mathbf{P}_{\mathrm{pred}}$，对应的真实值分别为 $\mathbf{P}_{\mathrm{rec}}^{\ast}$、$\mathbf{X}_{\mathrm{future}}^{\ast}$ 和 $\mathbf{P}_{\mathrm{pred}}^{\ast}$，则整体损失函数定义为
+为实现当前姿态重构、未来 IMU 预测以及未来姿态预测的联合优化，本文采用多任务学习策略构建整体损失函数。设当前姿态重构结果、未来 IMU 预测结果及未来姿态预测结果分别为 $\mathbf{P}_{\mathrm{rec}}$、$\mathbf{X}_{\mathrm{future}}$ 和 $\mathbf{P}_{\mathrm{pred}}$，对应的真实值分别为 $\mathbf{P}_{\mathrm{rec}}^{\ast}$、$\mathbf{X}_{\mathrm{future}}^{\ast}$ 和 $\mathbf{P}_{\mathrm{pred}}^{\ast}$，则整体损失函数定义如式~\eqref{eq:loss} 所示：
 \begin{equation}
 \mathcal{L} = \alpha \left\| \mathbf{P}_{\mathrm{rec}} - \mathbf{P}_{\mathrm{rec}}^{\ast} \right\|_{1}
 + \beta \left\| \mathbf{X}_{\mathrm{future}} - \mathbf{X}_{\mathrm{future}}^{\ast} \right\|_{1}
@@ -174,7 +179,7 @@ E\!\left(
 \end{equation}
 其中 $\alpha$、$\beta$ 和 $\gamma$ 为权重系数，用于平衡不同子任务对模型训练的影响。
 
-通过上述联合优化，模型在学习当前姿态重构的同时，能够建模 IMU 时序动态，并进一步提升未来姿态预测的准确性。
+通过式~\eqref{eq:loss} 所示的联合优化，模型在学习当前姿态重构的同时，能够建模 IMU 时序动态，并进一步提升未来姿态预测的准确性。
 
 \xsection{实验与结果分析}{Experimental Results and Analysis}
 
@@ -220,11 +225,12 @@ IMUPoser 是一个面向消费级可穿戴设备场景的人体姿态数据集�
   \end{tblr}
 \end{table}
 
-对于 XRFV2 数据集，本文在已有 IMU 数据基础上，进一步利用同步采集的视频构建人体二维姿态序列作为监督信号。具体而言，本文采用 OpenPose 算法\cite{cao2019openpose}对视频逐帧提取人体关键点位置，并基于 Body25 模型获得 25 个二维关键点。然而，直接由 OpenPose 提取的二维关键点序列仍存在一定噪声。受遮挡、视角变化及图像质量波动等因素影响，部分关键点在个别帧中可能无法被稳定检测；同时，不同受试者在身高、体型以及与摄像机相对位置上的差异，也会导致姿态关键点在图像坐标系中的位置与尺度存在明显变化。为此，本文对原始姿态序列进行了进一步处理：对于置信度为零的关键点，采用时间上相邻的最近有效关键点进行填补，以保证姿态序列在时间维度上的连续性；同时，为减弱个体差异及拍摄尺度差异的影响，对关键点坐标进行中心化与标准化处理，即以躯干中心关键点 MidHip 作为参考点进行平移，并以左右肩关键点之间的欧氏距离作为尺度因子进行标准化，具体形式为
+对于 XRFV2 数据集，本文在已有 IMU 数据基础上，进一步利用同步采集的视频构建人体二维姿态序列作为监督信号。具体而言，本文采用 OpenPose 算法\cite{cao2019openpose}对视频逐帧提取人体关键点位置，并基于 Body25 模型获得 25 个二维关键点。然而，直接由 OpenPose 提取的二维关键点序列仍存在一定噪声。受遮挡、视角变化及图像质量波动等因素影响，部分关键点在个别帧中可能无法被稳定检测；同时，不同受试者在身高、体型以及与摄像机相对位置上的差异，也会导致姿态关键点在图像坐标系中的位置与尺度存在明显变化。为此，本文对原始姿态序列进行了进一步处理：对于置信度为零的关键点，采用时间上相邻的最近有效关键点进行填补，以保证姿态序列在时间维度上的连续性；同时，为减弱个体差异及拍摄尺度差异的影响，对关键点坐标进行中心化与标准化处理，即以躯干中心关键点 MidHip 作为参考点进行平移，并以左右肩关键点之间的欧氏距离作为尺度因子进行标准化，具体形式如式~\eqref{eq:pose_normalization} 所示：
 \begin{equation}
 \hat{p}_{i,k}=\tanh\left(\frac{p_{i,k}-p_{i,c}}{\|p_{i,l}-p_{i,r}\|_2}\right),
+\label{eq:pose_normalization}
 \end{equation}
-其中，$p_{i,k}$ 表示第 $i$ 帧中第 $k$ 个关键点的二维坐标，$p_{i,c}$ 表示该帧的躯干中心关键点坐标，$p_{i,l}$ 与 $p_{i,r}$ 分别表示左肩与右肩关键点坐标，$\|p_{i,l}-p_{i,r}\|_2$ 表示肩宽尺度因子。当肩宽小于阈值 $\varepsilon$ 时，将其截断为 $\varepsilon$ 以避免数值不稳定。图~\ref{fig:pose_normalization} 展示了姿态处理前后的可视化结果。可以看出，经过关键点填补、中心化与标准化处理后，不同样本的人体姿态在坐标范围和尺度上更加一致，有助于后续模型学习稳定的姿态表示。
+其中，$p_{i,k}$ 表示第 $i$ 帧中第 $k$ 个关键点的二维坐标，$p_{i,c}$ 表示该帧的躯干中心关键点坐标，$p_{i,l}$ 与 $p_{i,r}$ 分别表示左肩与右肩关键点坐标，$\|p_{i,l}-p_{i,r}\|_2$ 表示肩宽尺度因子。当肩宽小于阈值 $\varepsilon$ 时，将其截断为 $\varepsilon$ 以避免数值不稳定。图~\ref{fig:pose_normalization} 展示了姿态处理前后的可视化结果。可以看出，经过关键点填补以及式~\eqref{eq:pose_normalization} 所示的中心化与标准化处理后，不同样本的人体姿态在坐标范围和尺度上更加一致，有助于后续模型学习稳定的姿态表示。
 
 \begin{figure}[h]
   \centering
@@ -235,13 +241,15 @@ IMUPoser 是一个面向消费级可穿戴设备场景的人体姿态数据集�
 
 \subsubsection{样本构建}{}
 
-为了构建适用于人体姿态重构与预测任务的训练样本，本文以 XRFV2 数据集为例，从连续采集的 IMU 序列与姿态序列中提取时间对齐的片段。由于 IMU 与姿态数据的采样频率不同，因此在样本构建时，首先基于统一时间轴建立二者之间的对应关系，再按照固定时间窗口从连续序列中截取样本。设 IMU 时间序列为
+为了构建适用于人体姿态重构与预测任务的训练样本，本文以 XRFV2 数据集为例，从连续采集的 IMU 序列与姿态序列中提取时间对齐的片段。由于 IMU 与姿态数据的采样频率不同，因此在样本构建时，首先基于统一时间轴建立二者之间的对应关系，再按照固定时间窗口从连续序列中截取样本。设 IMU 时间序列如式~\eqref{eq:imu_sequence_definition} 所示：
 \begin{equation}
 \mathbf{X}=\{x_1,x_2,\ldots,x_T\}, \qquad x_t\in\mathbb{R}^{C},
+\label{eq:imu_sequence_definition}
 \end{equation}
-其中，$C$ 表示 IMU 通道数。本文使用 5 个 IMU 设备，每个设备包含三轴加速度与三轴角速度，共 6 个通道，因此 $C=30$。设人体姿态序列为
+其中，$C$ 表示 IMU 通道数。本文使用 5 个 IMU 设备，每个设备包含三轴加速度与三轴角速度，共 6 个通道，因此 $C=30$。设人体姿态序列如式~\eqref{eq:pose_sequence_definition} 所示：
 \begin{equation}
 \mathbf{P}=\{p_1,p_2,\ldots,p_N\}, \qquad p_i\in\mathbb{R}^{K\times 2},
+\label{eq:pose_sequence_definition}
 \end{equation}
 其中，$K=25$ 表示人体关键点数量。
 
@@ -252,7 +260,7 @@ IMUPoser 是一个面向消费级可穿戴设备场景的人体姿态数据集�
   \label{fig:aipose_sample_construct}
 \end{figure}
 
-图~\ref{fig:aipose_sample_construct} 给出了样本构建过程的时间结构示意图。对于任一样本，其参考时刻 $t$ 表示该样本时间窗口的结束时刻。以该时刻为参照，本文从连续序列中分别截取当前 IMU 输入序列、未来 IMU 监督序列、当前姿态监督序列以及未来姿态监督序列，从而构建用于姿态重构与预测的监督样本。
+图~\ref{fig:aipose_sample_construct} 给出了样本构建过程的时间结构示意图。对于任一样本，其参考时刻 $t$ 表示该样本时间窗口的结束时刻。以该时刻为参照，本文从式~\eqref{eq:imu_sequence_definition} 和式~\eqref{eq:pose_sequence_definition} 所示的连续序列中分别截取当前 IMU 输入序列、未来 IMU 监督序列、当前姿态监督序列以及未来姿态监督序列，从而构建用于姿态重构与预测的监督样本。
 
 设 IMU 采样频率为 $f_{\mathrm{imu}}$，姿态数据帧率为 $f_{\mathrm{pose}}$，当前 IMU 输入窗口长度为 $L_{\mathrm{input}}$，当前姿态重构窗口长度为 $L_{\mathrm{rec}}$，以及未来姿态预测窗口长度 $L_{\mathrm{pred}}$，三个窗口长度均以秒为单位。在此基础上，样本中各部分定义如下：
 
@@ -260,24 +268,28 @@ IMUPoser 是一个面向消费级可穿戴设备场景的人体姿态数据集�
 \mathbf{X}_{\mathrm{input}}
 =
 \mathbf{X}\!\left[(t-(L_{\mathrm{input}}+L_{\mathrm{pred}}))f_{\mathrm{imu}}:\,(t-L_{\mathrm{pred}})f_{\mathrm{imu}}\right],
+\label{eq:sample_x_input}
 \end{equation}
 
 \begin{equation}
 \mathbf{X}_{\mathrm{future}}
 =
 \mathbf{X}\!\left[(t-L_{\mathrm{pred}})f_{\mathrm{imu}}:\,t f_{\mathrm{imu}}\right],
+\label{eq:sample_x_future}
 \end{equation}
 
 \begin{equation}
 \mathbf{P}_{\mathrm{rec}}
 =
 \mathbf{P}\!\left[(t-(L_{\mathrm{rec}}+L_{\mathrm{pred}}))f_{\mathrm{pose}}:\,(t-L_{\mathrm{pred}})f_{\mathrm{pose}}\right],
+\label{eq:sample_p_rec}
 \end{equation}
 
 \begin{equation}
 \mathbf{P}_{\mathrm{pred}}
 =
 \mathbf{P}\!\left[(t-L_{\mathrm{pred}})f_{\mathrm{pose}}:\,t f_{\mathrm{pose}}\right],
+\label{eq:sample_p_pred}
 \end{equation}
 
 \begin{equation}
@@ -289,8 +301,9 @@ IMUPoser 是一个面向消费级可穿戴设备场景的人体姿态数据集�
 \mathbf{P}_{\mathrm{rec}},
 \mathbf{P}_{\mathrm{pred}}
 \right\}.
+\label{eq:sample_set}
 \end{equation}
-其中，$\mathbf{X}_{\mathrm{input}}$ 表示当前 IMU 输入序列，用于提供姿态重构与预测的先验信息；$\mathbf{X}_{\mathrm{future}}$ 表示与未来姿态预测阶段对应的 IMU 序列；$\mathbf{P}_{\mathrm{rec}}$ 表示当前人体姿态序列，用于当前姿态重构任务；$\mathbf{P}_{\mathrm{pred}}$ 表示未来人体姿态序列，用于未来姿态预测任务。由此，一个完整样本由上述四个部分共同构成。
+其中，式~\eqref{eq:sample_x_input} 中的 $\mathbf{X}_{\mathrm{input}}$ 表示当前 IMU 输入序列，用于提供姿态重构与预测的先验信息；式~\eqref{eq:sample_x_future} 中的 $\mathbf{X}_{\mathrm{future}}$ 表示与未来姿态预测阶段对应的 IMU 序列；式~\eqref{eq:sample_p_rec} 中的 $\mathbf{P}_{\mathrm{rec}}$ 表示当前人体姿态序列，用于当前姿态重构任务；式~\eqref{eq:sample_p_pred} 中的 $\mathbf{P}_{\mathrm{pred}}$ 表示未来人体姿态序列，用于未来姿态预测任务。由此，一个完整样本由式~\eqref{eq:sample_set} 中的四个部分共同构成。
 
 在数据划分方面，本章主体实验采用与第三章一致的标准随机划分方式，并在泛化实验中进一步采用跨受试者与跨场景划分方式，以分别评估模型在同分布条件、受试者分布偏移和场景分布偏移条件下的性能。
 
@@ -304,7 +317,7 @@ IMUPoser 是一个面向消费级可穿戴设备场景的人体姿态数据集�
 
 \subsubsection{MPJPE}{}
 
-MPJPE 定义为
+MPJPE 定义如式~\eqref{eq:mpjpe} 所示：
 \begin{equation}
 \text{MPJPE} =
 \frac{1}{B T K}
@@ -314,23 +327,25 @@ MPJPE 定义为
 \left\|
 \hat{p}_{b,t,k} - p_{b,t,k}
 \right\|_2.
+\label{eq:mpjpe}
 \end{equation}
 其中，$\|\cdot\|_2$ 表示欧氏距离。该指标用于衡量预测关键点与真实关键点之间在图像平面中的平均位置偏差，单位为像素（px）。MPJPE 数值越小，表示模型预测精度越高。
 
 \subsubsection{PCK}{}
 
-PCK 用于衡量预测关键点是否足够接近真实位置。设关键点判定阈值为 $\delta_{\mathrm{PCK}}$，则 PCK 定义为
+PCK 用于衡量预测关键点是否足够接近真实位置。设关键点判定阈值为 $\delta_{\mathrm{PCK}}$，则 PCK 定义如式~\eqref{eq:pck} 所示：
 \begin{equation}
 \text{PCK}(\delta_{\mathrm{PCK}})=
 \frac{
 \left|\left\{(b,t,k)\mid \left\|\hat{p}_{b,t,k}-p_{b,t,k}\right\|_2 \leq \delta_{\mathrm{PCK}} \right\}\right|
 }{BTK}.
+\label{eq:pck}
 \end{equation}
 其中，$\delta_{\mathrm{PCK}}$ 为在原始图像坐标系下设定的关键点判定阈值，其单位为像素（px）。当预测关键点与真实关键点之间的欧氏距离不超过该阈值时，认为该关键点预测正确。本文在后续实验中统一报告 PCK@5、PCK@10 和 PCK@20，其中阈值单位均为像素（px），结果统一以百分比（\%）表示。例如，PCK@10 表示关键点预测误差不超过 10\,px 时的占比。PCK 数值越大表示模型性能越好。
 
 \subsubsection{Per-joint MPJPE}{}
 
-为进一步分析不同身体部位上的误差分布，本文对每个关键点分别计算平均关节位置误差。对于第 $k$ 个关键点，其 Per-joint MPJPE 定义为
+为进一步分析不同身体部位上的误差分布，本文对每个关键点分别计算平均关节位置误差。对于第 $k$ 个关键点，其 Per-joint MPJPE 定义如式~\eqref{eq:per_joint_mpjpe} 所示：
 \begin{equation}
 \text{MPJPE}^{(k)}=
 \frac{1}{BT}
@@ -340,12 +355,13 @@ PCK 用于衡量预测关键点是否足够接近真实位置。设关键点判�
 \hat{p}_{b,t,k} - p_{b,t,k}
 \right\|_2,
 \qquad k=1,2,\ldots,K.
+\label{eq:per_joint_mpjpe}
 \end{equation}
-该指标能够反映模型在不同关节部位上的误差差异，从而更细致地评估模型对不同关键点的建模能力。由于该指标同样在原始图像坐标系下计算，因此其单位与 MPJPE 一致，均为像素（px）。
+该指标能够反映模型在不同关节部位上的误差差异，从而更细致地评估模型对不同关键点的建模能力。由于该指标同样在原始图像坐标系下计算，因此其单位与式~\eqref{eq:mpjpe} 所示的 MPJPE 一致，均为像素（px）。
 
 \subsubsection{MJAE}{}
 
-MJAE 用于衡量预测关节旋转与真实关节旋转之间的差异。具体而言，先将预测轴角姿态和真实轴角姿态转换为旋转矩阵，再计算对应关节的旋转误差角，并在所有样本、时间步和关节上取平均。设第 $j$ 个关节在时刻 $t$ 的预测旋转矩阵和真实旋转矩阵分别为 $\hat{\mathbf{Q}}_{b,t,j}$ 和 $\mathbf{Q}_{b,t,j}$，则 MJAE 可表示为
+MJAE 用于衡量预测关节旋转与真实关节旋转之间的差异。具体而言，先将预测轴角姿态和真实轴角姿态转换为旋转矩阵，再计算对应关节的旋转误差角，并在所有样本、时间步和关节上取平均。设第 $j$ 个关节在时刻 $t$ 的预测旋转矩阵和真实旋转矩阵分别为 $\hat{\mathbf{Q}}_{b,t,j}$ 和 $\mathbf{Q}_{b,t,j}$，则 MJAE 可表示为式~\eqref{eq:mjae}：
 \begin{equation}
 \text{MJAE}=
 \frac{1}{BTJ}
@@ -353,12 +369,13 @@ MJAE 用于衡量预测关节旋转与真实关节旋转之间的差异。具体
 \sum_{t=1}^{T}
 \sum_{j=1}^{J}
 \theta\!\left(\hat{\mathbf{Q}}_{b,t,j},\mathbf{Q}_{b,t,j}\right),
+\label{eq:mjae}
 \end{equation}
 其中，$\theta(\cdot,\cdot)$ 表示两个旋转矩阵之间的测地角距离。该指标单位为度（deg），数值越小表示预测关节旋转越接近真实值。
 
 \subsubsection{PE}{}
 
-为进一步从空间位置角度衡量预测结果与真实姿态之间的差异，本文还计算 PE。具体而言，将预测姿态与真实姿态分别映射为对应的关节位置序列，再计算各关节之间的欧氏距离并取平均。设预测关节位置序列和真实关节位置序列分别为 $\hat{\mathbf{X}} \in \mathbb{R}^{B \times T \times J \times 3}$ 和 $\mathbf{X} \in \mathbb{R}^{B \times T \times J \times 3}$，则 PE 定义为
+为进一步从空间位置角度衡量预测结果与真实姿态之间的差异，本文还计算 PE。具体而言，将预测姿态与真实姿态分别映射为对应的关节位置序列，再计算各关节之间的欧氏距离并取平均。设预测关节位置序列和真实关节位置序列分别为 $\hat{\mathbf{X}} \in \mathbb{R}^{B \times T \times J \times 3}$ 和 $\mathbf{X} \in \mathbb{R}^{B \times T \times J \times 3}$，则 PE 定义如式~\eqref{eq:pe} 所示：
 \begin{equation}
 \text{PE}=
 \frac{1}{BTJ}
@@ -368,6 +385,7 @@ MJAE 用于衡量预测关节旋转与真实关节旋转之间的差异。具体
 \left\|
 \hat{x}_{b,t,j}-x_{b,t,j}
 \right\|_2.
+\label{eq:pe}
 \end{equation}
 该指标用于衡量预测姿态在空间关节位置层面的整体偏差，单位为厘米（cm），数值越小表示模型性能越好。
 
@@ -740,9 +758,10 @@ MobilePoser~\cite{xu2024mobileposer} (2024)：该方法面向移动消费设备�
 
 \xsubsection{长时预测与扰动鲁棒性实验}{Long-term Prediction and Perturbation Robustness Experiments}
 
-为系统评估 AIPose 在长时预测过程中的误差演化规律及其对输入扰动的鲁棒性，本文在统一实验框架下，对不同未来时间步的预测误差进行统计，并在自回归预测过程中引入高斯噪声干扰。具体而言，以当前时刻为参考点，将时间轴划分为多个连续区间，横轴表示未来第 $t$ 秒（$t=0,1,\dots,9$），并计算各时间步对应的平均关节位置误差（MPJPE）。其中，$t=0$ 表示当前姿态重构结果，$t>0$ 表示未来预测结果，从而统一刻画模型在重构与长时预测任务中的性能变化趋势。在此基础上，为模拟实际传感器噪声及自回归预测中的误差传播过程，在模型预测的 IMU 特征 $x$ 上注入高斯噪声，其形式定义为
+为系统评估 AIPose 在长时预测过程中的误差演化规律及其对输入扰动的鲁棒性，本文在统一实验框架下，对不同未来时间步的预测误差进行统计，并在自回归预测过程中引入高斯噪声干扰。具体而言，以当前时刻为参考点，将时间轴划分为多个连续区间，横轴表示未来第 $t$ 秒（$t=0,1,\dots,9$），并计算各时间步对应的平均关节位置误差（MPJPE）。其中，$t=0$ 表示当前姿态重构结果，$t>0$ 表示未来预测结果，从而统一刻画模型在重构与长时预测任务中的性能变化趋势。在此基础上，为模拟实际传感器噪声及自回归预测中的误差传播过程，在模型预测的 IMU 特征 $x$ 上注入高斯噪声，其形式定义如式~\eqref{eq:gaussian_perturbation} 所示：
 \begin{equation}
 \tilde{x} = x + \epsilon, \quad \epsilon \sim \mathcal{N}(0, \sigma^2 \cdot \mathrm{Var}(x))
+\label{eq:gaussian_perturbation}
 \end{equation}
 其中，$\sigma$ 为噪声强度系数，$\mathrm{Var}(x)$ 表示特征方差。该设计使噪声幅度能够随特征尺度自适应变化，更贴近真实传感器噪声分布。具体实现中，仅在自回归预测阶段对模型输出的 IMU 特征注入扰动，并通过控制噪声作用时间范围构建不同误差累积场景，即分别在未来前 $1$ 秒、$2$ 秒、$3$ 秒及 $4$ 秒内引入噪声，其余时间步不施加扰动。
 

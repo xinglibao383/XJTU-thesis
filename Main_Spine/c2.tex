@@ -17,39 +17,44 @@ IMU 是非视觉人体感知中最常用的可穿戴传感器之一，通常由�
     \label{fig:imu}
 \end{figure}
 
-在加速度测量方面，加速度计输出的是载体坐标系下的比力，即线性加速度扣除重力加速度后再经坐标变换得到的观测量。设时刻 $t$ 的加速度计观测值为 $a_t$，其测量模型可表示为：
+在加速度测量方面，加速度计输出的是载体坐标系下的比力，即线性加速度扣除重力加速度后再经坐标变换得到的观测量。设时刻 $t$ 的加速度计观测值为 $a_t$，其测量模型如式~\eqref{eq:imu_acc_model} 所示：
 \begin{equation}
 a_t = C_n^b (a_n - g_n) + b_a + n_a
+\label{eq:imu_acc_model}
 \end{equation}
 其中，$C_n^b$ 表示从导航坐标系到载体坐标系的旋转矩阵，$a_n$ 为导航坐标系下的线性加速度，$g_n$ 为导航坐标系下的重力加速度向量，$b_a$ 为加速度计零偏误差，$n_a$ 为测量噪声。
 
-陀螺仪用于测量载体的角速度信息，其观测模型可表示为：
+陀螺仪用于测量载体的角速度信息，其观测模型如式~\eqref{eq:imu_gyro_model} 所示：
 \begin{equation}
 \omega_t = \omega_t^{\mathrm{true}} + b_g + n_g
+\label{eq:imu_gyro_model}
 \end{equation}
-其中，$\omega_t^{\mathrm{true}}$ 为时刻 $t$ 的真实角速度，$b_g$ 为陀螺仪零偏误差，$n_g$ 为测量噪声。角速度信号能够刻画人体肢体在运动过程中的旋转动态变化，与加速度信息相结合，可以更全面地表征人体运动的时序特征。
+其中，$\omega_t^{\mathrm{true}}$ 为时刻 $t$ 的真实角速度，$b_g$ 为陀螺仪零偏误差，$n_g$ 为测量噪声。角速度信号能够刻画人体肢体在运动过程中的旋转动态变化，与式~\eqref{eq:imu_acc_model} 所示的加速度信息相结合，可以更全面地表征人体运动的时序特征。
 
 \xsubsection{WiFi 信道状态信息}{WiFi Channel State Information}
 
 WiFi 感知通过分析无线信号在传播过程中受到人体运动扰动而产生的信道变化，实现对人体行为的非接触式感知，具有部署成本低、环境适应性强等优势。近年来，该方向一方面不断出现新的高质量公开数据资源与基准数据集，如 EHUNAM、面向 80 MHz WiFi 信道的人体感知 CSI 数据集以及 WiMANS；另一方面，基于深度学习与注意力机制的 WiFi CSI 行为建模方法也在持续发展\cite{de2025ehunam,meneghello2023csi,huang2024wimans,sruthi2024wi,hussain2024wisigpro}。多用户、复杂环境和更标准化的数据构建，正在推动 WiFi 感知研究走向更系统的实验范式。
 
-现代 WiFi 系统通常采用正交频分复用（Orthogonal Frequency Division Multiplexing, OFDM）技术进行数据传输。在 OFDM 系统中，高速数据流被划分为多个子载波并行传输，从而能够有效应对复杂无线信道带来的频率选择性衰落。WiFi CSI 是物理层对无线信号在发射端与接收端之间传播特性的细粒度刻画，用于描述不同子载波上的信道频率响应。对于第 $k$ 个子载波，接收信号 $Y_k$ 与发送信号 $X_k$ 之间的关系可以表示为：
+现代 WiFi 系统通常采用正交频分复用（Orthogonal Frequency Division Multiplexing, OFDM）技术进行数据传输。在 OFDM 系统中，高速数据流被划分为多个子载波并行传输，从而能够有效应对复杂无线信道带来的频率选择性衰落。WiFi CSI 是物理层对无线信号在发射端与接收端之间传播特性的细粒度刻画，用于描述不同子载波上的信道频率响应。对于第 $k$ 个子载波，接收信号 $Y_k$ 与发送信号 $X_k$ 之间的关系如式~\eqref{eq:csi_transmission_model} 所示：
 \begin{equation}
 Y_k = H_k X_k + N_k
+\label{eq:csi_transmission_model}
 \end{equation}
 其中，$H_k$ 为该子载波上的复数信道增益，即 CSI；$N_k$ 为高斯白噪声。
 
-WiFi CSI 通常以复数形式表示，可以分解为幅度和相位：
+WiFi CSI 通常以复数形式表示，可以按照式~\eqref{eq:csi_amp_phase} 分解为幅度和相位：
 \begin{equation}
 H_k = |H_k| e^{j\angle H_k}
+\label{eq:csi_amp_phase}
 \end{equation}
 其中，幅度 $|H_k|$ 表示信号在该子载波上的能量衰减，相位 $\angle H_k$ 则反映了传播时延与路径变化等信息。与仅提供粗粒度接收功率信息的接收信号强度指示（Received Signal Strength Indicator, RSSI）相比，WiFi CSI 能够提供更细粒度的子载波级信道信息，因此更适合用于人体活动识别、定位和环境感知等任务\cite{varga2024mitigating,quy2025enhanced}。需要指出的是，实际采集到的相位信息通常会受到硬件时钟偏移和载波频偏等因素的影响，因此往往需要经过预处理或校准后才能稳定用于建模。
 
-在室内环境中，无线信号通常通过多条路径传播，包括来自墙壁、地面、家具以及人体的反射路径。根据多径传播模型，时变信道频率响应可以表示为：
+在室内环境中，无线信号通常通过多条路径传播，包括来自墙壁、地面、家具以及人体的反射路径。根据多径传播模型，时变信道频率响应可以表示为式~\eqref{eq:csi_multipath_model}：
 \begin{equation}
 H(f,t) = \sum_{p=1}^{P} \alpha_p(t) e^{-j2\pi f \tau_p(t)}
+\label{eq:csi_multipath_model}
 \end{equation}
-其中，$P$ 表示传播路径数量，$\alpha_p(t)$ 为第 $p$ 条路径的衰减系数，$\tau_p(t)$ 为对应的传播时延。当人体在 WiFi 覆盖区域内运动时，会改变部分传播路径的长度和反射特性，从而引起 $\alpha_p(t)$ 与 $\tau_p(t)$ 的变化。这种变化会进一步反映在 WiFi CSI 幅度和相位的时序波动中，使得 WiFi CSI 能够表征人体运动对无线传播环境造成的扰动。
+其中，$P$ 表示传播路径数量，$\alpha_p(t)$ 为第 $p$ 条路径的衰减系数，$\tau_p(t)$ 为对应的传播时延。当人体在 WiFi 覆盖区域内运动时，会改变部分传播路径的长度和反射特性，从而引起 $\alpha_p(t)$ 与 $\tau_p(t)$ 的变化。这种变化会进一步反映在式~\eqref{eq:csi_amp_phase} 所示的 WiFi CSI 幅度和相位的时序波动中，使得 WiFi CSI 能够表征人体运动对无线传播环境造成的扰动。
 
 因此，通过对 WiFi CSI 序列进行时序建模，可以从无线信号变化中提取与人体运动相关的判别特征。但基于 WiFi CSI 的感知方法性能通常会受到环境布局、设备部署方式、数据采集协议以及时间漂移等因素的影响，尤其在跨场景、跨时间或跨受试者设置下，对模型泛化能力提出了更高要求\cite{brunello2025time}。
 
@@ -59,34 +64,39 @@ H(f,t) = \sum_{p=1}^{P} \alpha_p(t) e^{-j2\pi f \tau_p(t)}
 
 Transformer 是当前序列建模中最具代表性的网络结构之一，其核心思想是利用自注意力机制直接建模序列中任意位置之间的依赖关系，而不依赖循环结构进行逐步状态传递\cite{vaswani2017attention}。相比循环神经网络（RNN）或长短期记忆网络（LSTM），Transformer 更易于并行计算，并且在长距离依赖建模方面具有明显优势，因此已被广泛用于自然语言处理、语音、视觉以及多种时序建模任务中。
 
-Transformer 的核心计算单元为缩放点积注意力。给定输入序列的特征表示，模型首先通过线性映射将其转换为查询向量（Query, $Q$）、键向量（Key, $K$）和值向量（Value, $V$）。注意力输出可以表示为：
+Transformer 的核心计算单元为缩放点积注意力。给定输入序列的特征表示，模型首先通过线性映射将其转换为查询向量（Query, $Q$）、键向量（Key, $K$）和值向量（Value, $V$）。注意力输出如式~\eqref{eq:scaled_dot_product_attention} 所示：
 \begin{equation}
 \text{Attention}(Q, K, V) =
 \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V
+\label{eq:scaled_dot_product_attention}
 \end{equation}
 其中，$d_k$ 为键向量的维度，缩放因子 $\sqrt{d_k}$ 用于缓解点积过大带来的训练不稳定问题。该过程通过计算序列中不同位置之间的相似度，自适应地聚合全局上下文信息。
 
-为了增强模型对不同表示子空间的建模能力，Transformer 进一步引入多头注意力机制。其计算形式如下：
+为了增强模型对不同表示子空间的建模能力，Transformer 进一步引入多头注意力机制。其计算形式如式~\eqref{eq:multihead_attention} 和式~\eqref{eq:attention_head} 所示：
 \begin{equation}
 \text{MultiHead}(Q, K, V) =
 \text{Concat}(\text{head}_1, \ldots, \text{head}_h)W^O
+\label{eq:multihead_attention}
 \end{equation}
 \begin{equation}
 \text{head}_i =
 \text{Attention}(QW_i^Q, KW_i^K, VW_i^V)
+\label{eq:attention_head}
 \end{equation}
-其中，$W_i^Q$、$W_i^K$、$W_i^V$ 和 $W^O$ 为可学习参数矩阵。多头注意力使模型能够在不同特征子空间中并行捕捉序列内部的相关性，从而提升表示能力。
+其中，$W_i^Q$、$W_i^K$、$W_i^V$ 和 $W^O$ 为可学习参数矩阵。式~\eqref{eq:attention_head} 表示单个注意力头的计算过程，式~\eqref{eq:multihead_attention} 则将多个注意力头的输出进行拼接与线性映射。多头注意力使模型能够在不同特征子空间中并行捕捉序列内部的相关性，从而提升表示能力。
 
-由于自注意力机制本身不显式包含顺序信息，因此 Transformer 通常通过位置编码引入时序位置信息。常用的正弦—余弦位置编码形式如下：
+由于自注意力机制本身不显式包含顺序信息，因此 Transformer 通常通过位置编码引入时序位置信息。常用的正弦—余弦位置编码形式如式~\eqref{eq:positional_encoding_sin} 和式~\eqref{eq:positional_encoding_cos} 所示：
 \begin{equation}
 \mathrm{PE}(pos, 2i) =
 \sin\left(pos / 10000^{2i/d_{model}}\right)
+\label{eq:positional_encoding_sin}
 \end{equation}
 \begin{equation}
 \mathrm{PE}(pos, 2i+1) =
 \cos\left(pos / 10000^{2i/d_{model}}\right)
+\label{eq:positional_encoding_cos}
 \end{equation}
-通过将位置编码与输入特征相加，模型能够感知时间顺序，从而实现对时序数据的有效建模。Transformer 模型结构如图~\ref{fig:transformer}所示。
+通过将式~\eqref{eq:positional_encoding_sin} 和式~\eqref{eq:positional_encoding_cos} 得到的位置编码与输入特征相加，模型能够感知时间顺序，从而实现对时序数据的有效建模。Transformer 模型结构如图~\ref{fig:transformer}所示。
 
 \begin{figure}[h]
     \centering
@@ -99,14 +109,16 @@ Transformer 的核心计算单元为缩放点积注意力。给定输入序列�
 
 Mamba 是一种基于状态空间模型（State Space Model, SSM）的序列建模结构，能够通过递归方式对历史信息进行压缩表示，并建模序列中的时间依赖关系\cite{gu2024mamba}。对于传感器数据这类具有明显时序特征的输入，Mamba 能够在较高建模效率下提取时序特征，因此适用于长时序信号建模任务。
 
-状态空间模型通过引入隐状态描述输入序列随时间的动态演化过程。在离散时间形式下，其基本表达为
+状态空间模型通过引入隐状态描述输入序列随时间的动态演化过程。在离散时间形式下，其基本表达如式~\eqref{eq:ssm_state_update} 和式~\eqref{eq:ssm_output} 所示：
 \begin{equation}
 h_t = A h_{t-1} + B x_t
+\label{eq:ssm_state_update}
 \end{equation}
 \begin{equation}
 y_t = C h_t
+\label{eq:ssm_output}
 \end{equation}
-其中，$x_t$ 表示时刻 $t$ 的输入，$h_t$ 表示系统隐状态，$y_t$ 表示输出，$A$、$B$ 和 $C$ 为模型参数矩阵。该结构通过递归更新隐状态，对历史信息进行持续累积，从而能够刻画长范围的时间依赖。
+其中，$x_t$ 表示时刻 $t$ 的输入，$h_t$ 表示系统隐状态，$y_t$ 表示输出，$A$、$B$ 和 $C$ 为模型参数矩阵。式~\eqref{eq:ssm_state_update} 通过递归更新隐状态，对历史信息进行持续累积，式~\eqref{eq:ssm_output} 则根据当前隐状态生成输出，从而能够刻画长范围的时间依赖。
 
 在传统状态空间模型中，状态更新过程通常依赖固定参数，因此对不同输入内容的自适应能力相对有限。Mamba 在状态空间建模中引入了选择性机制，使部分状态更新参数能够随当前输入动态变化，从而根据输入内容选择性地保留、更新或遗忘历史信息\cite{gu2024mamba}。这一设计增强了模型对关键信息的提取能力，使其在长时序建模任务中兼具效率与表达能力。Mamba 模型结构如图~\ref{fig:mamba}所示。
 
@@ -129,37 +141,41 @@ y_t = C h_t
 
 针对上述问题，对比学习为跨模态特征对齐提供了一种有效途径。其核心思想是通过拉近正样本对之间的距离、拉远负样本对之间的距离，从而学习具有判别性的特征表示。该机制已被广泛应用于跨模态表示学习，并在构建共享语义空间方面表现出良好效果\cite{choi2023multimodal,li2025multiEntityAlignment,yang2024multimodalCode,yin2023dualContrastive}。在本文场景中，来自同一时间窗口且语义一致的 IMU 片段与 WiFi CSI 片段构成跨模态正样本对，而来自不同样本或不同动作片段的组合则构成负样本对。
 
-在具体实现上，设 IMU 模态输入为 $x_i^{I}$，WiFi CSI 模态输入为 $x_i^{W}$，其中 $i$ 表示第 $i$ 个样本。经过各自编码网络后，可得到对应的特征表示：
+在具体实现上，设 IMU 模态输入为 $x_i^{I}$，WiFi CSI 模态输入为 $x_i^{W}$，其中 $i$ 表示第 $i$ 个样本。经过各自编码网络后，可得到式~\eqref{eq:contrastive_feature_extraction} 所示的特征表示：
 \begin{equation}
 u_i = f_{IMU}(x_i^{I}), \quad v_i = f_{WiFi}(x_i^{W})
+\label{eq:contrastive_feature_extraction}
 \end{equation}
 其中，$f_{IMU}(\cdot)$ 和 $f_{WiFi}(\cdot)$ 分别表示 IMU 模态与 WiFi CSI 模态的特征提取函数。为保证相似度计算的稳定性，通常对特征向量进行归一化处理，使其分布于单位超球面上。
 
-基于上述特征表示，可以构建跨模态相似度度量。对于 IMU 样本 $i$ 与 WiFi CSI 样本 $j$，其余弦相似度定义为：
+基于式~\eqref{eq:contrastive_feature_extraction} 得到的特征表示，可以构建跨模态相似度度量。对于 IMU 样本 $i$ 与 WiFi CSI 样本 $j$，其余弦相似度定义如式~\eqref{eq:contrastive_similarity} 所示：
 \begin{equation}
 S_{ij} = \frac{u_i^T v_j}{\|u_i\| \, \|v_j\|}
+\label{eq:contrastive_similarity}
 \end{equation}
 
-在一个包含 $N$ 个样本的训练批次中，进一步构建 IMU 特征与 WiFi CSI 特征之间的相似度矩阵 $S \in \mathbb{R}^{N \times N}$。其中，对角线元素对应语义匹配的正样本对，非对角线元素对应不匹配的负样本对。基于该相似度结构，本文采用跨模态双向对比学习（Bidirectional Cross-Modal Contrastive Learning, BCMCL）损失对模型进行优化，可同时约束两个模态方向上的对齐关系。
+在一个包含 $N$ 个样本的训练批次中，进一步构建 IMU 特征与 WiFi CSI 特征之间的相似度矩阵 $S \in \mathbb{R}^{N \times N}$。其中，对角线元素对应语义匹配的正样本对，非对角线元素对应不匹配的负样本对。基于式~\eqref{eq:contrastive_similarity} 所示的相似度结构，本文采用跨模态双向对比学习（Bidirectional Cross-Modal Contrastive Learning, BCMCL）损失对模型进行优化，可同时约束两个模态方向上的对齐关系。
 
-对于 IMU 到 WiFi 方向，其损失定义为：
+对于 IMU 到 WiFi 方向，其损失定义如式~\eqref{eq:contrastive_loss_i2w} 所示：
 \begin{equation}
 L_i^{I \rightarrow W} =
 -\log
 \frac{\exp(S_{ii}/\tau)}
 {\sum_{k=1}^{N}\exp(S_{ik}/\tau)}
+\label{eq:contrastive_loss_i2w}
 \end{equation}
 其中，$\tau$ 为温度系数，用于调节相似度分布的平滑程度。
 
-类似地，WiFi CSI 到 IMU 方向的损失可表示为：
+类似地，WiFi CSI 到 IMU 方向的损失可表示为式~\eqref{eq:contrastive_loss_w2i}：
 \begin{equation}
 L_i^{W \rightarrow I} =
 -\log
 \frac{\exp(S_{ii}/\tau)}
 {\sum_{k=1}^{N}\exp(S_{ki}/\tau)}
+\label{eq:contrastive_loss_w2i}
 \end{equation}
 
-最终，对比学习损失由两个方向的损失共同构成：
+最终，对比学习损失由两个方向的损失共同构成，如式~\eqref{eq:bcmcl_loss} 所示：
 \begin{equation}
 L_{\mathrm{BCMCL}} =
 \frac{1}{2N}
@@ -168,23 +184,25 @@ L_{\mathrm{BCMCL}} =
 L_i^{I \rightarrow W} +
 L_i^{W \rightarrow I}
 \right)
+\label{eq:bcmcl_loss}
 \end{equation}
 
-通过最小化上述损失，模型能够将语义一致的 IMU 与 WiFi CSI 样本映射到相邻的特征区域，同时拉开不匹配样本之间的距离，从而实现跨模态特征对齐。经过该约束后，不同模态的特征表示在共享语义空间中具有更高一致性，为后续跨模态特征融合与人体活动识别提供了更加稳定且具有判别性的表示基础\cite{li2025multiEntityAlignment,yang2024multimodalCode,yin2023dualContrastive}。
+通过最小化式~\eqref{eq:bcmcl_loss} 所示的损失，模型能够将语义一致的 IMU 与 WiFi CSI 样本映射到相邻的特征区域，同时拉开不匹配样本之间的距离，从而实现跨模态特征对齐。经过该约束后，不同模态的特征表示在共享语义空间中具有更高一致性，为后续跨模态特征融合与人体活动识别提供了更加稳定且具有判别性的表示基础\cite{li2025multiEntityAlignment,yang2024multimodalCode,yin2023dualContrastive}。
 
 \xsubsection{交叉注意力机制}{Cross-Attention Mechanism}
 
 尽管对比学习能够将 IMU 与 WiFi CSI 特征对齐到统一的语义空间，但其主要关注整体表示的一致性，尚未显式刻画不同模态之间的细粒度交互关系。因此，在完成模态对齐之后，仍有必要进一步引入跨模态交互机制，以实现更有效的特征融合\cite{oh2024multi,khan2025encoding,yin2023fineGrainedFusion}。
 
-交叉注意力机制（Cross-Attention Mechanism）是一类常见的多模态特征融合方法，其基本思想是利用一个模态的特征作为查询（Query），从另一模态的特征中检索与之最相关的信息。与自注意力机制不同，交叉注意力中的查询向量与键值向量来自不同模态，因此能够显式建立模态间依赖关系。设经过编码网络提取后的 IMU 特征序列为 $X_I \in \mathbb{R}^{L_I \times d}$，WiFi CSI 特征序列为 $X_W \in \mathbb{R}^{L_W \times d}$，其中 $L_I$ 与 $L_W$ 分别表示两个模态的序列长度，$d$ 表示特征维度。首先通过线性映射生成查询、键和值向量：
+交叉注意力机制（Cross-Attention Mechanism）是一类常见的多模态特征融合方法，其基本思想是利用一个模态的特征作为查询（Query），从另一模态的特征中检索与之最相关的信息。与自注意力机制不同，交叉注意力中的查询向量与键值向量来自不同模态，因此能够显式建立模态间依赖关系。设经过编码网络提取后的 IMU 特征序列为 $X_I \in \mathbb{R}^{L_I \times d}$，WiFi CSI 特征序列为 $X_W \in \mathbb{R}^{L_W \times d}$，其中 $L_I$ 与 $L_W$ 分别表示两个模态的序列长度，$d$ 表示特征维度。首先通过线性映射生成查询、键和值向量，如式~\eqref{eq:cross_attention_qkv} 所示：
 \begin{equation}
 Q_I = X_I W_Q, \quad
 K_W = X_W W_K, \quad
 V_W = X_W W_V
+\label{eq:cross_attention_qkv}
 \end{equation}
 其中，$W_Q \in \mathbb{R}^{d \times d_k}$、$W_K \in \mathbb{R}^{d \times d_k}$ 和 $W_V \in \mathbb{R}^{d \times d_v}$ 为可学习的线性映射矩阵。
 
-随后，通过缩放点积注意力计算 IMU 特征对 WiFi CSI 特征的关注程度：
+随后，通过缩放点积注意力计算 IMU 特征对 WiFi CSI 特征的关注程度，如式~\eqref{eq:cross_attention_output} 所示：
 \begin{equation}
 O_{I \leftarrow W} =
 \text{softmax}
@@ -192,8 +210,9 @@ O_{I \leftarrow W} =
 \frac{Q_I K_W^T}{\sqrt{d_k}}
 \right)
 V_W
+\label{eq:cross_attention_output}
 \end{equation}
-其中，$d_k$ 表示键向量的维度。该过程通过相似度矩阵刻画 IMU 时间步与 WiFi CSI 时间步之间的相关性，再利用注意力权重对 WiFi CSI 特征进行加权汇聚，从而得到融合后的表示 $O_{I \leftarrow W} \in \mathbb{R}^{L_I \times d_v}$。
+其中，$d_k$ 表示键向量的维度。该过程首先通过式~\eqref{eq:cross_attention_qkv} 生成跨模态查询、键和值向量，然后通过式~\eqref{eq:cross_attention_output} 中的相似度矩阵刻画 IMU 时间步与 WiFi CSI 时间步之间的相关性，再利用注意力权重对 WiFi CSI 特征进行加权汇聚，从而得到融合后的表示 $O_{I \leftarrow W} \in \mathbb{R}^{L_I \times d_v}$。
 
 通过该机制，模型能够根据一个模态的当前特征状态，从另一模态中自适应选择最有助于判别的信息。在实际应用中，也可以进一步构建反向注意力，即利用 WiFi CSI 特征作为查询，从 IMU 特征中获取相关信息，从而形成双向跨模态交互结构。相比简单拼接，交叉注意力更有利于捕捉模态间的局部对应关系与互补模式，因此在多模态融合任务中得到了广泛应用\cite{oh2024multi,yin2023fineGrainedFusion}。
 
@@ -201,25 +220,28 @@ V_W
 
 人体运动序列具有明显的时间连续性，即当前时刻的运动状态通常与前一阶段的姿态和运动趋势密切相关。例如，在行走、转身或摆臂等动作中，人体关节轨迹在相邻时间步之间通常呈现较强相关性。因此，在人体运动建模中，可以利用历史观测对未来状态进行推断。
 
-自回归建模机制的核心思想是利用最近一段历史观测序列预测下一时刻或后续时刻的状态。为兼顾时序建模能力与计算效率，通常采用长度为 $L$ 的固定滑动窗口，仅利用最近的历史信息进行建模。对于一步预测问题，其基本形式可写为：
+自回归建模机制的核心思想是利用最近一段历史观测序列预测下一时刻或后续时刻的状态。为兼顾时序建模能力与计算效率，通常采用长度为 $L$ 的固定滑动窗口，仅利用最近的历史信息进行建模。对于一步预测问题，其基本形式如式~\eqref{eq:ar_one_step} 所示：
 \begin{equation}
 \hat{x}_{t+1} = f_\theta(x_{t-L+1}, x_{t-L+2}, \ldots, x_t)
+\label{eq:ar_one_step}
 \end{equation}
 其中，$f_\theta(\cdot)$ 表示带参数 $\theta$ 的时间依赖建模函数。
 
-在多步预测阶段，自回归模型采用递归方式逐步生成未来序列。为统一表示真实观测与已生成结果，记：
+在多步预测阶段，自回归模型采用递归方式逐步生成未来序列。为统一表示真实观测与已生成结果，记为式~\eqref{eq:ar_observation_definition}：
 \begin{equation}
 \tilde{x}_{\tau} =
 \begin{cases}
 x_{\tau}, & \tau \le t, \\
 \hat{x}_{\tau}, & \tau > t,
 \end{cases}
+\label{eq:ar_observation_definition}
 \end{equation}
-则第 $k$ 步预测可表示为：
+则第 $k$ 步预测可表示为式~\eqref{eq:ar_multi_step}：
 \begin{equation}
 \hat{x}_{t+k} = f_\theta(\tilde{x}_{t+k-L}, \tilde{x}_{t+k-L+1}, \ldots, \tilde{x}_{t+k-1}), \quad k \ge 2.
+\label{eq:ar_multi_step}
 \end{equation}
-该递归预测方式能够在保持时间连续性的同时，仅依赖最近长度为 $L$ 的历史窗口完成后续状态生成。
+式~\eqref{eq:ar_multi_step} 基于式~\eqref{eq:ar_observation_definition} 将真实历史观测与已生成预测结果统一表示，使递归预测方式能够在保持时间连续性的同时，仅依赖最近长度为 $L$ 的历史窗口完成后续状态生成。
 
 \xsection{本章小结}{Summary}
 
