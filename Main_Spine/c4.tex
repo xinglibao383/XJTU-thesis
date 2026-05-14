@@ -23,7 +23,22 @@
 
 \xsection{方法描述}{Method Description}
 
-\xsubsection{任务定义与样本构建}{Task Definition and Sample Construction}
+\xsubsection{整体方法框架}{Overall Framework}
+
+AIPose 以当前 IMU 序列为输入，通过时序特征提取、当前姿态重构、未来 IMU 序列预测以及未来姿态预测四个阶段实现人体姿态重构与预测，整体流程如图~\ref{fig:aipose_apply} 所示，整体架构如图~\ref{fig:aipose_arch} 所示。
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\textwidth]{aipose_model.png}
+  \caption{AIPose 模型架构图}
+  \label{fig:aipose_arch}
+\end{figure}
+
+首先，将当前 IMU 序列输入时序特征提取模块，得到表征人体当前运动状态的高层时序特征。在此基础上，模型包含两个相互关联的分支：一条分支用于当前姿态重构，直接根据当前时序特征输出当前时间窗口内的人体姿态序列；另一条分支用于未来 IMU 序列预测，根据当前时序特征生成未来时间段内的 IMU 序列。
+
+在完成未来 IMU 序列预测后，模型将预测得到的未来 IMU 序列与当前 IMU 序列尾部进行拼接，构造扩展 IMU 序列，并基于该扩展 IMU 序列进一步预测未来姿态。因此，AIPose 将未来姿态预测分解为“未来 IMU 序列预测”和“基于扩展 IMU 序列的未来姿态预测”两个步骤，并通过自回归建模机制将二者连接起来。训练过程中，模型采用当前姿态重构损失、未来 IMU 序列预测损失以及未来姿态预测损失构成的联合目标进行优化，从而同时学习当前姿态恢复与未来运动演化规律。
+
+\xsubsection{样本构建}{Sample Construction}
 
 为了构建适用于人体姿态重构与预测任务的训练样本，本文以 XRFV2 数据集为例，从连续采集的 IMU 序列与姿态序列中提取时间对齐的片段。由于 IMU 与姿态数据的采样频率不同，因此在样本构建时，首先基于统一时间轴建立二者之间的对应关系，再按照固定时间窗口从连续序列中截取样本。设 IMU 时间序列如式~\eqref{eq:imu_sequence_definition} 所示：
 \begin{equation}
@@ -88,21 +103,6 @@
 \label{eq:sample_set}
 \end{equation}
 其中，式~\eqref{eq:sample_x_input} 中的 $\mathbf{X}_{\mathrm{input}}$ 表示当前 IMU 输入序列，用于提供姿态重构与预测的先验信息；式~\eqref{eq:sample_x_future} 中的 $\mathbf{X}_{\mathrm{future}}$ 表示与未来姿态预测阶段对应的 IMU 序列；式~\eqref{eq:sample_p_rec} 中的 $\mathbf{P}_{\mathrm{rec}}$ 表示当前人体姿态序列，用于当前姿态重构任务；式~\eqref{eq:sample_p_pred} 中的 $\mathbf{P}_{\mathrm{pred}}$ 表示未来人体姿态序列，用于未来姿态预测任务。由此，一个完整样本由式~\eqref{eq:sample_set} 中的四个部分共同构成。
-
-\xsubsection{整体方法框架}{Overall Framework}
-
-AIPose 以当前 IMU 序列为输入，通过时序特征提取、当前姿态重构、未来 IMU 序列预测以及未来姿态预测四个阶段实现人体姿态重构与预测，整体流程如图~\ref{fig:aipose_apply} 所示，整体架构如图~\ref{fig:aipose_arch} 所示。
-
-\begin{figure}[h]
-  \centering
-  \includegraphics[width=\textwidth]{aipose_model.png}
-  \caption{AIPose 模型架构图}
-  \label{fig:aipose_arch}
-\end{figure}
-
-首先，将当前 IMU 序列输入时序特征提取模块，得到表征人体当前运动状态的高层时序特征。在此基础上，模型包含两个相互关联的分支：一条分支用于当前姿态重构，直接根据当前时序特征输出当前时间窗口内的人体姿态序列；另一条分支用于未来 IMU 序列预测，根据当前时序特征生成未来时间段内的 IMU 序列。
-
-在完成未来 IMU 序列预测后，模型将预测得到的未来 IMU 序列与当前 IMU 序列尾部进行拼接，构造扩展 IMU 序列，并基于该扩展 IMU 序列进一步预测未来姿态。因此，AIPose 将未来姿态预测分解为“未来 IMU 序列预测”和“基于扩展 IMU 序列的未来姿态预测”两个步骤，并通过自回归建模机制将二者连接起来。训练过程中，模型采用当前姿态重构损失、未来 IMU 序列预测损失以及未来姿态预测损失构成的联合目标进行优化，从而同时学习当前姿态恢复与未来运动演化规律。
 
 \xsubsection{AIPose 模型}{AIPose Model}
 
