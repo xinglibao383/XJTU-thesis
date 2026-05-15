@@ -2,7 +2,7 @@
 
 \xchapter{基于自回归建模机制的人体姿态重构与预测}{Autoregressive Human Pose Reconstruction and Prediction}
 
-本章围绕基于自回归建模机制的人体姿态重构与预测问题展开研究。第三章主要从活动语义层面研究人体活动识别问题，通过输出离散活动类别刻画人体行为的宏观语义状态。然而，在实际人体感知应用中，活动类别只能反映行为类型，难以进一步描述人体运动过程中的细粒度姿态变化及其时间演化规律。因此，有必要在活动识别的基础上进一步将研究问题从离散的活动识别扩展到连续的人体姿态建模。第4.1节首先对任务背景与研究动机进行说明，分析现有基于 IMU 的人体姿态方法主要聚焦于当前姿态重构，而对未来姿态预测关注相对较少；第4.2节介绍本文提出的 AIPose 方法，包括整体方法框架、模型组成模块及其自回归建模机制；第4.3节通过实验对所提方法进行评估，从方法对比、骨干网络选择、样本构建与数据处理、设备消融、泛化能力以及长时姿态预测等方面分析模型性能；第4.4节对本章研究内容进行总结。
+本章围绕基于自回归建模机制的人体姿态重构与预测问题展开研究。第三章主要从活动语义层面研究人体活动识别问题，通过离散活动类别刻画人体行为的宏观语义状态，但难以进一步描述人体运动过程中的细粒度姿态变化及其时间演化规律。因此，本章将研究问题从离散活动识别扩展到连续人体姿态建模，提出 AIPose 方法，在给定当前 IMU 观测序列的条件下，同时实现当前姿态重构与未来姿态预测。第4.1节首先对任务背景与研究动机进行说明，分析现有视觉方法和基于 IMU 的姿态方法在隐私保护、部署方式及未来姿态建模方面的局限；第4.2节介绍 AIPose 方法，包括整体方法框架、样本构建过程以及模型组成模块与自回归建模机制；第4.3节通过实验对所提方法进行评估，从方法对比、骨干网络选择、样本构建与数据处理、设备消融、泛化能力以及长时姿态预测等方面分析模型性能；第4.4节对本章研究内容进行总结。
 
 \xsection{问题描述}{Problem Description}
 
@@ -25,7 +25,7 @@
 
 \xsubsection{整体方法框架}{Overall Framework}
 
-AIPose 以当前 IMU 序列为输入，通过时序特征提取、当前姿态重构、未来 IMU 序列预测以及未来姿态预测四个阶段实现人体姿态重构与预测，整体流程如图~\ref{fig:aipose_apply} 所示，整体架构如图~\ref{fig:aipose_arch} 所示。
+AIPose 面向基于 IMU 时序信号的人体姿态重构与预测任务，其核心目标是在给定当前 IMU 观测序列的条件下，通过自回归建模机制同时实现当前时间窗口内的人体姿态重构和未来时间窗口内的人体姿态预测。与仅关注当前姿态重构的方法不同，AIPose 将未来姿态预测显式纳入统一建模框架，并以未来 IMU 观测序列预测作为连接当前观测与未来姿态的中间环节，通过“当前姿态重构、未来 IMU 观测序列预测、未来姿态预测”三个相互关联的子任务共同刻画人体运动状态及其时间演化过程。整体流程如图~\ref{fig:aipose_apply} 所示，模型架构如图~\ref{fig:aipose_arch} 所示。
 
 \begin{figure}[h]
   \centering
@@ -34,23 +34,27 @@ AIPose 以当前 IMU 序列为输入，通过时序特征提取、当前姿态�
   \label{fig:aipose_arch}
 \end{figure}
 
-首先，将当前 IMU 序列输入时序特征提取模块，得到表征人体当前运动状态的高层时序特征。在此基础上，模型包含两个相互关联的分支：一条分支用于当前姿态重构，直接根据当前时序特征输出当前时间窗口内的人体姿态序列；另一条分支用于未来 IMU 序列预测，根据当前时序特征生成未来时间段内的 IMU 序列。
-
-在完成未来 IMU 序列预测后，模型将预测得到的未来 IMU 序列与当前 IMU 序列尾部进行拼接，构造扩展 IMU 序列，并基于该扩展 IMU 序列进一步预测未来姿态。因此，AIPose 将未来姿态预测分解为“未来 IMU 序列预测”和“基于扩展 IMU 序列的未来姿态预测”两个步骤，并通过自回归建模机制将二者连接起来。训练过程中，模型采用当前姿态重构损失、未来 IMU 序列预测损失以及未来姿态预测损失构成的联合目标进行优化，从而同时学习当前姿态恢复与未来运动演化规律。
+具体而言，模型首先以当前 IMU 观测序列作为输入，通过 IMU 时序特征提取模块获得表征当前运动状态的高层时序特征。在此基础上，模型包含两个并行分支：其一为当前姿态重构分支，用于根据当前 IMU 特征重构当前时间窗口内的人体姿态序列；其二为未来 IMU 观测序列预测分支，用于根据当前运动状态预测未来时间段内的 IMU 观测序列。在获得未来 IMU 观测序列预测结果后，AIPose 进一步将预测得到的未来 IMU 观测序列与当前 IMU 观测序列的尾部片段进行拼接，形成具有时间连续性的扩展 IMU 序列，并基于该扩展 IMU 序列预测未来人体姿态。即未来姿态预测并不是直接由当前特征一次性回归得到，而是经过未来 IMU 动态预测与扩展序列姿态映射两个阶段完成。该设计使模型能够在当前真实观测的约束下，将未来姿态预测建立在 IMU 时序动态演化过程之上。训练过程中，模型采用当前姿态重构损失、未来 IMU 观测序列预测损失和未来姿态预测损失进行联合优化，从而同时学习当前姿态重构能力与未来姿态预测能力。
 
 \xsubsection{样本构建}{Sample Construction}
 
-为了构建适用于人体姿态重构与预测任务的训练样本，本文以 XRFV2 数据集为例，从连续采集的 IMU 序列与姿态序列中提取时间对齐的片段。由于 IMU 与姿态数据的采样频率不同，因此在样本构建时，首先基于统一时间轴建立二者之间的对应关系，再按照固定时间窗口从连续序列中截取样本。设 IMU 时间序列如式~\eqref{eq:imu_sequence_definition} 所示：
+为支持上述统一建模框架，需要从连续采集的 IMU 序列与姿态序列中构建包含当前 IMU 观测、未来 IMU 监督、当前姿态监督和未来姿态监督的训练样本。本文以 XRFV2 数据集为例说明样本构建过程。由于 IMU 数据与姿态数据在采样频率上存在差异，本文首先基于统一时间轴建立二者之间的时间对应关系，然后以滑动窗口方式从连续序列中截取时间对齐的样本片段。
+
+设连续 IMU 序列为：
 \begin{equation}
 \mathbf{X}=\{x_1,x_2,\ldots,x_T\}, \qquad x_t\in\mathbb{R}^{C},
 \label{eq:imu_sequence_definition}
 \end{equation}
-其中，$C$ 表示 IMU 通道数。本文使用 5 个 IMU 设备，每个设备包含三轴加速度与三轴角速度，共 6 个通道，因此 $C=30$。设人体姿态序列如式~\eqref{eq:pose_sequence_definition} 所示：
+其中，$C$ 表示 IMU 通道数。在 XRFV2 数据集中，本文使用 5 个 IMU 设备，每个设备包含三轴加速度与三轴角速度，共 6 个通道，因此 $C=30$。
+
+设对应的人体姿态序列为：
 \begin{equation}
-\mathbf{P}=\{p_1,p_2,\ldots,p_N\}, \qquad p_i\in\mathbb{R}^{K\times 2},
+\mathbf{P}=\{p_1,p_2,\ldots,p_N\}, \qquad p_i\in\mathbb{R}^{K\times D_p},
 \label{eq:pose_sequence_definition}
 \end{equation}
-其中，$K=25$ 表示人体关键点数量。
+其中，$K$ 表示人体关键点或关节数量，$D_p$ 表示单个关键点或关节的姿态表示维度。在 XRFV2 数据集中，本文采用二维人体关键点作为姿态监督信号，因此 $K=25$，$D_p=2$。
+
+图~\ref{fig:aipose_sample_construct} 给出了样本构建过程的时间结构示意图。对于任一样本，设参考时刻 $t$ 为未来预测窗口的结束时刻，其中 $t$ 以秒为单位。以该时刻为基准，本文从连续 IMU 序列和姿态序列中分别截取四个部分：当前 IMU 观测序列、未来 IMU 观测监督序列、当前姿态监督序列和未来姿态监督序列。其中，当前 IMU 观测序列作为模型输入，未来 IMU 观测序列用于监督 IMU 时序预测分支，当前姿态序列用于监督当前姿态重构分支，未来姿态序列用于监督未来姿态预测分支。
 
 \begin{figure}[h]
   \centering
@@ -59,88 +63,92 @@ AIPose 以当前 IMU 序列为输入，通过时序特征提取、当前姿态�
   \label{fig:aipose_sample_construct}
 \end{figure}
 
-图~\ref{fig:aipose_sample_construct} 给出了样本构建过程的时间结构示意图。对于任一样本，其参考时刻 $t$ 表示该样本时间窗口的结束时刻。以该时刻为参照，本文从式~\eqref{eq:imu_sequence_definition} 和式~\eqref{eq:pose_sequence_definition} 所示的连续序列中分别截取当前 IMU 输入序列、未来 IMU 监督序列、当前姿态监督序列以及未来姿态监督序列，从而构建用于姿态重构与预测的监督样本。
-
-设 IMU 采样频率为 $f_{\mathrm{imu}}$，姿态数据帧率为 $f_{\mathrm{pose}}$，当前 IMU 输入窗口长度为 $L_{\mathrm{input}}$，当前姿态重构窗口长度为 $L_{\mathrm{rec}}$，以及未来姿态预测窗口长度 $L_{\mathrm{pred}}$，三个窗口长度均以秒为单位。在此基础上，样本中各部分定义如下：
-
+设 IMU 采样频率为 $f_{\mathrm{imu}}$，姿态数据帧率为 $f_{\mathrm{pose}}$，当前 IMU 输入窗口长度为 $L_{\mathrm{input}}$，当前姿态重构窗口长度为 $L_{\mathrm{rec}}$，未来姿态预测窗口长度为 $L_{\mathrm{pred}}$，三者均以秒为单位。则一个训练样本中的当前 IMU 观测序列定义为：
 \begin{equation}
 \mathbf{X}_{\mathrm{input}}
 =
-\mathbf{X}\!\left[(t-(L_{\mathrm{input}}+L_{\mathrm{pred}}))f_{\mathrm{imu}}:\,(t-L_{\mathrm{pred}})f_{\mathrm{imu}}\right],
+\mathbf{X}\!\left[(t-L_{\mathrm{pred}}-L_{\mathrm{input}})f_{\mathrm{imu}}:\,(t-L_{\mathrm{pred}})f_{\mathrm{imu}}\right],
 \label{eq:sample_x_input}
 \end{equation}
+其对应的是未来预测窗口之前的一段当前 IMU 观测。
 
+未来 IMU 观测监督序列定义为：
 \begin{equation}
-\mathbf{X}_{\mathrm{future}}
+\mathbf{X}_{\mathrm{future}}^{\ast}
 =
 \mathbf{X}\!\left[(t-L_{\mathrm{pred}})f_{\mathrm{imu}}:\,t f_{\mathrm{imu}}\right],
 \label{eq:sample_x_future}
 \end{equation}
+该序列作为 IMU 时序预测模块的监督目标。
 
+当前姿态重构监督序列定义为：
 \begin{equation}
-\mathbf{P}_{\mathrm{rec}}
+\mathbf{P}_{\mathrm{rec}}^{\ast}
 =
-\mathbf{P}\!\left[(t-(L_{\mathrm{rec}}+L_{\mathrm{pred}}))f_{\mathrm{pose}}:\,(t-L_{\mathrm{pred}})f_{\mathrm{pose}}\right],
+\mathbf{P}\!\left[(t-L_{\mathrm{pred}}-L_{\mathrm{rec}})f_{\mathrm{pose}}:\,(t-L_{\mathrm{pred}})f_{\mathrm{pose}}\right],
 \label{eq:sample_p_rec}
 \end{equation}
+其时间范围与当前 IMU 观测序列末端对齐，用于监督模型重构当前时间窗口内的人体姿态。
 
+未来姿态预测监督序列定义为：
 \begin{equation}
-\mathbf{P}_{\mathrm{pred}}
+\mathbf{P}_{\mathrm{pred}}^{\ast}
 =
 \mathbf{P}\!\left[(t-L_{\mathrm{pred}})f_{\mathrm{pose}}:\,t f_{\mathrm{pose}}\right],
 \label{eq:sample_p_pred}
 \end{equation}
+其时间范围与未来 IMU 观测监督序列一致，用于监督模型预测未来时间窗口内的人体姿态。
 
+由此，一个完整训练样本可表示为：
 \begin{equation}
 \mathcal{S}
 =
 \left\{
 \mathbf{X}_{\mathrm{input}},
-\mathbf{X}_{\mathrm{future}},
-\mathbf{P}_{\mathrm{rec}},
-\mathbf{P}_{\mathrm{pred}}
+\mathbf{X}_{\mathrm{future}}^{\ast},
+\mathbf{P}_{\mathrm{rec}}^{\ast},
+\mathbf{P}_{\mathrm{pred}}^{\ast}
 \right\}.
 \label{eq:sample_set}
 \end{equation}
-其中，式~\eqref{eq:sample_x_input} 中的 $\mathbf{X}_{\mathrm{input}}$ 表示当前 IMU 输入序列，用于提供姿态重构与预测的先验信息；式~\eqref{eq:sample_x_future} 中的 $\mathbf{X}_{\mathrm{future}}$ 表示与未来姿态预测阶段对应的 IMU 序列；式~\eqref{eq:sample_p_rec} 中的 $\mathbf{P}_{\mathrm{rec}}$ 表示当前人体姿态序列，用于当前姿态重构任务；式~\eqref{eq:sample_p_pred} 中的 $\mathbf{P}_{\mathrm{pred}}$ 表示未来人体姿态序列，用于未来姿态预测任务。由此，一个完整样本由式~\eqref{eq:sample_set} 中的四个部分共同构成。
+
+通过上述构建方式，AIPose 的输入与监督目标在时间上形成明确对应关系：模型以当前 IMU 观测序列 $\mathbf{X}_{\mathrm{input}}$ 为输入，同时学习当前姿态重构目标 $\mathbf{P}_{\mathrm{rec}}^{\ast}$、未来 IMU 观测序列预测目标 $\mathbf{X}_{\mathrm{future}}^{\ast}$ 和未来姿态预测目标 $\mathbf{P}_{\mathrm{pred}}^{\ast}$。这种样本组织方式为后续的多任务联合优化和自回归姿态预测提供了统一的数据基础。
 
 \xsubsection{AIPose 模型}{AIPose Model}
 
-在上述整体方法框架基础上，本节进一步介绍 AIPose 的具体实现。为便于说明，本文将其划分为 IMU 时序特征提取模块、姿态重构模块、IMU 时序预测模块、自回归建模机制以及损失函数五个部分，下面分别进行介绍。
+在上述样本定义基础上，本节进一步介绍 AIPose 的具体模型结构。模型主要包括 IMU 时序特征提取模块、姿态重构模块、IMU 时序预测模块、自回归建模机制以及损失函数五个部分。
 
 \subsubsection{IMU 时序特征提取模块}{}
 
-设输入 IMU 序列如式~\eqref{eq:input_imu} 所示：
+设输入 IMU 观测序列为：
 \begin{equation}
-\mathbf{X}_{\mathrm{input}} \in \mathbb{R}^{B \times T \times C}
+\mathbf{X}_{\mathrm{input}} \in \mathbb{R}^{B \times T_{\mathrm{input}} \times C},
 \label{eq:input_imu}
 \end{equation}
-其中 $B$ 表示批次大小，$T$ 表示时间窗口长度，$C$ 表示 IMU 通道数。在此基础上，通过 ResNet 对式~\eqref{eq:input_imu} 中的输入序列进行时序特征提取，得到式~\eqref{eq:feature_extract} 所示的特征表示：
+其中，$B$ 表示批次大小，$T_{\mathrm{input}}=L_{\mathrm{input}}f_{\mathrm{imu}}$ 表示当前 IMU 观测序列的时间步数，$C$ 表示 IMU 通道数。本文采用 ResNet 结构对输入 IMU 观测序列进行时序特征提取，其映射过程表示为：
 \begin{equation}
-\mathbf{F} = E(\mathbf{X}_{\mathrm{input}})
+\mathbf{F} = E(\mathbf{X}_{\mathrm{input}}),
 \label{eq:feature_extract}
 \end{equation}
-其中 $E(\cdot)$ 表示基于 ResNet 的映射函数。该结构利用一维卷积提取 IMU 信号中的局部动态变化，并通过残差连接增强特征表达的稳定性。式~\eqref{eq:feature_extract} 得到的特征表示 $\mathbf{F}$ 作为统一的中间表示，将同时用于当前姿态重构与未来 IMU 预测。
+其中，$E(\cdot)$ 表示 IMU 时序特征提取模块。该模块利用一维卷积提取 IMU 信号中的局部动态变化，并通过残差连接增强特征表达的稳定性。得到的特征表示 $\mathbf{F}$ 作为统一中间表示，分别输入当前姿态重构分支和未来 IMU 观测序列预测分支。
 
 \subsubsection{姿态重构模块}{}
 
-在获得 IMU 特征表示 $\mathbf{F}$ 后，首先对当前时间窗口内的人体姿态序列进行建模，其映射关系如式~\eqref{eq:pose_reconstruction} 所示：
+当前姿态重构模块用于根据 IMU 时序特征恢复当前时间窗口内的人体姿态序列。其映射关系定义为：
 \begin{equation}
-\mathbf{P}_{\mathrm{rec}} = f_{\mathrm{rec}}(\mathbf{F})
+\hat{\mathbf{P}}_{\mathrm{rec}} = f_{\mathrm{rec}}(\mathbf{F}),
 \label{eq:pose_reconstruction}
 \end{equation}
-通过全连接层将特征向量映射到姿态空间，并重构为具有时间结构的姿态序列。设姿态重构窗口长度为 $L_{\mathrm{rec}}$，关节数量为 $K$，单个关节的姿态表示维度为 $D_p$，输出形式如式~\eqref{eq:pose_shape} 所示：
+其中，$f_{\mathrm{rec}}(\cdot)$ 表示姿态重构映射函数，$\hat{\mathbf{P}}_{\mathrm{rec}}$ 表示模型预测的当前姿态序列。设当前姿态重构序列长度为 $T_{\mathrm{rec}}=L_{\mathrm{rec}}f_{\mathrm{pose}}$，则输出形式为：
 \begin{equation}
-\mathbf{P}_{\mathrm{rec}} \in \mathbb{R}^{B \times L_{\mathrm{rec}} \times K \times D_p}
+\hat{\mathbf{P}}_{\mathrm{rec}} \in \mathbb{R}^{B \times T_{\mathrm{rec}} \times K \times D_p}.
 \label{eq:pose_shape}
 \end{equation}
-其中，$D_p$ 的具体取值由姿态表示形式决定。例如，在二维关键点建模任务中，$D_p=2$；在参数化人体姿态建模任务中，$D_p$ 可对应关节旋转表示的维度。
-
-式~\eqref{eq:pose_reconstruction} 实现了从 IMU 时序特征到当前姿态序列的映射，其输出形式由式~\eqref{eq:pose_shape} 给出，并作为当前姿态重构任务的预测结果。
+其中，$K$ 表示关键点或关节数量，$D_p$ 表示单个关键点或关节的姿态表示维度。在二维关键点建模任务中，$D_p=2$；在参数化人体姿态建模任务中，$D_p$ 可对应关节旋转表示的维度。
 
 \subsubsection{IMU 时序预测模块}{}
 
-在完成当前姿态重构的同时，模型还需要基于当前 IMU 序列对应的时序特征，对未来时间段内的 IMU 序列进行预测。该模块整体结构如图~\ref{fig:imu_generator_model} 所示。
+除当前姿态重构外，AIPose 还需要根据当前 IMU 特征预测未来时间窗口内的 IMU 观测序列。该模块整体结构如图~\ref{fig:imu_generator_model} 所示。
 
 \begin{figure}[h]
   \centering
@@ -149,14 +157,12 @@ AIPose 以当前 IMU 序列为输入，通过时序特征提取、当前姿态�
   \label{fig:imu_generator_model}
 \end{figure}
 
-具体而言，模块首先利用 Transformer 编码器对当前输入特征进行时序建模，得到表征当前运动状态的时序记忆特征；随后，结合目标位置编码与当前时序记忆特征的时间维平均池化结果构造预测查询序列，并再次输入共享参数的 Transformer 编码器，从而生成未来时间窗口对应的 IMU 序列预测结果。该设计使模型能够在保留当前运动上下文的基础上，对未来惯性动态进行建模，为后续自回归姿态预测提供合理输入。
-
-设 IMU 时序特征提取模块输出的特征表示如式~\eqref{eq:imu_predictor_input_feature} 所示：
+设 IMU 时序特征提取模块输出的特征表示为：
 \begin{equation}
 \mathbf{F} \in \mathbb{R}^{B \times T_f \times D_f},
 \label{eq:imu_predictor_input_feature}
 \end{equation}
-其中，$B$ 表示批大小，$T_f$ 表示特征序列长度，$D_f$ 表示特征维度。首先，将输入特征映射到隐藏空间并加入对应的位置编码，得到当前序列的时序记忆特征，如式~\eqref{eq:imu_memory_feature} 所示：
+其中，$T_f$ 表示特征序列长度，$D_f$ 表示特征维度。首先，将输入特征映射至隐藏空间，并加入可学习位置编码，得到当前序列的时序记忆特征：
 \begin{equation}
 \mathbf{M}
 =
@@ -165,46 +171,46 @@ AIPose 以当前 IMU 序列为输入，通过时序特征提取、当前姿态�
 \right),
 \label{eq:imu_memory_feature}
 \end{equation}
-其中，$W_{\mathrm{in}} \in \mathbb{R}^{D_f \times D_h}$ 表示输入投影矩阵，$\mathbf{E}_{\mathrm{pos}}^{(1:T_f)} \in \mathbb{R}^{1 \times T_f \times D_h}$ 表示与输入序列对应的可学习位置编码，$D_h$ 表示隐藏层维度。由此有式~\eqref{eq:imu_memory_shape}：
+其中，$W_{\mathrm{in}} \in \mathbb{R}^{D_f \times D_h}$ 表示输入投影矩阵，$\mathbf{E}_{\mathrm{pos}}^{(1:T_f)} \in \mathbb{R}^{1 \times T_f \times D_h}$ 表示输入序列对应的可学习位置编码，$D_h$ 表示隐藏层维度。因此：
 \begin{equation}
 \mathbf{M} \in \mathbb{R}^{B \times T_f \times D_h}.
 \label{eq:imu_memory_shape}
 \end{equation}
 
-在预测阶段，模型将未来时间位置编码与当前时序记忆特征的全局上下文相结合，并通过共享参数的 Transformer 编码器和输出映射层直接得到未来 IMU 序列预测结果，即式~\eqref{eq:imu_future_prediction}：
+在未来序列生成阶段，模型利用未来时间位置编码构造预测查询，并结合当前时序记忆特征的全局上下文生成未来 IMU 观测序列：
 \begin{equation}
-\mathbf{X}_{\mathrm{future}}
+\hat{\mathbf{X}}_{\mathrm{future}}
 =
 \mathrm{Encoder}\!\left(
 \mathbf{E}_{\mathrm{pos}}^{(1:T_{\mathrm{pred}})} + \mathrm{MeanPool}_T(\mathbf{M})
 \right) W_{\mathrm{out}} + b_{\mathrm{out}},
 \label{eq:imu_future_prediction}
 \end{equation}
-其中，$\mathbf{E}_{\mathrm{pos}}^{(1:T_{\mathrm{pred}})} \in \mathbb{R}^{1 \times T_{\mathrm{pred}} \times D_h}$ 表示与预测序列对应的可学习位置编码，$W_{\mathrm{out}} \in \mathbb{R}^{D_h \times C}$、$b_{\mathrm{out}} \in \mathbb{R}^{C}$ 分别表示输出映射层的权重与偏置，$C$ 表示 IMU 通道数。因此有式~\eqref{eq:imu_future_shape}：
+其中，$\mathbf{E}_{\mathrm{pos}}^{(1:T_{\mathrm{pred}})} \in \mathbb{R}^{1 \times T_{\mathrm{pred}} \times D_h}$ 表示未来预测序列对应的可学习位置编码，$T_{\mathrm{pred}}=L_{\mathrm{pred}}f_{\mathrm{imu}}$ 表示未来 IMU 观测序列的时间步数，$W_{\mathrm{out}} \in \mathbb{R}^{D_h \times C}$ 和 $b_{\mathrm{out}} \in \mathbb{R}^{C}$ 分别表示输出映射层的权重与偏置。由此得到：
 \begin{equation}
-\mathbf{X}_{\mathrm{future}} \in \mathbb{R}^{B \times T_{\mathrm{pred}} \times C}.
+\hat{\mathbf{X}}_{\mathrm{future}} \in \mathbb{R}^{B \times T_{\mathrm{pred}} \times C}.
 \label{eq:imu_future_shape}
 \end{equation}
 
-式~\eqref{eq:imu_future_prediction} 表明，未来 IMU 序列的生成并不是对各时刻进行独立回归，而是以未来时间位置编码作为时序索引，并引入 $\mathrm{MeanPool}_T(\mathbf{M})$ 所提供的当前运动状态全局上下文，在共享参数的 Transformer 编码器中完成未来动态建模。这样既能够区分不同预测时刻，又能够保持与当前运动模式的一致性，从而更有效地刻画未来时间窗口内的惯性变化。
+式~\eqref{eq:imu_future_prediction} 表明，未来 IMU 观测序列预测并不是对各时间步进行相互独立的回归，而是以未来时间位置编码作为时序索引，并结合当前运动状态的全局上下文，在 Transformer 编码器中完成未来惯性动态建模。该设计能够区分不同预测时刻，同时保持未来 IMU 观测序列与当前运动模式之间的一致性。
 
 \subsubsection{自回归建模机制}{}
 
-在获得未来 IMU 序列预测结果 $\mathbf{X}_{\mathrm{future}}$ 后，本文进一步引入自回归建模机制，以实现未来时间窗口内的人体姿态预测。该机制的核心思想是：未来姿态并不直接由当前时序特征一次性回归得到，而是先构造与未来时间段对应的扩展 IMU 序列，再基于该扩展 IMU 序列进行姿态建模。这样可以使未来姿态预测仍建立在 IMU 时序动态演化过程之上，从而保持“先预测运动，再预测姿态”的建模思路。
+在获得未来 IMU 观测序列预测结果 $\hat{\mathbf{X}}_{\mathrm{future}}$ 后，AIPose 进一步通过自回归建模机制完成未来姿态预测。该机制的核心思想是：未来姿态不直接由当前特征一次性生成，而是先预测未来 IMU 动态，再基于由真实当前观测和预测未来动态共同组成的扩展 IMU 序列进行姿态预测。
 
-设当前 IMU 输入序列如式~\eqref{eq:ar_input_imu} 所示：
+具体而言，设当前 IMU 观测序列为：
 \begin{equation}
 \mathbf{X}_{\mathrm{input}} \in \mathbb{R}^{B \times T_{\mathrm{input}} \times C},
 \label{eq:ar_input_imu}
 \end{equation}
-其中，$B$ 表示批大小，$C$ 表示 IMU 通道数，$T_{\mathrm{input}} = L_{\mathrm{input}} f_{\mathrm{imu}}$ 表示当前 IMU 输入窗口对应的时间步数。设 IMU 时序预测模块输出的未来 IMU 序列预测结果如式~\eqref{eq:ar_future_imu} 所示：
+
+未来 IMU 观测序列预测结果为：
 \begin{equation}
-\mathbf{X}_{\mathrm{future}} \in \mathbb{R}^{B \times T_{\mathrm{pred}} \times C},
+\hat{\mathbf{X}}_{\mathrm{future}} \in \mathbb{R}^{B \times T_{\mathrm{pred}} \times C}.
 \label{eq:ar_future_imu}
 \end{equation}
-其中，$T_{\mathrm{pred}} = L_{\mathrm{pred}} f_{\mathrm{imu}}$ 表示未来预测窗口对应的时间步数。
 
-为了使未来姿态预测阶段的输入仍保持连续的时间结构，本文首先从式~\eqref{eq:ar_input_imu} 所示的当前 IMU 输入序列中截取与未来预测阶段相邻的尾部片段：
+为了在未来姿态预测阶段保留与当前观测相邻的真实运动信息，本文从当前 IMU 观测序列中截取尾部片段：
 \begin{equation}
 \mathbf{X}_{\mathrm{tail}}
 =
@@ -214,38 +220,38 @@ AIPose 以当前 IMU 序列为输入，通过时序特征提取、当前姿态�
 \label{eq:x_tail}
 \end{equation}
 
-在此基础上，自回归姿态预测过程可统一表示为式~\eqref{eq:autoregressive_pose_prediction}：
+随后，将该尾部真实观测与预测得到的未来 IMU 观测序列沿时间维度拼接，构成扩展 IMU 序列，并输入姿态预测分支：
 \begin{equation}
-\mathbf{P}_{\mathrm{pred}}
+\hat{\mathbf{P}}_{\mathrm{pred}}
 =
 f_{\mathrm{pred}}
 \!\left(
 E\!\left(
 \mathrm{Concat}\!\left(
-\mathbf{X}_{\mathrm{tail}},\,\mathbf{X}_{\mathrm{future}}
+\mathbf{X}_{\mathrm{tail}},\,\hat{\mathbf{X}}_{\mathrm{future}}
 \right)
 \right)
 \right),
 \qquad
-\mathbf{P}_{\mathrm{pred}} \in \mathbb{R}^{B \times L_{\mathrm{pred}} \times K \times D_p},
+\hat{\mathbf{P}}_{\mathrm{pred}} \in \mathbb{R}^{B \times T_{\mathrm{pose}} \times K \times D_p}.
 \label{eq:autoregressive_pose_prediction}
 \end{equation}
-其中，$\mathrm{Concat}(\cdot,\cdot)$ 表示沿时间维度进行拼接操作，$E(\cdot)$ 表示 IMU 时序特征提取模块，$f_{\mathrm{pred}}(\cdot)$ 表示未来姿态预测映射函数，$K$ 表示关节数量，$D_p$ 表示单个关节的姿态表示维度。由式~\eqref{eq:autoregressive_pose_prediction} 可知，模型首先将当前时刻附近的真实 IMU 观测 $\mathbf{X}_{\mathrm{tail}}$ 与预测得到的未来 IMU 序列 $\mathbf{X}_{\mathrm{future}}$ 拼接为扩展 IMU 序列，再基于该扩展输入完成未来姿态预测。
+其中，$\mathrm{Concat}(\cdot,\cdot)$ 表示沿时间维度进行拼接操作，$f_{\mathrm{pred}}(\cdot)$ 表示未来姿态预测映射函数，$T_{\mathrm{pose}}=L_{\mathrm{pred}}f_{\mathrm{pose}}$ 表示未来姿态序列的时间步数。
 
-可以看出，该机制并非直接由当前 IMU 时序特征一次性生成未来姿态，而是先利用当前 IMU 输入预测未来 IMU 序列，再将当前时刻附近的真实观测与预测得到的未来 IMU 动态组合为扩展 IMU 序列，最后基于该扩展输入完成未来姿态预测。因此，未来姿态建模过程始终依赖于 IMU 序列在时间维度上的连续演化关系，体现了自回归建模“由当前状态递推未来状态”的基本思想。通过这种方式，模型能够在当前观测基础上，结合预测得到的未来 IMU 动态信息，对未来姿态进行连续建模。
+由式~\eqref{eq:autoregressive_pose_prediction} 可知，AIPose 的未来姿态预测过程并非直接从当前 IMU 特征映射到未来姿态，而是通过未来 IMU 观测序列预测建立中间运动状态，再结合当前真实 IMU 尾部片段形成连续输入。该机制使未来姿态预测过程始终依赖于 IMU 序列的时间演化关系，同时利用真实观测片段作为锚点约束未来预测，从而缓解完全依赖预测序列可能带来的误差累积问题。
 
 \subsubsection{损失函数}{}
 
-为实现当前姿态重构、未来 IMU 预测以及未来姿态预测的联合优化，本文采用多任务学习策略构建整体损失函数。设当前姿态重构结果、未来 IMU 预测结果及未来姿态预测结果分别为 $\mathbf{P}_{\mathrm{rec}}$、$\mathbf{X}_{\mathrm{future}}$ 和 $\mathbf{P}_{\mathrm{pred}}$，对应的真实值分别为 $\mathbf{P}_{\mathrm{rec}}^{\ast}$、$\mathbf{X}_{\mathrm{future}}^{\ast}$ 和 $\mathbf{P}_{\mathrm{pred}}^{\ast}$，则整体损失函数定义如式~\eqref{eq:loss} 所示：
+为实现当前姿态重构、未来 IMU 观测序列预测和未来姿态预测的联合优化，本文采用多任务损失函数对模型进行训练。设当前姿态重构结果、未来 IMU 观测序列预测结果和未来姿态预测结果分别为 $\hat{\mathbf{P}}_{\mathrm{rec}}$、$\hat{\mathbf{X}}_{\mathrm{future}}$ 和 $\hat{\mathbf{P}}_{\mathrm{pred}}$，其对应真实值分别为 $\mathbf{P}_{\mathrm{rec}}^{\ast}$、$\mathbf{X}_{\mathrm{future}}^{\ast}$ 和 $\mathbf{P}_{\mathrm{pred}}^{\ast}$，则整体损失函数定义为：
 \begin{equation}
-\mathcal{L} = \alpha \left\| \mathbf{P}_{\mathrm{rec}} - \mathbf{P}_{\mathrm{rec}}^{\ast} \right\|_{1}
-+ \beta \left\| \mathbf{X}_{\mathrm{future}} - \mathbf{X}_{\mathrm{future}}^{\ast} \right\|_{1}
-+ \gamma \left\| \mathbf{P}_{\mathrm{pred}} - \mathbf{P}_{\mathrm{pred}}^{\ast} \right\|_{1}
+\mathcal{L} = \alpha \left\| \hat{\mathbf{P}}_{\mathrm{rec}} - \mathbf{P}_{\mathrm{rec}}^{\ast} \right\|_{1}
++ \beta \left\| \hat{\mathbf{X}}_{\mathrm{future}} - \mathbf{X}_{\mathrm{future}}^{\ast} \right\|_{1}
++ \gamma \left\| \hat{\mathbf{P}}_{\mathrm{pred}} - \mathbf{P}_{\mathrm{pred}}^{\ast} \right\|_{1},
 \label{eq:loss}
 \end{equation}
-其中 $\alpha$、$\beta$ 和 $\gamma$ 为权重系数，用于平衡不同子任务对模型训练的影响。
+其中，$\|\cdot\|_1$ 表示在批次、时间步以及对应特征维度上的平均绝对误差，$\alpha$、$\beta$ 和 $\gamma$ 为权重系数，用于平衡不同子任务对模型训练的影响。
 
-通过式~\eqref{eq:loss} 所示的联合优化，模型在学习当前姿态重构的同时，能够建模 IMU 时序动态，并进一步提升未来姿态预测的准确性。
+通过式~\eqref{eq:loss} 所示的联合优化，模型能够在学习当前姿态重构的同时，显式建模未来 IMU 动态，并进一步利用预测得到的未来运动信息完成未来姿态预测，从而形成当前姿态重构与未来姿态预测相结合的统一建模框架。
 
 \xsection{实验与结果分析}{Experimental Results and Analysis}
 
@@ -458,7 +464,7 @@ MobilePoser~\cite{xu2024mobileposer} (2024)：该方法面向移动消费设备�
   \label{fig:aipose_baselines}
 \end{figure}
 
-综上可得，在统一的数据划分、训练设置和评价指标下，AIPose 在 XRFV2 数据集上的当前姿态重构任务中表现出最优的整体性能。无论从整体误差、关键点命中率，还是从逐关节误差分布与训练收敛过程来看，AIPose 均表现出较强的时序建模能力与较好的训练稳定性。这说明所提出方法能够更有效地利用历史 IMU 观测信息，为后续未来姿态预测任务奠定良好基础。
+综上可得，在统一的数据划分、训练设置和评价指标下，AIPose 在 XRFV2 数据集上的当前姿态重构任务中表现出最优的整体性能。无论从整体误差、关键点命中率，还是从逐关节误差分布与训练收敛过程来看，AIPose 均表现出较强的时序建模能力与较好的训练稳定性。这说明所提出方法能够更有效地利用当前 IMU 观测信息，为后续未来姿态预测任务奠定良好基础。
 
 \subsubsection{DIP-IMU、AMASS 与 IMUPoser 数据集上的方法对比实验}{}
 
@@ -484,7 +490,7 @@ MobilePoser~\cite{xu2024mobileposer} (2024)：该方法面向移动消费设备�
   \end{tblr}
 \end{table}
 
-如表~\ref{tab:aipose_in_supplement_datasets} 所示，在当前姿态重构任务中，本章方法在 DIP-IMU、AMASS 和 IMUPoser 数据集上的 MJAE/PE 分别为 4.43\,deg/3.42\,cm、5.15\,deg/7.16\,cm 和 5.95\,deg/6.01\,cm；在未来姿态预测任务中，对应的 MJAE/PE 分别为 4.52\,deg/3.56\,cm、5.35\,deg/7.55\,cm 和 6.16\,deg/6.57\,cm。与当前姿态重构结果相比，未来姿态预测误差有所增加，其中 MJAE 分别增加 0.09\,deg、0.20\,deg 和 0.21\,deg，PE 分别增加 0.14\,cm、0.39\,cm 和 0.56\,cm。由于未来姿态预测需要根据历史 IMU 序列推断后续运动状态，其任务难度高于当前姿态重构，因此误差上升符合任务特性。从增幅来看，三个数据集上的误差变化均处于相对有限范围内，说明本章方法在补充数据集上能够保持较为稳定的姿态建模性能。
+如表~\ref{tab:aipose_in_supplement_datasets} 所示，在当前姿态重构任务中，本章方法在 DIP-IMU、AMASS 和 IMUPoser 数据集上的 MJAE/PE 分别为 4.43\,deg/3.42\,cm、5.15\,deg/7.16\,cm 和 5.95\,deg/6.01\,cm；在未来姿态预测任务中，对应的 MJAE/PE 分别为 4.52\,deg/3.56\,cm、5.35\,deg/7.55\,cm 和 6.16\,deg/6.57\,cm。与当前姿态重构结果相比，未来姿态预测误差有所增加，其中 MJAE 分别增加 0.09\,deg、0.20\,deg 和 0.21\,deg，PE 分别增加 0.14\,cm、0.39\,cm 和 0.56\,cm。由于未来姿态预测需要根据当前 IMU 序列推断后续运动状态，其任务难度高于当前姿态重构，因此误差上升符合任务特性。从增幅来看，三个数据集上的误差变化均处于相对有限范围内，说明本章方法在补充数据集上能够保持较为稳定的姿态建模性能。
 
 进一步地，表~\ref{tab:method_compare_dip_amass_imuposer} 展示了本章方法与对比方法在当前姿态重构任务上的性能表现。需要再次说明的是，这些对比方法主要面向当前姿态重构任务，而不包含未来 IMU 序列预测或未来姿态预测分支。因此，该表仅统计了各方法在当前姿态重构任务上的 MJAE 和 PE 指标数据。
 
