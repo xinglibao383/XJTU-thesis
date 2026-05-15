@@ -210,13 +210,13 @@ AIPose 面向基于 IMU 时序信号的人体姿态重构与预测任务，其�
 \label{eq:ar_future_imu}
 \end{equation}
 
-为了保留与未来预测窗口相邻的真实运动信息，本文从当前 IMU 观测序列中截取尾部片段：
+为了保留与未来预测窗口相邻的真实运动信息，并使扩展 IMU 序列与 AIPose 的输入窗口长度保持一致，本文从当前 IMU 观测序列中截取长度为 $T_{\mathrm{input}}-T_{\mathrm{pred}}$ 的尾部片段：
 \begin{equation}
 \mathbf{X}_{\mathrm{tail}}
 =
-\mathbf{X}_{\mathrm{input}}[:,\,T_{\mathrm{input}}-T_{\mathrm{pred}}:T_{\mathrm{input}},\,:],
+\mathbf{X}_{\mathrm{input}}[:,\,T_{\mathrm{pred}}:T_{\mathrm{input}},\,:],
 \qquad
-\mathbf{X}_{\mathrm{tail}} \in \mathbb{R}^{B \times T_{\mathrm{pred}} \times C}.
+\mathbf{X}_{\mathrm{tail}} \in \mathbb{R}^{B \times (T_{\mathrm{input}}-T_{\mathrm{pred}}) \times C}.
 \label{eq:x_tail}
 \end{equation}
 
@@ -228,7 +228,7 @@ AIPose 面向基于 IMU 时序信号的人体姿态重构与预测任务，其�
 \mathbf{X}_{\mathrm{tail}},\,\hat{\mathbf{X}}_{\mathrm{future}}
 \right),
 \qquad
-\mathbf{X}_{\mathrm{ext}} \in \mathbb{R}^{B \times 2T_{\mathrm{pred}} \times C}.
+\mathbf{X}_{\mathrm{ext}} \in \mathbb{R}^{B \times T_{\mathrm{input}} \times C}.
 \label{eq:extended_imu}
 \end{equation}
 
