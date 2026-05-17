@@ -1,6 +1,6 @@
 % !TeX root = ../main.tex
 
-\xchapter{基于自回归建模机制的人体姿态重构与预测}{Autoregressive Human Pose Reconstruction and Prediction}
+\xchapter{基于自回归建模机制的人体姿态重构与预测方法}{Autoregressive Human Pose Reconstruction and Prediction Method}
 
 本章围绕基于自回归建模机制的人体姿态重构与预测问题展开研究。第三章主要从活动语义层面研究人体活动识别问题，通过离散活动类别刻画人体行为的宏观语义状态，但难以进一步描述人体运动过程中的细粒度姿态变化及其时间演化规律。因此，本章将研究问题从离散活动识别扩展到连续人体姿态建模，提出 AIPose（Autoregressive IMU Pose Reconstruction）方法，在给定当前 IMU 观测序列的条件下，同时实现当前姿态重构与未来姿态预测。第4.1节首先对任务背景与研究动机进行说明，分析现有姿态方法在未来姿态建模等方面的局限；第4.2节介绍 AIPose 方法，包括整体方法框架、样本构建过程以及模型组成模块；第4.3节通过实验对所提方法进行评估，从方法对比、模型架构以及长时预测与扰动鲁棒性等方面分析模型性能；第4.4节对本章研究内容进行总结。
 
